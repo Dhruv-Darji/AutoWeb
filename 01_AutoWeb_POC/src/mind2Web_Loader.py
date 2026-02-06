@@ -85,14 +85,78 @@ class Mind2WebDataset:
             raise ValueError("Unexpected format for screenshot field: %s" % type(screenshot_field))
 
 
+    def _extract_oracle_action(self, operation: dict) -> dict:
+        """
+        Extract oracle (ground-truth) action from operation dict.
+        
+        Returns standardized action dict:
+        {
+            'action_type': str (click/type/scroll/select/...),
+            'target': {
+                'selector': str,
+                'text': str,
+                'bbox': [x, y, w, h] or None
+            },
+            'value': str or None
+        }
+        """
+        if not operation or not isinstance(operation, dict):
+            return {
+                "action_type": "noop",
+                "target": None,
+                "value": None
+            }
+        
+        # Extract action type
+        action_type = operation.get("op", "")
+        
+        # Map operation types to standard action types
+        type_mapping = {
+            "CLICK": "click",
+            "TYPE": "type",
+            "SELECT": "click",  # SELECT is treated as click in SeeAct
+            "SCROLL": "scroll",
+            "HOVER": "click",  # HOVER treated as click
+        }
+        
+        action_type_std = type_mapping.get(action_type.upper(), action_type.lower())
+        
+        # Extract target information
+        target = None
+        if "original_op_before_modification" in operation:
+            element = operation["original_op_before_modification"]
+        else:
+            element = operation
+        
+        # Try to extract selector and other target info
+        selector = element.get("selector") or element.get("element_css_selector")
+        text = element.get("text") or element.get("element_text", "")
+        
+        if selector or text:
+            target = {
+                "selector": selector,
+                "text": text
+            }
+        
+        # Extract value for type operations
+        value = operation.get("value") or operation.get("action_input")
+        
+        return {
+            "action_type": action_type_std,
+            "target": target,
+            "value": value
+        }
+
     def __getitem__(self, idx: int):
         """
         Returns: dics with keys:
             'image' : PIL.Image
+            'instruction' : str (task description)
+            'oracle_action' : dict (ground-truth action)
             'raw_html' : str
-            'operation' : dict
-            'pos_candidates' : list of dicts
-            'task' : str
+            'cleaned_html' : str
+            'operation' : dict (raw operation)
+            'candidates' : list of dicts
             'metadata' : dict (website, annotation_id etc.)
         """
 
@@ -100,11 +164,15 @@ class Mind2WebDataset:
 
         sample = {}
         sample["image"] = self._load_image(row["screenshot"])
+        sample["instruction"] = row.get("confirmed_task", "")
         sample["raw_html"] = row.get("raw_html", None)
         sample["cleaned_html"] = row.get("cleaned_html", None)
-        sample["operation"] = row["operation"]  # dict
+        sample["operation"] = row["operation"]  # dict (raw)
         sample["candidates"] = row.get("pos_candidates", [])
-        sample["task"] = row.get("confirmed_task", "")
+        
+        # Extract oracle action for evaluation
+        sample["oracle_action"] = self._extract_oracle_action(row["operation"])
+        
         sample["metadata"] = {
             "action_uid": row.get("action_uid"),
             "annotation_id": row.get("annotation_id"),
