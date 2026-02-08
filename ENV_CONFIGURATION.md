@@ -79,11 +79,23 @@ python run_demo.py \
 
 ## Configuration Options
 
+### Path Configuration
+
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `MODEL_PATH` | Path to Qwen2-VL-2B model directory | Yes |
 | `DATASET_PATH` | Path to Multimodal Mind2Web dataset | Yes (for evaluation scripts) |
 | `RESULTS_PATH` | Path for results output (default: `../results`) | No |
+
+### GPU Configuration (Optional)
+
+| Variable | Description | Default | Recommended for RTX 4050 (6GB) |
+|----------|-------------|---------|-------------------------------|
+| `DEVICE` | Device to use: `cuda`, `cpu`, or `auto` | `auto` | `cuda` |
+| `MODEL_DTYPE` | Model precision: `fp16` or `float32` | `fp16` | `fp16` |
+| `USE_8BIT` | Use 8-bit quantization: `true` or `false` | `false` | `false` |
+
+**For detailed GPU configuration, see [GPU_CONFIGURATION.md](GPU_CONFIGURATION.md)**
 
 ## Notes
 

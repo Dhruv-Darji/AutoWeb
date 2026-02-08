@@ -25,7 +25,7 @@ sys.path.insert(0, str(src_path))
 from mind2Web_Loader import Mind2WebDataset
 from seeact_pipeline import SeeActPipeline
 from evaluator import ActionEvaluator
-from config import get_model_path, get_dataset_path, get_results_path
+from config import get_model_path, get_dataset_path, get_results_path, get_device, get_model_dtype, get_use_8bit
 
 
 class EnhancedEvaluator:
@@ -78,11 +78,23 @@ class EnhancedEvaluator:
         
         # Step 2: Initialize pipeline
         print(f"[2/4] Initializing SeeAct pipeline...")
+        
+        # Load GPU config from .env
+        device = get_device()
+        model_dtype = get_model_dtype()
+        use_8bit = get_use_8bit()
+        
+        print(f"  Device: {device}")
+        print(f"  Model dtype: {model_dtype}")
+        print(f"  8-bit quantization: {use_8bit}")
+        
         try:
             pipeline = SeeActPipeline(
                 model_folder=model_path,
                 target_width=1280,
-                target_height=720
+                target_height=720,
+                device=device,
+                use_8bit=use_8bit
             )
             print(f"  ✓ Pipeline ready")
         except Exception as e:

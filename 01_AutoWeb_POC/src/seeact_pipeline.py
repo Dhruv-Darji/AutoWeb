@@ -28,7 +28,7 @@ from action_decoder import ActionDecoder
 from image_preprocessor import SeeActImagePreprocessor
 from prompt_engine import PromptEngine
 from model_interface import VLModel
-from config import get_model_path
+from config import get_model_path, get_device, get_model_dtype, get_use_8bit
 
 
 class SeeActPipeline:
@@ -218,13 +218,22 @@ class SeeActPipeline:
 def run_single_prediction_example(
     model_folder: str,
     image_path: str,
-    instruction: str
+    instruction: str,
+    device: Optional[str] = None,
+    use_8bit: bool = False
 ):
     """
     Example: Run a single prediction.
     
     This demonstrates the STOPPING CRITERION:
     "I can give a screenshot + instruction and my system outputs a valid JSON action prediction locally."
+    
+    Args:
+        model_folder: Path to model directory
+        image_path: Path to screenshot image
+        instruction: Task instruction
+        device: Device to use ("cuda", "cpu", or None for auto)
+        use_8bit: Whether to use 8-bit quantization
     """
     print("=" * 80)
     print("SeeAct Single-Step UI Action Predictor")
@@ -234,7 +243,9 @@ def run_single_prediction_example(
     pipeline = SeeActPipeline(
         model_folder=model_folder,
         target_width=1280,
-        target_height=720
+        target_height=720,
+        device=device,
+        use_8bit=use_8bit
     )
     
     # Run prediction
@@ -280,8 +291,19 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
+    # Load GPU config from .env
+    device = get_device()
+    use_8bit = get_use_8bit()
+    
+    print(f"\nConfiguration:")
+    print(f"  Device: {device}")
+    print(f"  8-bit quantization: {use_8bit}")
+    print()
+    
     run_single_prediction_example(
         model_folder=args.model,
         image_path=args.image,
-        instruction=args.instruction
+        instruction=args.instruction,
+        device=device,
+        use_8bit=use_8bit
     )
