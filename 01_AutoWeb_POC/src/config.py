@@ -63,6 +63,54 @@ def get_results_path(default: str = "../results") -> str:
     return os.getenv("RESULTS_PATH", default)
 
 
+def get_device(default: str = "auto") -> str:
+    """
+    Get the device to use for inference from environment or default.
+    
+    Args:
+        default: Default device if not found in environment
+    
+    Returns:
+        Device string: "cuda", "cpu", or "auto"
+    """
+    device = os.getenv("DEVICE", default)
+    if device.lower() == "auto":
+        try:
+            import torch
+            return "cuda" if torch.cuda.is_available() else "cpu"
+        except ImportError:
+            # If torch not installed, default to CPU
+            return "cpu"
+    return device
+
+
+def get_model_dtype(default: str = "fp16") -> str:
+    """
+    Get the model dtype from environment or default.
+    
+    Args:
+        default: Default dtype if not found in environment
+    
+    Returns:
+        Dtype string: "fp16" or "float32"
+    """
+    return os.getenv("MODEL_DTYPE", default)
+
+
+def get_use_8bit(default: bool = False) -> bool:
+    """
+    Get whether to use 8-bit quantization from environment or default.
+    
+    Args:
+        default: Default value if not found in environment
+    
+    Returns:
+        Boolean indicating whether to use 8-bit quantization
+    """
+    value = os.getenv("USE_8BIT", str(default)).lower()
+    return value in ("true", "1", "yes")
+
+
 def print_config():
     """Print current configuration."""
     print("\n" + "=" * 80)
@@ -71,4 +119,7 @@ def print_config():
     print(f"MODEL_PATH:    {get_model_path() or '(not set)'}")
     print(f"DATASET_PATH:  {get_dataset_path() or '(not set)'}")
     print(f"RESULTS_PATH:  {get_results_path()}")
+    print(f"DEVICE:        {get_device()}")
+    print(f"MODEL_DTYPE:   {get_model_dtype()}")
+    print(f"USE_8BIT:      {get_use_8bit()}")
     print("=" * 80 + "\n")
