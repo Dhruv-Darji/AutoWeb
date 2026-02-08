@@ -18,9 +18,10 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-from .src.mind2Web_Loader import Mind2WebDataset
-from .src.seeact_pipeline import SeeActPipeline
-from .src.evaluator import ActionEvaluator
+from mind2Web_Loader import Mind2WebDataset
+from seeact_pipeline import SeeActPipeline
+from evaluator import ActionEvaluator
+from config import get_model_path, get_dataset_path
 
 
 def run_demo(
@@ -166,20 +167,26 @@ def run_demo(
 if __name__ == "__main__":
     import argparse
     
+    # Get defaults from .env file
+    default_model = get_model_path()
+    default_dataset = get_dataset_path()
+    
     parser = argparse.ArgumentParser(
         description="Demo: SeeAct-style single-step prediction with Mind2Web"
     )
     parser.add_argument(
         "--dataset",
         type=str,
-        required=True,
-        help="Path to Mind2Web dataset root directory"
+        default=default_dataset,
+        required=default_dataset is None,
+        help=f"Path to Mind2Web dataset root directory (default from .env: {default_dataset})" if default_dataset else "Path to Mind2Web dataset root directory"
     )
     parser.add_argument(
         "--model",
         type=str,
-        required=True,
-        help="Path to Qwen2-VL-2B model folder"
+        default=default_model,
+        required=default_model is None,
+        help=f"Path to Qwen2-VL-2B model folder (default from .env: {default_model})" if default_model else "Path to Qwen2-VL-2B model folder"
     )
     parser.add_argument(
         "--num-samples",

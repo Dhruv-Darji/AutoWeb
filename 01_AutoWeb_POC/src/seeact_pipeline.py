@@ -28,6 +28,7 @@ from action_decoder import ActionDecoder
 from image_preprocessor import SeeActImagePreprocessor
 from prompt_engine import PromptEngine
 from model_interface import VLModel
+from config import get_model_path
 
 
 class SeeActPipeline:
@@ -264,9 +265,14 @@ if __name__ == "__main__":
     # Example usage
     import argparse
     
+    # Get default model path from .env
+    default_model = get_model_path()
+    
     parser = argparse.ArgumentParser(description="Run SeeAct single-step prediction")
-    parser.add_argument("--model", type=str, required=True, 
-                       help="Path to Qwen2-VL-2B model folder")
+    parser.add_argument("--model", type=str, 
+                       default=default_model,
+                       required=default_model is None,
+                       help=f"Path to Qwen2-VL-2B model folder (default from .env: {default_model})" if default_model else "Path to Qwen2-VL-2B model folder")
     parser.add_argument("--image", type=str, required=True,
                        help="Path to screenshot image")
     parser.add_argument("--instruction", type=str, required=True,

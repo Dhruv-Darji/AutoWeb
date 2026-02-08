@@ -52,7 +52,33 @@ source venv/bin/activate
 # venv\Scripts\activate
 ```
 
-### Step 3: Install Dependencies
+### Step 3: Configure Environment (Optional but Recommended)
+
+**NEW: You can now use a .env file to store your model and dataset paths!**
+
+```bash
+# Copy the example .env file
+cp .env.example .env
+
+# Edit .env with your paths
+# Windows: notepad .env
+# Linux/Mac: nano .env
+```
+
+**Example .env configuration:**
+```env
+MODEL_PATH=D:\Environments\Models\Qwen2-VL-2B
+DATASET_PATH=D:\Environments\Datasets\multimodal-mind2web
+```
+
+**Benefits:**
+- ✅ Configure paths once, use everywhere
+- ✅ No need to type long paths every time
+- ✅ Each team member can have their own configuration
+
+For detailed instructions, see [ENV_CONFIGURATION.md](ENV_CONFIGURATION.md).
+
+### Step 4: Install Dependencies
 
 ```bash
 # Upgrade pip
@@ -66,7 +92,7 @@ python -c "import torch; print(f'PyTorch: {torch.__version__}')"
 python -c "import transformers; print(f'Transformers: {transformers.__version__}')"
 ```
 
-### Step 4: Download Model
+### Step 5: Download Model
 
 #### Option A: Using Hugging Face CLI (Recommended)
 
@@ -104,7 +130,7 @@ EOF
        └── ...
    ```
 
-### Step 5: Download Dataset (Optional - for evaluation)
+### Step 6: Download Dataset (Optional - for evaluation)
 
 ```bash
 # Create data directory
@@ -116,7 +142,7 @@ mkdir -p data
 # Place in: ./data/Mind2Web/
 ```
 
-### Step 6: Verify Installation
+### Step 7: Verify Installation
 
 ```bash
 # Run tests
@@ -145,11 +171,22 @@ python mock_demo.py
 
 ### Test 2: Single Prediction (Requires Model)
 
+**With .env configured:**
+```bash
+cd 01_AutoWeb_POC
+
+# Model path is loaded from .env automatically!
+python src/seeact_pipeline.py \
+  --image ../data/test_screenshot.jpg \
+  --instruction "Click the login button"
+```
+
+**Without .env (manual path):**
 ```bash
 # Create a test image (or use your own screenshot)
 cd 01_AutoWeb_POC
 
-# Run single prediction
+# Run single prediction with explicit path
 python src/seeact_pipeline.py \
   --model ../models/Qwen2-VL-2B-Instruct \
   --image ../data/test_screenshot.jpg \
@@ -168,6 +205,15 @@ python src/seeact_pipeline.py \
 
 ### Test 3: Demo with Mind2Web (Requires Dataset)
 
+**With .env configured:**
+```bash
+cd 01_AutoWeb_POC
+
+# Paths loaded from .env automatically!
+python run_demo.py --num-samples 5
+```
+
+**Without .env (manual paths):**
 ```bash
 cd 01_AutoWeb_POC
 
@@ -181,10 +227,19 @@ python run_demo.py \
 
 ## Running Research Experiments
 
+**Note:** All examples below can use .env paths! Just omit `--dataset` and `--model` if configured in .env.
+
 ### Experiment 1: Baseline Evaluation (Small Scale)
 
 Run evaluation on a small subset to verify everything works:
 
+**With .env:**
+```bash
+cd 01_AutoWeb_POC
+python run_demo.py --num-samples 20
+```
+
+**Without .env:**
 ```bash
 cd 01_AutoWeb_POC
 
@@ -203,6 +258,13 @@ python run_demo.py \
 
 For research-quality results, run on 100-200 samples:
 
+**With .env:**
+```bash
+cd 01_AutoWeb_POC
+python enhanced_eval.py --num-samples 100
+```
+
+**Without .env:**
 ```bash
 cd 01_AutoWeb_POC
 
@@ -210,8 +272,12 @@ cd 01_AutoWeb_POC
 mkdir -p ../results/baseline
 
 # Run evaluation with logging
-python run_demo.py \
+python enhanced_eval.py \
   --dataset ../data/Mind2Web \
+  --model ../models/Qwen2-VL-2B-Instruct \
+  --num-samples 100 \
+  2>&1 | tee ../results/baseline/run_log.txt
+```
   --model ../models/Qwen2-VL-2B-Instruct \
   --num-samples 100 \
   2>&1 | tee ../results/baseline/run_log.txt
