@@ -12,9 +12,9 @@ import json
 src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from ..src.action_schema import ActionPrediction, ActionSchema, create_action_prediction
-from ..src.json_repair import JSONRepair, ActionJSONRepair
-from ..src.action_decoder import ActionDecoder
+from action_schema import ActionPrediction, ActionSchema, create_action_prediction
+from json_repair import JSONRepair, ActionJSONRepair
+from action_decoder import ActionDecoder
 from PIL import Image
 import numpy as np
 
