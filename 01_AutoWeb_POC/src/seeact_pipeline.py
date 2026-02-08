@@ -137,10 +137,24 @@ class SeeActPipeline:
         
         # Step 2: Build prompt
         print("  [2/5] Building prompt...")
+        # Ask model/processor what image placeholder (if any) it prefers so tokenization and
+        # image features remain aligned. VLModel.get_preferred_image_key returns empty string
+        # when the processor prefers implicit image tokens.
+        try:
+            image_key = self.model.get_preferred_image_key(processed_image)
+            if image_key == "":
+                print("        Using implicit image tokens (no explicit placeholder)")
+            else:
+                print(f"        Using image placeholder: {image_key!r}")
+        except Exception as e:
+            image_key = "<image>"
+            print(f"        ⚠ could not detect image placeholder (falling back to '<image>'): {e}")
+
         prompt_text, _ = self.prompt_engine.build_prompt(
             task_text=instruction,
             variant="strict_json",
-            include_dom=False  # SeeAct: no DOM, vision-only
+            include_dom=False,  # SeeAct: no DOM, vision-only
+            image_key=image_key or "<image>"
         )
         
         # Step 3: Run model inference
@@ -264,24 +278,63 @@ def run_single_prediction_example(
 if __name__ == "__main__":
     # Example usage
     import argparse
+    from pathlib import Path
     
     # Get default model path from .env
     default_model = get_model_path()
     
-    parser = argparse.ArgumentParser(description="Run SeeAct single-step prediction")
-    parser.add_argument("--model", type=str, 
-                       default=default_model,
-                       required=default_model is None,
-                       help=f"Path to Qwen2-VL-2B model folder (default from .env: {default_model})" if default_model else "Path to Qwen2-VL-2B model folder")
-    parser.add_argument("--image", type=str, required=True,
-                       help="Path to screenshot image")
-    parser.add_argument("--instruction", type=str, required=True,
-                       help="Task instruction")
+    parser = argparse.ArgumentParser(
+        description="Run SeeAct single-step prediction"
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=default_model,
+        required=default_model is None,
+        help=(f"Path to Qwen2-VL-2B model folder (default from .env: {default_model})" \
+              if default_model else "Path to Qwen2-VL-2B model folder")
+    )
+    parser.add_argument(
+        "--image",
+        type=str,
+        required=False,
+        help="Path to screenshot image"
+    )
+    parser.add_argument(
+        "--instruction",
+        type=str,
+        required=False,
+        help="Task instruction"
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run a lightweight bundled demo (creates a placeholder screenshot and example instruction)"
+    )
     
     args = parser.parse_args()
     
+    # CLI validation / demo fallback
+    if args.demo:
+        # create a lightweight placeholder image next to the script for reproducible demo runs
+        demo_path = Path(__file__).parent / "demo_screenshot.jpg"
+        if not demo_path.exists():
+            from PIL import Image
+            Image.new("RGB", (1280, 720), color=(240, 240, 240)).save(demo_path)
+        image_path = str(demo_path)
+        instruction = "Click the login button"
+    else:
+        if not args.image or not args.instruction:
+            parser.error(
+                "Either --demo or both --image and --instruction must be provided.\n"
+                "Example (Windows PowerShell):\n"
+                "  python .\\seeact_pipeline.py --image \"C:\\path\\to\\shot.png\" --instruction \"Click login\""
+            )
+        image_path = args.image
+        instruction = args.instruction
+    
     run_single_prediction_example(
         model_folder=args.model,
-        image_path=args.image,
-        instruction=args.instruction
+        image_path=image_path,
+        instruction=instruction
     )
