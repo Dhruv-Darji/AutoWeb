@@ -12,8 +12,8 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-from action_decoder import ActionDecoder
-from action_schema import ActionSchema
+from .src.action_decoder import ActionDecoder
+from .src.action_schema import ActionSchema
 
 
 def mock_model_output_examples():

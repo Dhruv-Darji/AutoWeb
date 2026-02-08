@@ -18,9 +18,9 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-from mind2Web_Loader import Mind2WebDataset
-from seeact_pipeline import SeeActPipeline
-from evaluator import ActionEvaluator
+from .src.mind2Web_Loader import Mind2WebDataset
+from .src.seeact_pipeline import SeeActPipeline
+from .src.evaluator import ActionEvaluator
 
 
 def run_demo(
