@@ -43,7 +43,9 @@ Screenshot + Instruction
 ## 📦 Components
 
 ### 1. Action Schema (`action_schema.py`)
+
 Defines the strict output contract:
+
 ```json
 {
   "action_type": "click|type|scroll|noop",
@@ -54,47 +56,60 @@ Defines the strict output contract:
 ```
 
 ### 2. JSON Repair (`json_repair.py`)
+
 Handles common model output issues:
+
 - Extracts JSON from surrounding text
 - Fixes trailing commas
 - Removes markdown wrappers
 - Adds missing fields with defaults
 
 ### 3. Action Decoder (`action_decoder.py`)
+
 Converts raw model output to validated ActionPrediction:
+
 - Repairs JSON
 - Normalizes coordinates
 - Validates schema
 - Handles errors gracefully
 
 ### 4. Image Preprocessor (`image_preprocessor.py`)
+
 Minimal preprocessing per SeeAct principles:
+
 - Resize with aspect ratio preservation
 - NO OCR (vision-only)
 - NO DOM parsing (intentionally limited)
 
 ### 5. Dataset Adapter (`mind2Web_Loader.py`)
+
 Loads Mind2Web samples with oracle actions:
+
 - Clean format: image, instruction, oracle_action
 - Ready for evaluation
 
 ### 6. Evaluator (`evaluator.py`)
+
 Prepares metrics (structure only, doesn't run yet):
+
 - Action Accuracy (AA)
 - Target Accuracy (TA)
 - Value Accuracy (VA)
 
 ### 7. Pipeline (`seeact_pipeline.py`)
+
 End-to-end integration of all components.
 
 ## 🚀 Installation
 
 ### 1. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 2. Download Qwen2-VL-2B Model
+
 ```bash
 # From Hugging Face
 # Model: Qwen/Qwen2-VL-2B-Instruct
@@ -102,7 +117,9 @@ pip install -r requirements.txt
 ```
 
 ### 3. Download Mind2Web Dataset (Optional)
+
 For evaluation with real data:
+
 ```bash
 # Download from: https://github.com/OSU-NLP-Group/Mind2Web
 # Save to: /path/to/datasets/Mind2Web
@@ -111,12 +128,14 @@ For evaluation with real data:
 ## 🧪 Usage
 
 ### Run Unit Tests
+
 ```bash
 cd 01_AutoWeb_POC
 python tests/test_components.py
 ```
 
 ### Single Prediction Example
+
 ```bash
 cd 01_AutoWeb_POC/src
 python seeact_pipeline.py \
@@ -126,6 +145,7 @@ python seeact_pipeline.py \
 ```
 
 ### Demo with Mind2Web
+
 ```bash
 cd 01_AutoWeb_POC
 python run_demo.py \
@@ -135,6 +155,7 @@ python run_demo.py \
 ```
 
 ### Python API
+
 ```python
 from src.seeact_pipeline import SeeActPipeline
 from PIL import Image
@@ -169,6 +190,7 @@ The system meets the stopping criterion when:
 > "I can give a screenshot + instruction and my system outputs a valid JSON action prediction locally."
 
 This is achieved when the pipeline:
+
 1. ✅ Takes an image and instruction as input
 2. ✅ Preprocesses the image (minimal, SeeAct-style)
 3. ✅ Generates a strict prompt for JSON output
@@ -189,6 +211,7 @@ Evaluation will be run after the baseline is confirmed working.
 ## 🔧 Configuration
 
 Key parameters in `seeact_pipeline.py`:
+
 - `target_width`: Image resize width (default: 1280)
 - `target_height`: Image resize height (default: 720)
 - `max_new_tokens`: Model generation limit (default: 256)
@@ -197,7 +220,7 @@ Key parameters in `seeact_pipeline.py`:
 ## 📝 Project Structure
 
 ```
-01_AutoWeb_POC/
+AutoWeb/
 ├── src/
 │   ├── action_schema.py       # Output contract definition
 │   ├── json_repair.py         # JSON fixing utilities
@@ -228,6 +251,7 @@ Key parameters in `seeact_pipeline.py`:
 ## 🔬 Next Steps (Future Work)
 
 After the baseline is confirmed working:
+
 1. Run evaluation on larger Mind2Web subset
 2. Analyze failure patterns
 3. Consider improvements (but baseline comes first!)
