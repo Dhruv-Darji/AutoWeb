@@ -21,6 +21,9 @@ from model_interface import VLModel
 from config import get_model_path, get_device, get_model_dtype, get_use_8bit
 
 
+# New imports:
+from mind2Web_Loader import Mind2WebDataset
+
 class SeeActPipeline:
     """
     Complete SeeAct-style single-Task UI action prediction pipeline.
@@ -43,29 +46,11 @@ class SeeActPipeline:
                  target_height: int = 720,
                  device: Optional[str] = None,
                  use_8bit: bool = False):
-        """
-        Initialize the SeeAct pipeline.
-        
-        Args:
-            model_folder: Path to local Qwen2-VL-2B model
-            target_width: Target image width for preprocessing
-            target_height: Target image height for preprocessing
-            device: "cuda" or "cpu" (None = auto)
-            use_8bit: Whether to use 8-bit quantization
-        """
         print("[SeeActPipeline] Initializing components...")
         
-        # 1. Image Preprocessor (minimal, SeeAct-style)
-        """ 
-        I HAVE TO LOOK HERE BECAUSE IMAGE PREPROCESSING IS LIKELY UNSAFE IN MULTIMODEL-MIND2WEB
-        """
-        self.preprocessor = SeeActImagePreprocessor(
-            target_width=target_width,
-            target_height=target_height,
-            keep_aspect_ratio=True,
-            normalize=False  # Model handles normalization
-        )
-        print(f"  ✓ Image preprocessor ready ({target_width}x{target_height})")
+        # 1. Mind2Web Dataset Loader (for retrieving task data based on annotation ID)
+        self.mind2web_loader = Mind2WebDataset(root_dir="D:\\Environments\\Datasets\\multimodal-mind2web")
+        print(f"  ✓ Mind2Web dataset loader ready(root: D:\\Environments\\Datasets\\multimodal-mind2web)")
         
         # 2. Prompt Engine (strict JSON enforcement)
         self.prompt_engine = PromptEngine()
@@ -73,11 +58,11 @@ class SeeActPipeline:
         
         # 3. Model Interface (local Qwen2-VL-2B)
         print(f"  ⏳ Loading model from {model_folder}...")
-        self.model = VLModel(
-            model_folder=model_folder,
-            device=device,
-            use_8bit=use_8bit
-        )
+        # self.model = VLModel(
+        #     model_folder=model_folder,
+        #     device=device,
+        #     use_8bit=use_8bit
+        # )
         print("  ✓ Model loaded")
         
         # 4. Action Decoder (JSON repair + validation)
@@ -103,8 +88,13 @@ class SeeActPipeline:
         print(f"\n[SeeActPipeline] Predicting action for: '{annotation_id}'")
         
         # Step 1: Load single task data (multiple steps (with details like screenshot, cleaned HTML) + instruction)
-        print(" [1/6] Loading task data...")
+        print("="*20 , "[1/6] Loading task data...", "="*20)
+        single_task = self.mind2web_loader.get_task(
+            annotation_id=annotation_id,
+            file_name=dataset_file_name
+        )
         
+        print(f"Instruction: {single_task[0]['instruction']}")
 
         # # Update decoder with image dimensions for coordinate normalization
         # self.decoder.set_image_dimensions(
@@ -119,12 +109,12 @@ class SeeActPipeline:
         # for each step in task_steps:
 
         # Step 2: Prepare inputs for single task (stepImage + past history + instruction)
-        print("  [2/6] Input Preparation...")
+        print("="*20 , "[2/6] Input Preparation...", "="*20)
         # Ask model/processor what image placeholder (if any) it prefers so tokenization and
         # when the processor prefers implicit image tokens.
         
         # Step 3: Action Generation (take input from previous block, result a planning for task)
-        print(" [3/6] Running Action Generation...")
+        print("="*20 , "[3/6] Running Action Generation...", "="*20)
 
         # prompt_text, _ = self.prompt_engine.build_prompt(
         #     task_text=instruction,
@@ -134,7 +124,7 @@ class SeeActPipeline:
         # )
         
         # Step 4: Grounding method selection and processing
-        print("  [4/6] Running Action Grounding ...")
+        print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
         # self.action_grounding.process(method=seeAct_method, annotation_id=annotation_id, dataset_file_name=dataset_file_name )
                         
         
@@ -145,7 +135,7 @@ class SeeActPipeline:
         # print(f"        Raw output (first 100 chars): {raw_output[:100]}...")
         
         # Step 5: Parse the Grounding output 
-        print("  [5/6] Parsing output...")
+        print("="*20 , "[5/6] Parsing output...", "="*20)
         # decode_result = self.decoder.decode_with_metadata(raw_output)
         
         # prediction = decode_result["prediction"]
@@ -160,7 +150,7 @@ class SeeActPipeline:
         #     print(f"        ✗ Decode failed: {error}")
         
         # # Step 6: Evaluate
-        print(" [6/6] Evaluating prediction...")
+        print("="*20 , "[6/6] Evaluating prediction...", "="*20)
         # if prediction:
         #     print("  [6/6] Validating schema...")
         #     is_valid, validation_error = ActionSchema.validate_prediction(prediction)
