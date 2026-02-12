@@ -292,31 +292,12 @@ if __name__ == "__main__":
     from pathlib import Path
     
     # Get default model path from .env
-    default_model = get_model_path()
+    default_model_path = get_model_path()
     
     parser = argparse.ArgumentParser(
         description="Run SeeAct single-step prediction"
     )
-    parser.add_argument(
-        "--model",
-        type=str,
-        default=default_model,
-        required=default_model is None,
-        help=(f"Path to Qwen2-VL-2B model folder (default from .env: {default_model})" \
-              if default_model else "Path to Qwen2-VL-2B model folder")
-    )
-    parser.add_argument(
-        "--image",
-        type=str,
-        required=False,
-        help="Path to screenshot image"
-    )
-    parser.add_argument(
-        "--instruction",
-        type=str,
-        required=False,
-        help="Task instruction"
-    )
+    
     parser.add_argument(
         "--demo",
         action="store_true",
@@ -335,17 +316,14 @@ if __name__ == "__main__":
         image_path = str(demo_path)
         instruction = "Click the login button"
     else:
-        if not args.image or not args.instruction:
-            parser.error(
-                "Either --demo or both --image and --instruction must be provided.\n"
-                "Example (Windows PowerShell):\n"
-                "  python .\\seeact_pipeline.py --image \"C:\\path\\to\\shot.png\" --instruction \"Click login\""
-            )
-        image_path = args.image
-        instruction = args.instruction
+        parser.error(
+            "--demomust be provided.\n"
+            "Example (Windows PowerShell):\n"
+            "  python .\\seeact_pipeline.py --demo\n"
+        )
     
     run_single_prediction_example(
-        model_folder=args.model,
+        model_folder= default_model_path,
         image_path=image_path,
         instruction=instruction
     )
