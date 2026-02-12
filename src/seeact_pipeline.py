@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 from PIL import Image
+from transformers import pipeline
 
 # Add src to path for imports
 src_path = Path(__file__).parent
@@ -85,161 +86,117 @@ class SeeActPipeline:
         
         print("[SeeActPipeline] ✓ Pipeline ready!")
     
-    def predict(self,
-               image: Image.Image,
-               instruction: str,
-               max_new_tokens: int = 256,
-               temperature: float = 0.0) -> Dict:
+    def predict_single_task(
+            self, 
+            annotation_id: str, 
+            dataset_file_name: str,
+            seeAct_method: str = "2" #1. Element Attributes 2. Textual Choice 3. Image Annotation
+        ) -> Dict:
         """
-        Predict a single task from screenshots + instruction.
-        
-        Args:
-            image: PIL.Image of webpage screenshot
-            instruction: Task instruction (e.g., "Click the login button")
-            max_new_tokens: Max tokens to generate
-            temperature: Sampling temperature (0.0 = greedy)
-        
-        Returns:
-            {
-                "prediction": ActionPrediction or None,
-                "raw_output": str (model raw text),
-                "parsed_json": dict or None,
-                "error": str or None,
-                "success": bool,
-                "latency": float (seconds),
-                "scale_info": dict (for coordinate transformation)
-            }
+        Run the full SeeAct-style prediction for a single task (multiple steps).
+        Available methods for action grounding:
+        1. Element Attributes
+        2. Textual Choice
+        3. Image Annotation
         """
-        print(f"\n[SeeActPipeline] Predicting action for: '{instruction}'")
+
+        print(f"\n[SeeActPipeline] Predicting action for: '{annotation_id}'")
         
-        # Step 1: Preprocess image
-        print("  [1/5] Preprocessing image...")
-        preprocessed = self.preprocessor.preprocess(image)
-        processed_image = preprocessed["image"]
-        scale_info = preprocessed["scale_info"]
+        # Step 1: Load single task data (multiple steps (with details like screenshot, cleaned HTML) + instruction)
+        print(" [1/6] Loading task data...")
         
-        # Update decoder with image dimensions for coordinate normalization
-        self.decoder.set_image_dimensions(
-            scale_info["new_width"],
-            scale_info["new_height"]
-        )
+
+        # # Update decoder with image dimensions for coordinate normalization
+        # self.decoder.set_image_dimensions(
+        #     scale_info["new_width"],
+        #     scale_info["new_height"]
+        # )
         
-        print(f"        Original: {scale_info['original_width']}x{scale_info['original_height']}")
-        print(f"        Resized:  {scale_info['new_width']}x{scale_info['new_height']}")
-        print(f"        Scale:    {scale_info['scale_x']:.3f}")
+        # print(f"        Original: {scale_info['original_width']}x{scale_info['original_height']}")
+        # print(f"        Resized:  {scale_info['new_width']}x{scale_info['new_height']}")
+        # print(f"        Scale:    {scale_info['scale_x']:.3f}")
         
-        # Step 2: Build prompt
-        print("  [2/5] Building prompt...")
+        # for each step in task_steps:
+
+        # Step 2: Prepare inputs for single task (stepImage + past history + instruction)
+        print("  [2/6] Input Preparation...")
         # Ask model/processor what image placeholder (if any) it prefers so tokenization and
         # when the processor prefers implicit image tokens.
-        try:
-            image_key = self.model.get_preferred_image_key(processed_image)
-            if image_key == "":
-                print("        Using implicit image tokens (no explicit placeholder)")
-            else:
-                print(f"        Using image placeholder: {image_key!r}")
-        except Exception as e:
-            image_key = "<image>"
-            print(f"        ⚠ could not detect image placeholder (falling back to '<image>'): {e}")
+        
+        # Step 3: Action Generation (take input from previous block, result a planning for task)
+        print(" [3/6] Running Action Generation...")
 
-        prompt_text, _ = self.prompt_engine.build_prompt(
-            task_text=instruction,
-            variant="strict_json",
-            include_dom=False,  # SeeAct: no DOM, vision-only
-            image_key=image_key or "<image>"
-        )
+        # prompt_text, _ = self.prompt_engine.build_prompt(
+        #     task_text=instruction,
+        #     variant="strict_json",
+        #     include_dom=False,  # SeeAct: no DOM, vision-only
+        #     image_key=image_key or "<image>"
+        # )
         
-        # Step 3: Run model inference
-        print("  [3/5] Running model inference...")
-        inference_result = self.model.infer(
-            image_or_tensor=processed_image,
-            prompt_text=prompt_text,
-            max_new_tokens=max_new_tokens,
-            do_sample=temperature > 0,
-            temperature=max(temperature, 0.01)  # Avoid temp=0 issues
-        )
+        # Step 4: Grounding method selection and processing
+        print("  [4/6] Running Action Grounding ...")
+        # self.action_grounding.process(method=seeAct_method, annotation_id=annotation_id, dataset_file_name=dataset_file_name )
+                        
         
-        raw_output = inference_result["raw_text"]
-        latency = inference_result["latency"]
+        # raw_output = inference_result["raw_text"]
+        # latency = inference_result["latency"]
         
-        print(f"        Latency: {latency:.2f}s")
-        print(f"        Raw output (first 100 chars): {raw_output[:100]}...")
+        # print(f"        Latency: {latency:.2f}s")
+        # print(f"        Raw output (first 100 chars): {raw_output[:100]}...")
         
-        # Step 4: Decode and repair JSON
-        print("  [4/5] Decoding action...")
-        decode_result = self.decoder.decode_with_metadata(raw_output)
+        # Step 5: Parse the Grounding output 
+        print("  [5/6] Parsing output...")
+        # decode_result = self.decoder.decode_with_metadata(raw_output)
         
-        prediction = decode_result["prediction"]
-        parsed_json = decode_result["parsed_json"]
-        error = decode_result["error"]
-        success = decode_result["success"]
+        # prediction = decode_result["prediction"]
+        # parsed_json = decode_result["parsed_json"]
+        # error = decode_result["error"]
+        # success = decode_result["success"]
         
-        if success:
-            print(f"        ✓ Action: {prediction.action_type}")
-            print(f"        ✓ Confidence: {prediction.confidence:.2f}")
-        else:
-            print(f"        ✗ Decode failed: {error}")
+        # if success:
+        #     print(f"        ✓ Action: {prediction.action_type}")
+        #     print(f"        ✓ Confidence: {prediction.confidence:.2f}")
+        # else:
+        #     print(f"        ✗ Decode failed: {error}")
         
-        # Step 5: Validate schema
-        if prediction:
-            print("  [5/5] Validating schema...")
-            is_valid, validation_error = ActionSchema.validate_prediction(prediction)
-            if is_valid:
-                print("        ✓ Schema valid")
-            else:
-                print(f"        ⚠ Schema validation warning: {validation_error}")
-        else:
-            print("  [5/5] Skipping validation (no prediction)")
+        # # Step 6: Evaluate
+        print(" [6/6] Evaluating prediction...")
+        # if prediction:
+        #     print("  [6/6] Validating schema...")
+        #     is_valid, validation_error = ActionSchema.validate_prediction(prediction)
+        #     if is_valid:
+        #         print("        ✓ Schema valid")
+        #     else:
+        #         print(f"        ⚠ Schema validation warning: {validation_error}")
+        # else:
+        #     print("  [6/6 ] Skipping validation (no prediction)")
         
+        # return {
+        #     "prediction": prediction,
+        #     "raw_output": raw_output,
+        #     "parsed_json": parsed_json,
+        #     "error": error,
+        #     "success": success,
+        #     "latency": latency,
+        #     "prompt": prompt_text  # Include for debugging
+        # }  
+
         return {
-            "prediction": prediction,
-            "raw_output": raw_output,
-            "parsed_json": parsed_json,
-            "error": error,
-            "success": success,
-            "latency": latency,
-            "scale_info": scale_info,
-            "prompt": prompt_text  # Include for debugging
-        }
-    
-    def predict_from_path(self,
-                         image_path: str,
-                         instruction: str,
-                         **kwargs) -> Dict:
-        """
-        Convenience method to predict from image file path.
-        
-        Args:
-            image_path: Path to image file
-            instruction: Task instruction
-            **kwargs: Additional arguments for predict()
-        
-        Returns:
-            Prediction result dict (same as predict())
-        """
-        image = Image.open(image_path).convert("RGB")
-        return self.predict(image, instruction, **kwargs)
-
+            "success": False,
+            "error": "Not implemented yet",
+            "latency": 0.0,
+            "raw_output": "",
+            "prediction": None            
+            }  
 
 def run_single_prediction_example(
     model_folder: str,
-    image_path: str,
-    instruction: str,
+    annotation_id: Optional[str] = None,
+    dataset_file_name: Optional[str] = None,
     device: Optional[str] = None,
-    use_8bit: bool = False
 ):
-    """
-    Example: Run a single prediction.
-    
-    This demonstrates the STOPPING CRITERION:
-    "I can give a screenshot + instruction and my system outputs a valid JSON action prediction locally."
-    
-    Args:
-        model_folder: Path to model directory
-        image_path: Path to screenshot image
-        instruction: Task instruction
-        device: Device to use ("cuda", "cpu", or None for auto)
-        use_8bit: Whether to use 8-bit quantization
+    """    
+    # Pass the annoation ID and dataset file name to retrieve the screenshot and instruction for that particular annotation ID and then run the prediction on that.
     """
     print("=" * 80)
     print("SeeAct Single-Step UI Action Predictor")
@@ -250,12 +207,11 @@ def run_single_prediction_example(
         model_folder=model_folder,
         target_width=1280,
         target_height=720,
-        device=device,
-        use_8bit=use_8bit
     )
     
     # Run prediction
-    result = pipeline.predict_from_path(image_path, instruction)
+    """THIS IS THE ACTUAL PREDICTION CALL FOR SINGLE TASK SEEACT"""
+    result = pipeline.predict_single_task( annotation_id=annotation_id, dataset_file_name=dataset_file_name)
     
     # Display results
     print("\n" + "=" * 80)
