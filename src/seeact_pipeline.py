@@ -1,16 +1,5 @@
 """
-SeeAct-Style Single-Step UI Action Predictor Pipeline
-
-This is the main pipeline that integrates all components:
-1. Load dataset sample (image + instruction)
-2. Preprocess image (minimal, SeeAct-style)
-3. Build strict prompt
-4. Run model inference
-5. Decode and validate JSON output
-6. Return structured ActionPrediction
-
-STOPPING CRITERION:
-"I can give a screenshot + instruction and my system outputs a valid JSON action prediction locally."
+Final plan available at AutoWeb/Docs/SeeAct_understanding.md
 """
 
 import os
@@ -33,17 +22,18 @@ from config import get_model_path, get_device, get_model_dtype, get_use_8bit
 
 class SeeActPipeline:
     """
-    Complete SeeAct-style single-step UI action prediction pipeline.
+    Complete SeeAct-style single-Task UI action prediction pipeline.
     
     This class integrates:
-    - Image preprocessing (minimal, vision-only)
-    - Prompt engineering (strict JSON output)
-    - Model inference (local Qwen2-VL-2B)
-    - JSON repair and validation
-    - Action decoding
+    - Dataset Loading
+    - Input prepration (Prompt Template + Task , Screenshot Image (i), History of Previous Actions for task)        
+    - Action Generation (take input from previous block, result a planning for task)
+    - Action Grounding (3 methods: Element Attributes, Textual Choices, Image Annotation)
+    - Action decoding (as per user method selection retrieve the output)
+    - Evaluation
     
-    Input: screenshot (PIL.Image) + instruction (str)
-    Output: ActionPrediction (validated JSON)
+    Input: screenshot (PIL.Image) + instruction (str) + Cleaned HTML
+    Output: Action to be perform with target
     """
     
     def __init__(self,
@@ -65,6 +55,9 @@ class SeeActPipeline:
         print("[SeeActPipeline] Initializing components...")
         
         # 1. Image Preprocessor (minimal, SeeAct-style)
+        """ 
+        I HAVE TO LOOK HERE BECAUSE IMAGE PREPROCESSING IS LIKELY UNSAFE IN MULTIMODEL-MIND2WEB
+        """
         self.preprocessor = SeeActImagePreprocessor(
             target_width=target_width,
             target_height=target_height,
@@ -98,7 +91,7 @@ class SeeActPipeline:
                max_new_tokens: int = 256,
                temperature: float = 0.0) -> Dict:
         """
-        Predict a single UI action from screenshot + instruction.
+        Predict a single task from screenshots + instruction.
         
         Args:
             image: PIL.Image of webpage screenshot
@@ -284,52 +277,3 @@ def run_single_prediction_example(
     
     return result
 
-
-if __name__ == "__main__":
-    # Example usage
-    import argparse
-    from pathlib import Path
-    
-    # Get default model path from .env
-    default_model_path = get_model_path()
-    
-    parser = argparse.ArgumentParser(
-        description="Run SeeAct single-step prediction"
-    )
-    
-    parser.add_argument(
-        "--demo",
-        action="store_true",
-        help="Run a lightweight bundled demo (creates a placeholder screenshot and example instruction)"
-    )
-    
-    args = parser.parse_args()
-    
-    # CLI validation / demo fallback
-    if args.demo:
-        # create a lightweight placeholder image next to the script for reproducible demo runs
-        demo_path = Path(__file__).parent / "demo_screenshot.jpg"
-        if not demo_path.exists():
-            from PIL import Image
-            Image.new("RGB", (1280, 720), color=(240, 240, 240)).save(demo_path)
-        image_path = str(demo_path)
-        instruction = "Click the login button"
-    else:
-        # Temporary Default demo added
-        demo_path = Path(__file__).parent / "demo_screenshot.jpg"
-        if not demo_path.exists():
-            from PIL import Image
-            Image.new("RGB", (1280, 720), color=(240, 240, 240)).save(demo_path)
-        image_path = str(demo_path)
-        instruction = "Click the login button"
-        # parser.error(
-        #     "--demomust be provided.\n"
-        #     "Example (Windows PowerShell):\n"
-        #     "  python .\\seeact_pipeline.py --demo\n"
-        # )
-    
-    run_single_prediction_example(
-        model_folder= default_model_path,
-        image_path=image_path,
-        instruction=instruction
-    )
