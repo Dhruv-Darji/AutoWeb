@@ -138,7 +138,6 @@ class SeeActPipeline:
         # Step 2: Build prompt
         print("  [2/5] Building prompt...")
         # Ask model/processor what image placeholder (if any) it prefers so tokenization and
-        # image features remain aligned. VLModel.get_preferred_image_key returns empty string
         # when the processor prefers implicit image tokens.
         try:
             image_key = self.model.get_preferred_image_key(processed_image)
@@ -316,11 +315,18 @@ if __name__ == "__main__":
         image_path = str(demo_path)
         instruction = "Click the login button"
     else:
-        parser.error(
-            "--demomust be provided.\n"
-            "Example (Windows PowerShell):\n"
-            "  python .\\seeact_pipeline.py --demo\n"
-        )
+        # Temporary Default demo added
+        demo_path = Path(__file__).parent / "demo_screenshot.jpg"
+        if not demo_path.exists():
+            from PIL import Image
+            Image.new("RGB", (1280, 720), color=(240, 240, 240)).save(demo_path)
+        image_path = str(demo_path)
+        instruction = "Click the login button"
+        # parser.error(
+        #     "--demomust be provided.\n"
+        #     "Example (Windows PowerShell):\n"
+        #     "  python .\\seeact_pipeline.py --demo\n"
+        # )
     
     run_single_prediction_example(
         model_folder= default_model_path,
