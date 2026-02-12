@@ -133,7 +133,77 @@ class VLModel:
         # If we got a PIL.Image or numpy array, call processor
         # For Qwen2-VL, processor expects: processor(text=..., images=..., return_tensors="pt")
         inputs = self.processor(text=prompt_text, images=image_or_tensor, return_tensors=return_tensors)
-        
+
+        # --- Sanity check: ensure processor inserted image placeholder tokens when images provided ---
+        try:
+            input_ids = inputs.get("input_ids", None)
+            pixel_values = inputs.get("pixel_values", None)
+            # If we have pixel_values (or images) but no image placeholder tokens, try to repair
+            if pixel_values is not None and input_ids is not None:
+                # convert a few token ids back to strings if tokenizer available
+                def _tokens_preview(ids_tensor, tokenizer, n=120):
+                    if tokenizer is None:
+                        return None
+                    ids = ids_tensor[0].tolist()[:n]
+                    return tokenizer.convert_ids_to_tokens(ids)
+
+                has_image_tokens = False
+                if self.tokenizer is not None:
+                    toks = _tokens_preview(input_ids, self.tokenizer, n=512) or []
+                    # look for any token that clearly marks an image placeholder
+                    for t in toks:
+                        if t and ("<image" in t.lower() or "<img" in t.lower() or "[img" in t.lower() or "image" == t.lower()):
+                            has_image_tokens = True
+                            break
+
+                if not has_image_tokens:
+                    # Attempt 1: replace common placeholders with tokenizer-known special token (if any)
+                    tried = False
+                    if self.tokenizer is not None:
+                        candidates = [st for st in getattr(self.tokenizer, "all_special_tokens", []) if "img" in st or "image" in st]
+                        if candidates:
+                            for cand in candidates:
+                                tried = True
+                                new_prompt = (prompt_text or "").replace("<image>", cand)
+                                repaired = self.processor(text=new_prompt, images=image_or_tensor, return_tensors=return_tensors)
+                                rid = repaired.get("input_ids")
+                                if rid is not None:
+                                    toks2 = _tokens_preview(rid, self.tokenizer, n=512) or []
+                                    if any(("<image" in (x or "").lower() or "<img" in (x or "").lower() or "[img" in (x or "").lower()) for x in toks2):
+                                        inputs = repaired
+                                        has_image_tokens = True
+                                        break
+                    # Attempt 2: remove the explicit placeholder and let processor inject implicit image tokens
+                    if not has_image_tokens and not tried:
+                        repaired = self.processor(text=(prompt_text or "").replace("<image>", ""), images=image_or_tensor, return_tensors=return_tensors)
+                        rid = repaired.get("input_ids")
+                        if rid is not None:
+                            if self.tokenizer is not None:
+                                toks3 = _tokens_preview(rid, self.tokenizer, n=512) or []
+                                if any(("<image" in (x or "").lower() or "<img" in (x or "").lower() or "[img" in (x or "").lower()) for x in toks3):
+                                    inputs = repaired
+                                    has_image_tokens = True
+
+                    # If still no image tokens but pixel_values present, raise a clearer error (with diagnostics)
+                    if not has_image_tokens:
+                        preview = None
+                        if self.tokenizer is not None and input_ids is not None:
+                            preview = _tokens_preview(input_ids, self.tokenizer, n=120)
+                        raise ValueError(
+                            "Processor returned image features but the tokenized prompt contains NO image placeholder tokens.\n"
+                            f"This typically means the prompt's image placeholder (e.g. '<image>') is not recognized by the model tokenizer.\n\n"
+                            "Diagnostics:\n"
+                            f"  - prompt_text (truncated): {str(prompt_text)[:200]!r}\n"
+                            f"  - input_ids length: {input_ids.shape if hasattr(input_ids, 'shape') else 'n/a'}\n"
+                            f"  - pixel_values shape: {pixel_values.shape if hasattr(pixel_values, 'shape') else 'n/a'}\n"
+                            f"  - token preview (first 120 tokens): {preview}\n\n"
+                            "Quick fixes: ensure the prompt uses the model's exact image placeholder (commonly '<image>'),\n"
+                            "or try running the script with --demo after updating the model's processor/tokenizer."
+                        )
+        except Exception:
+            # Don't crash preprocessing for non-fatal introspection errors; let generation surface the issue
+            pass
+
         # Move inputs to model device
         try:
             # Get the device where model parameters are
@@ -144,8 +214,65 @@ class VLModel:
         except Exception:
             # If device detection fails, let device_map handle it
             pass
-        
+
         return inputs
+
+    def get_preferred_image_key(self, sample_image=None) -> str:
+        """Return the best image placeholder to use in prompts for this model.
+
+        Tries (in order):
+        - tokenizer special tokens that contain 'img'/'image'
+        - the literal '<image>' if tokenizer recognizes it
+        - let the processor inject implicit image tokens (returns empty string)
+
+        The returned string should be passed to `PromptEngine.build_prompt(image_key=...)`.
+        Returns empty string when no explicit placeholder is required/recognized.
+        """
+        # 1) Look for obvious special tokens from tokenizer
+        try:
+            if getattr(self, "tokenizer", None) is not None:
+                for st in getattr(self.tokenizer, "all_special_tokens", []) or []:
+                    if "img" in st.lower() or "image" in st.lower():
+                        return st
+
+                # 2) check whether the literal '<image>' maps to token ids
+                try:
+                    ids = self.tokenizer.convert_tokens_to_ids(["<image>"])
+                    if ids and ids[0] != self.tokenizer.unk_token_id:
+                        return "<image>"
+                except Exception:
+                    # tokenizer may not recognize the string-to-id mapping; ignore
+                    pass
+
+        except Exception:
+            # non-fatal
+            pass
+
+        # 3) As a final check, ask the processor to tokenize a small prompt and inspect whether
+        # it inserted any image-like tokens. If so, return '<image>' as a hint; otherwise
+        # return empty string to indicate the processor should handle images implicitly.
+        try:
+            probe_prompt = "<image>"
+            proc_out = None
+            if sample_image is not None:
+                proc_out = self.processor(text=probe_prompt, images=sample_image, return_tensors="pt")
+            else:
+                # If no sample image, call processor with an empty PIL image of expected size
+                from PIL import Image
+                img = Image.new("RGB", (32, 32), color=(128, 128, 128))
+                proc_out = self.processor(text=probe_prompt, images=img, return_tensors="pt")
+
+            input_ids = proc_out.get("input_ids", None)
+            if input_ids is not None and getattr(self, "tokenizer", None) is not None:
+                toks = self.tokenizer.convert_ids_to_tokens(input_ids[0].tolist()[:256])
+                for t in toks:
+                    if t and ("<image" in t.lower() or "<img" in t.lower() or "[img" in t.lower() or "image" == t.lower()):
+                        return "<image>"
+        except Exception:
+            pass
+
+        # No explicit placeholder detected — prefer implicit handling
+        return ""
 
     # ---------------------
     # Infer / generate
@@ -181,9 +308,25 @@ class VLModel:
             top_p=top_p
         )
 
-        # Run generation
-        with torch.no_grad():
-            outputs = self.model.generate(**inputs, **generate_kwargs)
+        # Run generation (catch common image/token mismatches and provide actionable message)
+        try:
+            with torch.no_grad():
+                outputs = self.model.generate(**inputs, **generate_kwargs)
+        except ValueError as e:
+            msg = str(e)
+            if "Image features and image tokens do not match" in msg or "image features and image tokens" in msg.lower():
+                # Improve the error with specific guidance
+                raise ValueError(
+                    "Model generation failed because image features and token placeholders are misaligned.\n"
+                    "Likely causes: the prompt's image placeholder (e.g. '<image>') is not the exact special token the model tokenizer expects,\n"
+                    "or the processor/tokenizer pair from the model checkpoint is incompatible with the prompt format.\n\n"
+                    "Immediate remedies:\n"
+                    "  1) Ensure your prompt contains the model's image placeholder token (common: '<image>') exactly.\n"
+                    "  2) Try removing the explicit '<image>' from the prompt so the processor can insert implicit image tokens.\n"
+                    "  3) If you use a custom prompt, inspect tokenizer.special_tokens or run with VLMODEL_DEBUG=1 to print token diagnostics.\n\n"
+                    f"Original error: {msg}"
+                ) from e
+            raise
         
         # Decode output
         try:

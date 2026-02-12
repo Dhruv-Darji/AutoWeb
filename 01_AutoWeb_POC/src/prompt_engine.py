@@ -6,15 +6,26 @@ from typing import List, Dict, Optional, Tuple
 CONSTANT PROMPTS USED IN THE APPLICATION
 """
 
-DEFAULT_STRICT_TEMPLATE = """
-You are a UI action predictor. Given the webpage screenshot and a short task, output EXACTLY one JSON object and NOTHING else, with the following keys:
-- action: one of ["click","type","scroll","noop"]
-- target: either {"selector":"<css>"} OR {"coords":[x,y]} OR null
-- value: string or null
-- confidence: float between 0.0 and 1.0
+DEFAULT_STRICT_TEMPLATE = """You are a UI action predictor for web automation.
 
-Do not add any extra text, commentary, or explanation.
-"""
+Given a webpage screenshot and a task instruction, predict the next single UI action.
+
+Output EXACTLY ONE JSON object with NO additional text. Use this exact format:
+
+{
+  "action_type": "click|type|scroll|noop",
+  "target": {"selector": "CSS selector"} OR {"coords": [x, y]} OR {"bbox": [x, y, w, h]} OR null,
+  "value": "text to type" OR null,
+  "confidence": 0.0 to 1.0
+}
+
+Rules:
+- action_type: MUST be one of: click, type, scroll, noop
+- target: For click/type, provide selector OR coords OR bbox. For scroll/noop, use null
+- value: ONLY for type actions. Otherwise null
+- confidence: Your confidence score (0.0 = no confidence, 1.0 = certain)
+
+Output ONLY the JSON. No explanations. No markdown. No extra text."""
 
 FEW_SHOT_EXAMPLE_PROMPT = """
 ### Example
