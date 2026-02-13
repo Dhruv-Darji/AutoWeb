@@ -39,15 +39,15 @@ class SeeActActionGenerator:
         print("  ⏳ Generating action plan using the model...")
         print(f"    - screenshot type: {type(screenshot)}, prompt length: {len(prompt) if prompt is not None else 0}")
 
-        # Short prompt preview + stable hash so we can compare notebook vs pipeline
-        try:
-            preview = (prompt or "")[:400].replace("\n", " ")
-            import hashlib
-            prompt_hash = hashlib.sha256((prompt or "").encode("utf-8")).hexdigest()[:10]
-            print(f"    - prompt preview: {preview}")
-            print(f"    - prompt hash: {prompt_hash}")
-        except Exception:
-            pass
+        # # Short prompt preview + stable hash so we can compare notebook vs pipeline
+        # try:
+        #     # preview = (prompt or "")[:400].replace("\n", " ")
+        #     import hashlib
+        #     prompt_hash = hashlib.sha256((prompt or "").encode("utf-8")).hexdigest()[:10]
+        #     # print(f"    - prompt preview: {preview}")
+        #     # print(f"    - prompt hash: {prompt_hash}")
+        # except Exception:
+        #     pass
 
         # Check that prompt contains an image placeholder the model recognizes (best-effort)
         try:
@@ -71,10 +71,10 @@ class SeeActActionGenerator:
             print(f"    ✓ model.infer() returned in {t1 - t0:.2f}s (used max_new_tokens={256})")
         except Exception as e:
             print(f"    ✗ Model inference failed: {e}")
-            return {"error": str(e), "raw_text": "", "latency": 0.0}
+            return {"error": str(e),"output_text": "", "raw_text": "", "latency": 0.0}
 
         # Normalize return shape: if model.infer returns dict, keep as-is; if it returned string, wrap it
         if isinstance(generated_action_plan, dict):
             return {**generated_action_plan, "latency": t1 - t0}
         else:
-            return {"raw_text": str(generated_action_plan), "latency": t1 - t0}
+            return {"raw_text": str(generated_action_plan), "output_text": str(generated_action_plan), "latency": t1 - t0}

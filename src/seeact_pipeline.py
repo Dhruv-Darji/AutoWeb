@@ -146,13 +146,13 @@ class SeeActPipeline:
                 input_data=action_generation_input
             )
 
-            output_plan = action_generation_plan.get("output_text")
+            output_plan = action_generation_plan.get("output_text", "")
             err = action_generation_plan.get("error")
 
-            print(f"    Generated Action Plan: {output_plan}")
+            print(f"Generated Action Plan: {output_plan}")
 
             if err:
-                print(f"    ✗ Action generation failed with error: {err}")
+                print(f"✗ Action generation failed with error: {err}")
                 # continue to next action or decide how to handle this case (e.g., skip grounding/decoding for this step)
                 continue
 
