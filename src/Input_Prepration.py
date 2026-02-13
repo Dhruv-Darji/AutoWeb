@@ -47,9 +47,8 @@ class SeeActInputPreparator:
                 max_w, max_h = (1280, 720)
                 if orig_size[0] > max_w or orig_size[1] > max_h:
                     # compute high-quality resize that preserves more detail than aggressive thumbnailing
-                    # increase cap to double quality (larger but still constrained)
-                    # HIGH_QUALITY_MAX_W, HIGH_QUALITY_MAX_H = 4800, 2700  # doubled from 1600x900
-                    HIGH_QUALITY_MAX_W, HIGH_QUALITY_MAX_H = 3200, 1800  # doubled from 1280x720
+                    # increase cap to double quality (larger but still constrained)                    
+                    HIGH_QUALITY_MAX_W, HIGH_QUALITY_MAX_H = 3200, 1800  # doubled from 3200x1800
                     scale_w = HIGH_QUALITY_MAX_W / orig_size[0]
                     scale_h = HIGH_QUALITY_MAX_H / orig_size[1]
                     scale = min(scale_w, scale_h, 1.0)
@@ -76,33 +75,100 @@ class SeeActInputPreparator:
             # non-fatal — continue with original image
             pass
 
+        # Format history into a numbered list for clearer context (handles list or string inputs)
+        history_text = ""
+        try:
+            if isinstance(history, list):
+                lines = []
+                for i, h in enumerate(history):
+                    # extract readable text from dict-like entries
+                    if isinstance(h, dict):
+                        text = h.get("action_plan") or h.get("output_text") or h.get("raw_text") or str(h)
+                    else:
+                        text = str(h)
+
+                    text = "\n".join(text.strip().splitlines())
+                    lines.append(f"{i}. {text}")
+                history_text = "\n".join(lines) if lines else "(none)"
+            elif isinstance(history, str):
+                parts = [p.strip() for p in history.splitlines() if p.strip()]
+                if parts:
+                    history_text = "\n".join(f"{i}. {p}" for i, p in enumerate(parts))
+                else:
+                    history_text = history
+            else:
+                history_text = str(history)
+        except Exception:
+            history_text = str(history)
+
         prompt_text = f"""
-You are an expert web automation assistant. 
-Your task is to generate textual action plans to accomplish the user's task based on the instruction and the website screenshot provided.
+You are an expert web automation assistant. Your job is to generate **exactly one atomic UI action** at a time that will help complete the user’s task on the current webpage. You should think like a human interacting with the page: observing, reasoning, and planning one small step at a time.
 
-Instruction (What user want to achieve): {instruction},
+Do NOT produce multi-step plans, lists, code, or explanations — only one action.
 
-Current website screenshot: <|vision_start|><|image_pad|><|vision_end|>
+────────────────────────────────────────────────────────────────────────────
+INPUTS (do not repeat in output):
 
-What previous actions planned and executed so far: {history}
+Instruction (goal): {instruction}
+Current website screenshot:
+<|vision_start|><|image_pad|><|vision_end|>
 
-Rules (IMPORTANT):
-- Generate EXACTLY ONE next atomic UI action only.
-- Do NOT produce multi-step trajectories or numbered lists.
-- Do NOT repeat actions already present in "Previous Executed Actions".
-- If no further action is required, output the single token: FINISH
+History of actions already taken:
+{history_text}
 
-Output format (one line only):
-<ACTION_TYPE>: <ACTION_DETAIL>
-Examples:
-1. click: "Explore destinations for you"
-2. scroll: "scroll upto "Customer Reviews" section"
-3. input: "in search box, type 'wireless headphones'"
-4. hover: "hover over the product image on the top right"
-5. select: "in the date dropdown, select 'Next Week'"
+────────────────────────────────────────────────────────────────────────────
+THE ACTION SPACE (allowed actions):
+
+1) click — Click on a specific UI element  
+2) input — Type text into a field  
+3) select — Choose an option from a dropdown  
+4) finish — No more actions needed
+
+All actions must follow this exact output format.
+
+────────────────────────────────────────────────────────────────────────────
+RESPONSE RULES (IMPORTANT):
+
+• Generate **exactly ONE next action** that moves toward the goal.  
+• Do NOT repeat an action already in history.  
+• Do NOT make up UI element text — use what is visible.  
+• Do NOT hallucinate or invent actions unrelated to the visible screenshot.  
+• If the task is already complete or no further UI action is needed, output exactly `FINISH` (without quotes).  
+
+────────────────────────────────────────────────────────────────────────────
+OUTPUT FORMAT (one line only):
+ACTION_TYPE: ACTION_DETAIL
+
+• ACTION_TYPE must be exactly one of: click, input, select, FINISH  
+• ACTION_DETAIL must clearly describe where and what to do on the UI
+
+────────────────────────────────────────────────────────────────────────────
+COMPLETE TASK EXAMPLES:
+
+Task Goal: 
+Given Textual plan for all steps (which is expected output of the Action Generation for single step at point):
+1. CLICK : Click on heading "CAR" 
+2. INPUT : Enter pick up city, airport name, or airport code and TYPE: "Brooklyn Central"
+3. CLICK : Click on the suggestion "Brooklyn - Central (New York), US"
+4. CLICK : Click on the "Pickup" textbox
+5. CLICK : Click on the date "Sunday, April 9, 2023"
+6. CLICK : Click on the date "Saturday, April 15, 2023"
+7. CLICK : Click on the "Find cars button"
+
 FINISH
 
-Based on the above instruction, website screenshot and history, please generate the NEXT SINGLE ACTION and nothing else.
+INVALID OUTPUTS (don’t generate these):
+• [] (empty value)
+• click: #input-button
+• input: search:nth-child(2)
+• multi-step lists (e.g., “1. click…, 2. input…”)  
+• explanations or thoughts in output  
+• commands not executable as UI action  
+• HTML, CSS selectors, code, or element ids
+
+────────────────────────────────────────────────────────────────────────────
+Now based on the instruction, the screenshot, and history, generate the **next single action** and nothing else.
+
 """
         return {
             "screenshot": website_screenshot,

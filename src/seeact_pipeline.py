@@ -127,7 +127,7 @@ class SeeActPipeline:
         task_latency_start = time.time()
 
         # Initialize history of previous actions for the task (if needed for input preparation)
-        action_history = []
+        action_history = ["None"]
 
         for action in single_task:
             print(f"\n--- Processing action: '{action['action_uid']}' ---")
