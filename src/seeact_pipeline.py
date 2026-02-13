@@ -162,20 +162,10 @@ class SeeActPipeline:
             })
 
             
-
-
-
-            # prompt_text, _ = self.prompt_engine.build_prompt(
-            #     task_text=instruction,
-            #     variant="strict_json",
-            #     include_dom=False,  # SeeAct: no DOM, vision-only
-            #     image_key=image_key or "<image>"
-            # )
-            
             # Step 4: Grounding method selection and processing
             print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
             # self.action_grounding.process(method=seeAct_method, annotation_id=annotation_id, dataset_file_name=dataset_file_name )
-                            
+            
             
             # raw_output = inference_result["raw_text"]
             # latency = inference_result["latency"]
