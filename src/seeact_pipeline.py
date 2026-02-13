@@ -5,21 +5,22 @@ Final plan available at AutoWeb/Docs/SeeAct_understanding.md
 import os
 import sys
 from pathlib import Path
-from time import time
+import time
 from typing import Dict, Optional, Tuple
 from PIL import Image
 from transformers import pipeline
+
+from AutoWeb.src.action_generation import SeeActActionGenerator
+
 
 # Add src to path for imports
 src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
-from action_schema import ActionPrediction, ActionSchema
 from action_decoder import ActionDecoder
-from image_preprocessor import SeeActImagePreprocessor
-from model_interface import VLModel
 from config import get_model_path, get_device, get_model_dtype, get_use_8bit
+from AutoWeb.src.model_interface import VLModel
 
 
 # New imports:
@@ -45,8 +46,7 @@ class SeeActPipeline:
                  model_folder: str,
                  target_width: int = 1280,
                  target_height: int = 720,
-                 device: Optional[str] = None,
-                 use_8bit: bool = False):
+                 device: Optional[str] = None):
         print("[SeeActPipeline] Initializing components...")
         
         # 1. Mind2Web Dataset Loader (for retrieving task data based on annotation ID)
@@ -59,14 +59,39 @@ class SeeActPipeline:
         
         # 3. Model Interface (local Qwen2-VL-2B)
         print(f"  ⏳ Loading model from {model_folder}...")
-        # self.model = VLModel(
-        #     model_folder=model_folder,
-        #     device=device,
-        #     use_8bit=use_8bit
-        # )
-        print("  ✓ Model loaded")
+        # decide device: prefer explicit argument, else fall back to config.get_device()
+        device_to_use = device or get_device()
+        try:
+            self.model = VLModel(
+                model_folder=model_folder,
+                device=device_to_use
+            )
+            print("  ✓ Model loaded and ready for inference")
+        except Exception as e:
+            # provide extra diagnostics to help debug GPU/device-related hangs
+            print("[SeeActPipeline] Error loading model:", e)
+            try:
+                import torch
+                print(f"[SeeActPipeline] torch.cuda.is_available(): {torch.cuda.is_available()}")
+                if torch.cuda.is_available():
+                    try:
+                        print(f"[SeeActPipeline] cuda memory allocated: {torch.cuda.memory_allocated(0)}")
+                        print(f"[SeeActPipeline] cuda memory reserved: {torch.cuda.memory_reserved(0)}")
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            print("[SeeActPipeline] Falling back to CPU model load (this may be slower). To force GPU, pass device='cuda' when initializing the pipeline.")
+            self.model = VLModel(model_folder=model_folder, device="cpu")
+            print("  ✓ Model loaded on CPU (fallback)")
         
-        # 4. Action Decoder (JSON repair + validation)
+
+        # 4. Action Generator (SeeAct Action Generation Module)
+        print("  ⏳ Initializing action generator...")
+        self.actionGenration = SeeActActionGenerator(model=self.model)
+        print("  ✓ Action generator ready")
+        
+        # 5. Action Decoder (JSON repair + validation)
         self.decoder = ActionDecoder(strict_validation=False)
         print("  ✓ Action decoder ready")
         
@@ -117,6 +142,27 @@ class SeeActPipeline:
         
             # Step 3: Action Generation (take input from previous block, result a planning for task)
             print("="*20 , "[3/6] Running Action Generation...", "="*20)
+            action_generation_plan = self.actionGenration.generate_plans(
+                input_data=action_generation_input
+            )
+
+            output_plan = action_generation_plan.get("output_text")
+            err = action_generation_plan.get("error")
+
+            print(f"    Generated Action Plan: {output_plan}")
+
+            if err:
+                print(f"    ✗ Action generation failed with error: {err}")
+                # continue to next action or decide how to handle this case (e.g., skip grounding/decoding for this step)
+                continue
+
+            # store the input and action plan in history for potential use in future steps
+            action_history.append({                
+                "action_plan": output_plan
+            })
+
+            
+
 
 
             # prompt_text, _ = self.prompt_engine.build_prompt(

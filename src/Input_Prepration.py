@@ -38,15 +38,43 @@ class SeeActInputPreparator:
 
         website_screenshot = action.get("screenshot", None)
 
+        # If the screenshot is a PIL image and is larger than typical model input,
+        # downscale it to a max size to avoid excessive patch/token counts.
+        try:
+            from PIL import Image
+            if isinstance(website_screenshot, Image.Image):
+                orig_size = website_screenshot.size
+                max_w, max_h = (1280, 720)
+                if orig_size[0] > max_w or orig_size[1] > max_h:
+                    # preserve aspect ratio
+                    website_screenshot.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
+                    print(f"[SeeActInputPreparator] resized screenshot {orig_size} -> {website_screenshot.size}")
+                    
+                    # Store image in action_id named temp file for further debugging in processed_image folder
+                    import os
+                    temp_dir = "processed_images"
+                    os.makedirs(temp_dir, exist_ok=True)
+                    temp_path = os.path.join(temp_dir, f"{action.get('action_id', 'unknown')}_input.jpg")
+                    website_screenshot.save(temp_path)
+                    print(f"    saved processed screenshot to {temp_path}")
+        except Exception:
+            # non-fatal — continue with original image
+            pass
+
         prompt_text = f"""
 You are an expert web automation assistant. 
 Your task is to generate textual action plans to accomplish the user's task based on the instruction and the website screenshot provided.
 
 Instruction (What user want to achieve): {instruction},
 
+Current website screenshot: <|vision_start|><|image_pad|><|vision_end|>
+
 What previous actions planned and executed so far: {history}
 
 Based on the above instruction, website screenshot and history, please generate the next action plan to move towards accomplishing the user's task.
+
+MODEL_RESPONSE:
+
 """
         return {
             "screenshot": website_screenshot,
