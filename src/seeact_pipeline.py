@@ -5,6 +5,7 @@ Final plan available at AutoWeb/Docs/SeeAct_understanding.md
 import os
 import sys
 from pathlib import Path
+from time import time
 from typing import Dict, Optional, Tuple
 from PIL import Image
 from transformers import pipeline
@@ -13,10 +14,10 @@ from transformers import pipeline
 src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
+from AutoWeb.src.Input_Prepration import SeeActInputPreparator
 from action_schema import ActionPrediction, ActionSchema
 from action_decoder import ActionDecoder
 from image_preprocessor import SeeActImagePreprocessor
-from prompt_engine import PromptEngine
 from model_interface import VLModel
 from config import get_model_path, get_device, get_model_dtype, get_use_8bit
 
@@ -53,8 +54,8 @@ class SeeActPipeline:
         print(f"  ✓ Mind2Web dataset loader ready(root: D:\\Environments\\Datasets\\multimodal-mind2web)")
         
         # 2. Prompt Engine (strict JSON enforcement)
-        self.prompt_engine = PromptEngine()
-        print("  ✓ Prompt engine ready (strict JSON mode)")
+        self.input_preparator = SeeActInputPreparator()
+        print("  ✓ Input preparator ready")
         
         # 3. Model Interface (local Qwen2-VL-2B)
         print(f"  ⏳ Loading model from {model_folder}...")
@@ -95,86 +96,96 @@ class SeeActPipeline:
         )
         
         print(f"Instruction: {single_task[0]['instruction']}")
+        
+        print("="*20 , f"For each action in Task {annotation_id}...", "="*20)
 
-        # # Update decoder with image dimensions for coordinate normalization
-        # self.decoder.set_image_dimensions(
-        #     scale_info["new_width"],
-        #     scale_info["new_height"]
-        # )
-        
-        # print(f"        Original: {scale_info['original_width']}x{scale_info['original_height']}")
-        # print(f"        Resized:  {scale_info['new_width']}x{scale_info['new_height']}")
-        # print(f"        Scale:    {scale_info['scale_x']:.3f}")
-        
-        # for each step in task_steps:
+        task_latency_start = time.time()
 
-        # Step 2: Prepare inputs for single task (stepImage + past history + instruction)
-        print("="*20 , "[2/6] Input Preparation...", "="*20)
-        # Ask model/processor what image placeholder (if any) it prefers so tokenization and
-        # when the processor prefers implicit image tokens.
-        
-        # Step 3: Action Generation (take input from previous block, result a planning for task)
-        print("="*20 , "[3/6] Running Action Generation...", "="*20)
+        # Initialize history of previous actions for the task (if needed for input preparation)
+        action_history = []
 
-        # prompt_text, _ = self.prompt_engine.build_prompt(
-        #     task_text=instruction,
-        #     variant="strict_json",
-        #     include_dom=False,  # SeeAct: no DOM, vision-only
-        #     image_key=image_key or "<image>"
-        # )
+        for action in single_task:
+            print(f"\n--- Processing action: '{action['action_uid']}' ---")
+            action_latency_start = time.time()
+            # Step 2: Prepare inputs for single task (stepImage + past history + instruction)
+            print("="*20 , "[2/6] Input Preparation...", "="*20)
+            
+            action_generation_input = self.input_preparator.prepare_input(
+                action=action,
+                history=action_history
+            )
         
-        # Step 4: Grounding method selection and processing
-        print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
-        # self.action_grounding.process(method=seeAct_method, annotation_id=annotation_id, dataset_file_name=dataset_file_name )
-                        
-        
-        # raw_output = inference_result["raw_text"]
-        # latency = inference_result["latency"]
-        
-        # print(f"        Latency: {latency:.2f}s")
-        # print(f"        Raw output (first 100 chars): {raw_output[:100]}...")
-        
-        # Step 5: Parse the Grounding output 
-        print("="*20 , "[5/6] Parsing output...", "="*20)
-        # decode_result = self.decoder.decode_with_metadata(raw_output)
-        
-        # prediction = decode_result["prediction"]
-        # parsed_json = decode_result["parsed_json"]
-        # error = decode_result["error"]
-        # success = decode_result["success"]
-        
-        # if success:
-        #     print(f"        ✓ Action: {prediction.action_type}")
-        #     print(f"        ✓ Confidence: {prediction.confidence:.2f}")
-        # else:
-        #     print(f"        ✗ Decode failed: {error}")
-        
-        # # Step 6: Evaluate
-        print("="*20 , "[6/6] Evaluating prediction...", "="*20)
-        # if prediction:
-        #     print("  [6/6] Validating schema...")
-        #     is_valid, validation_error = ActionSchema.validate_prediction(prediction)
-        #     if is_valid:
-        #         print("        ✓ Schema valid")
-        #     else:
-        #         print(f"        ⚠ Schema validation warning: {validation_error}")
-        # else:
-        #     print("  [6/6 ] Skipping validation (no prediction)")
-        
-        # return {
-        #     "prediction": prediction,
-        #     "raw_output": raw_output,
-        #     "parsed_json": parsed_json,
-        #     "error": error,
-        #     "success": success,
-        #     "latency": latency,
-        #     "prompt": prompt_text  # Include for debugging
-        # }  
+            # Step 3: Action Generation (take input from previous block, result a planning for task)
+            print("="*20 , "[3/6] Running Action Generation...", "="*20)
+
+
+            # prompt_text, _ = self.prompt_engine.build_prompt(
+            #     task_text=instruction,
+            #     variant="strict_json",
+            #     include_dom=False,  # SeeAct: no DOM, vision-only
+            #     image_key=image_key or "<image>"
+            # )
+            
+            # Step 4: Grounding method selection and processing
+            print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
+            # self.action_grounding.process(method=seeAct_method, annotation_id=annotation_id, dataset_file_name=dataset_file_name )
+                            
+            
+            # raw_output = inference_result["raw_text"]
+            # latency = inference_result["latency"]
+            
+            # print(f"        Latency: {latency:.2f}s")
+            # print(f"        Raw output (first 100 chars): {raw_output[:100]}...")
+            
+            # Step 5: Parse the Grounding output 
+            print("="*20 , "[5/6] Parsing output...", "="*20)
+            # decode_result = self.decoder.decode_with_metadata(raw_output)
+            
+            # prediction = decode_result["prediction"]
+            # parsed_json = decode_result["parsed_json"]
+            # error = decode_result["error"]
+            # success = decode_result["success"]
+            
+            # if success:
+            #     print(f"        ✓ Action: {prediction.action_type}")
+            #     print(f"        ✓ Confidence: {prediction.confidence:.2f}")
+            # else:
+            #     print(f"        ✗ Decode failed: {error}")
+            
+            # # Step 6: Evaluate
+            print("="*20 , "[6/6] Evaluating prediction...", "="*20)
+            # if prediction:
+            #     print("  [6/6] Validating schema...")
+            #     is_valid, validation_error = ActionSchema.validate_prediction(prediction)
+            #     if is_valid:
+            #         print("        ✓ Schema valid")
+            #     else:
+            #         print(f"        ⚠ Schema validation warning: {validation_error}")
+            # else:
+            #     print("  [6/6 ] Skipping validation (no prediction)")
+            
+            # return {
+            #     "prediction": prediction,
+            #     "raw_output": raw_output,
+            #     "parsed_json": parsed_json,
+            #     "error": error,
+            #     "success": success,
+            #     "latency": latency,
+            #     "prompt": prompt_text  # Include for debugging
+            # }
+
+            action_latency_end = time.time()
+            action_latency = action_latency_end - action_latency_start
+
+        print("="*20 , f"Each action executed for annotation ID {annotation_id}...", "="*20)
+
+        task_latency_end = time.time()
+        total_task_latency = task_latency_end - task_latency_start
 
         return {
             "success": False,
             "error": "Not implemented yet",
-            "latency": 0.0,
+            "latency": total_task_latency,
             "raw_output": "",
             "prediction": None            
             }  

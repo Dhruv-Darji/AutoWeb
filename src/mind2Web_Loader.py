@@ -170,7 +170,7 @@ class Mind2WebDataset:
     def __getitem__(self, idx: int):
         """
         Returns: dics with keys:
-            'image' : PIL.Image
+            'screenshot' : PIL.Image
             'instruction' : str (task description)
             'oracle_action' : dict (ground-truth action)
             'raw_html' : str
@@ -183,7 +183,7 @@ class Mind2WebDataset:
         row = self.df.iloc[idx]
 
         sample = {}
-        sample["image"] = self._load_image(row["screenshot"])
+        sample["screenshot"] = self._load_image(row["screenshot"])
         sample["instruction"] = row.get("confirmed_task", "")
         sample["raw_html"] = row.get("raw_html", None)
         sample["cleaned_html"] = row.get("cleaned_html", None)
@@ -246,7 +246,7 @@ class Mind2WebDataset:
             sample = {}
             sample["annotation_id"] = r.get("annotation_id")
             sample["action_uid"] = r.get("action_uid")
-            sample["image"] = self._load_image(r["screenshot"])
+            sample["screenshot"] = self._load_image(r["screenshot"])
             sample["instruction"] = r.get("confirmed_task", "")
             sample["raw_html"] = r.get("raw_html", None)
             sample["cleaned_html"] = r.get("cleaned_html", None)
