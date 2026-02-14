@@ -111,6 +111,10 @@ def get_use_8bit(default: bool = False) -> bool:
     return value in ("true", "1", "yes")
 
 
+def get_deberta_model_path(default: Optional[str] = None) -> Optional[str]:
+
+    return os.getenv("DEBERTA_MODEL_PATH", default)
+
 def print_config():
     """Print current configuration."""
     print("\n" + "=" * 80)

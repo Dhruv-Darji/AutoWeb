@@ -11,6 +11,7 @@ from PIL import Image
 from transformers import pipeline
 
 from AutoWeb.src.action_generation import SeeActActionGenerator
+from AutoWeb.src.action_grounding import SeeActActionGrounding
 
 
 # Add src to path for imports
@@ -90,6 +91,9 @@ class SeeActPipeline:
         print("  ⏳ Initializing action generator...")
         self.actionGenration = SeeActActionGenerator(model=self.model)
         print("  ✓ Action generator ready")
+
+        # 5. Action Grounding (SeeAct Action Grounding Module)
+        self.action_grounding = SeeActActionGrounding(model=self.model)
         
         # 5. Action Decoder (JSON repair + validation)
         self.decoder = ActionDecoder(strict_validation=False)
@@ -164,7 +168,10 @@ class SeeActPipeline:
             
             # Step 4: Grounding method selection and processing
             print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
-            # self.action_grounding.process(method=seeAct_method, annotation_id=annotation_id, dataset_file_name=dataset_file_name )
+            self.action_grounding.process(
+                annotation_id=annotation_id,
+                textual_plan=output_plan,
+                step_info=action)
             
             
             # raw_output = inference_result["raw_text"]

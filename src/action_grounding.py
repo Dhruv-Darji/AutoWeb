@@ -14,13 +14,56 @@ Input:
 3. Image Annotation
 """
 
+import time
+from AutoWeb.src.config import get_deberta_model_path
 from AutoWeb.src.model_interface import VLModel
-from typing import Dict
+from typing import Dict, List
+
+from AutoWeb.src.utils.html_to_dom import extract_interactive_elements
+from AutoWeb.src.utils.img_downscaler import downscale_image_if_needed
+from AutoWeb.src.utils.load_DeBERTa import DeBERTaLoader
+import torch.nn.functional as F
 
 
 class SeeActActionGrounding:
-    def __init__(self, model:VLModel):
+    def __init__(
+            self, 
+            model:VLModel,
+            method: str = "2"
+            ):
         self.model = model
+        self.method = method
+
+        self.switcher = {
+            "1": self._ground_using_element_attributes,
+            "2": self._ground_using_textual_choice,
+            "3": self._ground_using_image_annotation
+        }
+
+        self.grounding_function = self.switcher.get(self.method, self._invalid_method)
+
+        if self.grounding_function == self._invalid_method:
+            print(f"  ⚠️ Warning: Invalid grounding method '{self.method}' specified. Defaulting to invalid method handler.")
+            # Block execution if the method is invalid
+            raise ValueError(f"Invalid grounding method '{self.method}' specified. Please choose a valid method (1, 2, or 3).") 
+        
+        # Load the DeBERTa model for groudning method "2" (Textual Choice)
+        self.deberta_loader = None
+        self.deberta_model = None
+        if self.method == "2":
+            self.load_deberta()
+            print(f"  ✅ DeBERTa model loaded successfully.")
+        
+
+
+    def load_deberta(self):        
+        deberta_model_path = get_deberta_model_path()
+        if not deberta_model_path:
+            raise ValueError("DeBERTa model path not specified. Please set the DEBERTA_MODEL_PATH environment variable or provide a default path.")
+        
+        self.deberta_loader = DeBERTaLoader(model_path=deberta_model_path)
+        self.deberta_loader.load_model()
+        self.deberta_model = self.deberta_loader.model
 
     def _ground_using_element_attributes(self, annotation_id:str, textual_plan: str, step_info: Dict):
         # Placeholder for grounding logic using element attributes
@@ -28,11 +71,108 @@ class SeeActActionGrounding:
         # Here we would have the actual code to perform grounding using element attributes.
         pass
 
-    def _ground_using_textual_choice(self, annotation_id:str, textual_plan: str, step_info: Dict):
-        # Placeholder for grounding logic using textual choice
+    def select_element_from_candidates(self, textual_plan: str, candidates: List[Dict], website_screenshot, user_instruction: str = ""):
+        """
+        Grounding Using Textual Choice - Select the best matching element from the top candidates using the Qwen model.
+        """
+        prompt = f"""
+You are an expert web automation assistant. Your task is to select the most appropriate interactive element from a list top k candidates based on a given textual plan and website screenshot.
+────────────────────────────────────────────────────────────────────────────
+Instruction (goal): {user_instruction}
+────────────────────────────────────────────────────────────────────────────
+Textual Plan: {textual_plan}
+────────────────────────────────────────────────────────────────────────────
+Candidate Elements:
+{chr(10).join([f"{i}. {c['element']['representation']} (score: {c['score']:.4f})" for i, c in enumerate(candidates)])}
+────────────────────────────────────────────────────────────────────────────
+Website Screenshot:
+<|vision_start|><|image_pad|><|vision_end|>
+────────────────────────────────────────────────────────────────────────────
+
+RESPONSE RULES (IMPORTANT):
+- Analyze the textual plan, candidate elements, and screenshot to select the best matching element.
+- Respond with the index of the selected element in the format: "Selected element: [index]".
+- Only respond with the index, do not include any explanations or additional text.
+
+
+Please select the best matching element from the candidates based on the textual plan and screenshot. Respond with the index of the selected element (e.g., "Selected element: 0").
+        """
+
+        response = self.model.infer(
+            image_or_tensor=downscale_image_if_needed(website_screenshot) if website_screenshot else None,
+            prompt=prompt,
+            max_new_tokens= 256,
+            do_sample=False
+            )
+        print(f"    Model response for element selection: {response}")
+        
+        # Extract selected index from model response
+        selected_index = None
+        try:
+            if "Selected element:" in response:
+                selected_index = int(response.split("Selected element:")[1].strip())
+                if 0 <= selected_index < len(candidates):
+                    return candidates[selected_index]["element"]
+        except Exception as e:
+            print(f"    Error parsing model response for element selection: {e}")
+        
+        return None
+
+
+    def _ground_using_textual_choice(self, 
+                                     annotation_id:str, 
+                                     textual_plan: str, 
+                                     step_info: Dict,
+                                     top_k: int = 100):        
         print(f"    Grounding using Textual Choice for annotation '{annotation_id}'...")
-        # Here we would have the actual code to perform grounding using textual choice.
-        pass
+        start_time = time.time()
+
+        # get cleaned HTML value
+        cleaned_html = step_info.get("cleaned_html", "")
+
+        # Get DOM like interactive elements
+        elements = extract_interactive_elements(cleaned_html)
+        
+        # iterate through elements in the DOM and compute similarity with textual plan using DeBERTa embeddings
+        plan_emd = self.deberta_loader.get_embeddings(textual_plan).mean(dim=1)
+
+        scored_elements = []
+        for el in elements:
+            el_emb = self.deberta_loader.get_embeddings(el["representation"]).mean(dim=1)
+            score = F.cosine_similarity(plan_emd, el_emb).item()
+
+            scored_elements.append({
+                "score": score,
+                "element": el
+            })
+        
+        scored_elements.sort(key=lambda x: x["score"], reverse=True)
+
+
+        # select top 100 elements based on similarity scores
+        top_k_elements = scored_elements[:top_k]
+
+        # ask qwen model to select best matching element from top 100 
+        website_screenshot = step_info.get("screenshot", None)
+
+        selected_element = self.select_element_from_candidates(textual_plan, top_k_elements, website_screenshot)
+
+        # return the selected element as the grounded action
+        if selected_element is None:
+            print(f"    ✗ No element selected for annotation '{annotation_id}'.")
+            return {
+                "success": False,
+                "error": "No element selected",
+                "selected_element": None,
+                "latency": time.time() - start_time
+            }
+
+        return {
+            "success": True,
+            "error": None,
+            "selected_element": selected_element,
+            "latency": time.time() - start_time
+        }
 
     def _ground_using_image_annotation(self, annotation_id:str, textual_plan: str, step_info: Dict):
         # Placeholder for grounding logic using image annotation
@@ -45,37 +185,26 @@ class SeeActActionGrounding:
         return None
 
     def process(
-                self, 
-                method: str, 
+                self,  
                 annotation_id:str,
                 textual_plan: str,
                 step_info: Dict,
-                ):
+                ) -> Dict:
         """
         Process the action grounding based on the specified method.
         
-        Args:
-            method: An integer (1-3) indicating the grounding method to use.
+        Args:            
             annotation_id: Identifier for the current annotation being processed.
-        
+            textual_plan: The textual plan generated by the action generation module for the current step.
+            step_info: Additional information about the current step (e.g., DOM snapshot, screenshots, etc.)        
         Returns:
             Grounded action details (format may vary based on method).
         """
-        print(f"  ⏳ Processing action grounding using method {method} for annotation '{annotation_id}' in dataset '{dataset_file_name}'...")
-        
-        switcher = {
-            "1": self._ground_using_element_attributes,
-            "2": self._ground_using_textual_choice,
-            "3": self._ground_using_image_annotation
-        }
-        grounding_function = switcher.get(method, self._invalid_method)
 
-        result = grounding_function(annotation_id, textual_plan, step_info)
+        print(f"  ⏳ Processing action grounding for annotation '{annotation_id}'...")       
         
-        if result is None:
-            return {
-                "error": f"Invalid grounding method '{method}' specified."                
-            }
+        result = self.grounding_function(annotation_id, textual_plan, step_info)
+
 
         # Here we would have the actual code to perform action grounding based on the specified method.
         # For now, we will just return a placeholder string.
