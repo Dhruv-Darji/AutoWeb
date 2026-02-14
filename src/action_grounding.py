@@ -23,6 +23,9 @@ from AutoWeb.src.utils.html_to_dom import extract_interactive_elements
 from AutoWeb.src.utils.img_downscaler import downscale_image_if_needed
 from AutoWeb.src.utils.load_DeBERTa import DeBERTaLoader
 import torch.nn.functional as F
+import re
+import json
+import ast
 
 
 class SeeActActionGrounding:
@@ -75,47 +78,150 @@ class SeeActActionGrounding:
         """
         Grounding Using Textual Choice - Select the best matching element from the top candidates using the Qwen model.
         """
+        # Build a compact enumerated candidate list for the few-shot prompt
+        enumerated_candidates = "\n".join([f"{i}. {c['element']['representation']} (score: {c['score']:.4f})" for i, c in enumerate(candidates)])
+
+        # Few-shot prompt that forces a single-line 'Answer: <index|NO_MATCH>' output
         prompt = f"""
-You are an expert web automation assistant. Your task is to select the most appropriate interactive element from a list top k candidates based on a given textual plan and website screenshot.
-────────────────────────────────────────────────────────────────────────────
-Instruction (goal): {user_instruction}
-────────────────────────────────────────────────────────────────────────────
-Textual Plan: {textual_plan}
-────────────────────────────────────────────────────────────────────────────
-Candidate Elements:
-{chr(10).join([f"{i}. {c['element']['representation']} (score: {c['score']:.4f})" for i, c in enumerate(candidates)])}
-────────────────────────────────────────────────────────────────────────────
-Website Screenshot:
-<|vision_start|><|image_pad|><|vision_end|>
-────────────────────────────────────────────────────────────────────────────
+You are an assistant that selects the best candidate from a numbered list. Return EXACTLY ONE token only: the 0-based index of the chosen candidate, or the token NO_MATCH if none apply. Do NOT output JSON, explanation or other text.
 
-RESPONSE RULES (IMPORTANT):
-- Analyze the textual plan, candidate elements, and screenshot to select the best matching element.
-- Respond with the index of the selected element in the format: "Selected element: [index]".
-- Only respond with the index, do not include any explanations or additional text.
+EXAMPLES:
+Candidates: 0. "Search"  1. "Sign in"  2. "Add to cart"
+Plan: Click on the search box
+Answer: 0
 
+Candidates: 0. "Price"  1. "Reviews"  2. "Buy now"
+Plan: Click the buy button
+Answer: 2
 
-Please select the best matching element from the candidates based on the textual plan and screenshot. Respond with the index of the selected element (e.g., "Selected element: 0").
-        """
+NOW:
+user instruction: {user_instruction}
 
-        response = self.model.infer(
-            image_or_tensor=downscale_image_if_needed(website_screenshot) if website_screenshot else None,
-            prompt=prompt,
-            max_new_tokens= 256,
-            do_sample=False
+Website screenshot: <|vision_start|><|image_pad|><|vision_end|>
+
+Candidates:
+{enumerated_candidates}
+
+Plan: {textual_plan}
+
+Answer:
+"""
+
+        # Deterministic generation: low token budget, no sampling
+        def call_model(p, max_tokens=6):
+            r = self.model.infer(
+                image_or_tensor=downscale_image_if_needed(website_screenshot) if website_screenshot else None,
+                prompt_text=p,
+                max_new_tokens=max_tokens,
+                do_sample=False,
+                temperature=0.0
             )
-        print(f"    Model response for element selection: {response}")
+            if isinstance(r, dict):
+                return (r.get('output_text') or r.get('raw_text') or str(r)).strip(), r
+            return str(r).strip(), r
+
+        resp_text, raw_resp = call_model(prompt, max_tokens=6)
+        print(f"    Model response for element selection (text): {resp_text}")
+
+        # quick retry with stricter instruction if response is not a single token
+        retry_prompt = prompt + "\n(Reply with a single token: an integer index or NO_MATCH)"
+        retry_attempted = False
+        if not re.search(r"\b(NO_MATCH|\d+)\b", resp_text, re.IGNORECASE):
+            retry_attempted = True
+            print("    ⚠ Initial response not parseable — retrying with stricter prompt")
+            resp_text, raw_resp = call_model(retry_prompt, max_tokens=4)
+            print(f"    Retry response: {resp_text}")
         
-        # Extract selected index from model response
-        selected_index = None
+        # Diagnostics: show top candidates (reprs) to help debugging
         try:
-            if "Selected element:" in response:
-                selected_index = int(response.split("Selected element:")[1].strip())
-                if 0 <= selected_index < len(candidates):
-                    return candidates[selected_index]["element"]
+            preview_candidates = [c["element"]["representation"] for c in candidates[:10]]
+            print(f"    Candidate count={len(candidates)}, top previews={preview_candidates}")
+        except Exception:
+            pass
+
+        # 1) Try plain integer extraction (single digit or multi-digit)
+        m = re.search(r"\b(\d+)\b", resp_text)
+        if m:
+            try:
+                idx = int(m.group(1))
+                if 0 <= idx < len(candidates):
+                    print(f"   Selected element : {candidates[idx]['element']},  (index {idx})")
+                    return candidates[idx]["element"]
+                else:
+                    print(f"    Parsed index {idx} out of range (0..{len(candidates)-1})")
+            except Exception as e:
+                print(f"    Error converting parsed index: {e}")
+
+        # 2) Try to locate JSON object after the token (e.g. Selected element: {...})
+        json_obj = None
+        jmatch = re.search(r"Selected element\s*[:\-\[]\s*(\{.*\})", resp_text, re.DOTALL | re.IGNORECASE)
+        if jmatch:
+            js = jmatch.group(1)
+            try:
+                json_obj = json.loads(js)
+            except Exception:
+                try:
+                    json_obj = ast.literal_eval(js)
+                except Exception:
+                    json_obj = None
+
+        # 3) If we received a JSON-like object as the whole response, try to parse it
+        if not json_obj:
+            try:
+                if resp_text.startswith('{') and resp_text.endswith('}'):
+                    json_obj = json.loads(resp_text)
+            except Exception:
+                try:
+                    json_obj = ast.literal_eval(resp_text)
+                except Exception:
+                    json_obj = None
+
+        # 4) If JSON object found, try to match its 'text' or attributes against candidates
+        if isinstance(json_obj, dict):
+            probe_text = json_obj.get('text') or ''
+            # if probe_text is empty, try attributes -> join attribute values
+            if not probe_text and isinstance(json_obj.get('attributes'), dict):
+                probe_text = ' '.join(str(v) for v in json_obj['attributes'].values() if v)
+
+            probe_text = probe_text.strip()
+            if probe_text:
+                # basic string-match scoring
+                best_idx = None
+                best_score = 0
+                for i, c in enumerate(candidates):
+                    repr_text = c['element'].get('representation', '') or ''
+                    a = repr_text.lower()
+                    b = probe_text.lower()
+                    score = 0
+                    if b in a or a in b:
+                        score = max(score, 100)
+                    # token overlap
+                    toks_a = set(a.split())
+                    toks_b = set(b.split())
+                    ov = len(toks_a & toks_b)
+                    score += ov
+                    if score > best_score:
+                        best_score = score
+                        best_idx = i
+                if best_idx is not None and best_score > 0:
+                    print(f"    Matched JSON 'text' to candidate index={best_idx} (score={best_score})")
+                    return candidates[best_idx]['element']
+                else:
+                    print("    JSON returned by model contained text but no candidate matched confidently")
+            else:
+                print("    JSON returned by model is empty or has no text/attributes")
+
+        # 5) As a robust fallback, pick the top DeBERTa/scored candidate (best similarity)
+        try:
+            if candidates:
+                # candidates are pre-scored by DeBERTa in the caller; pick the highest score
+                best = max(candidates, key=lambda x: x.get('score', 0))
+                print(f"    ⚠ Falling back to best-scored candidate (score={best.get('score')})")
+                return best['element']
         except Exception as e:
-            print(f"    Error parsing model response for element selection: {e}")
-        
+            print(f"    Fallback selection failed: {e}")
+
+        print("    ✗ No element selected after parsing and fallback")
         return None
 
 
