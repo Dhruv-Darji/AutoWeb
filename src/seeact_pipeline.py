@@ -141,6 +141,11 @@ class SeeActPipeline:
         for action in single_task:
             print(f"\n--- Processing action: '{action['action_uid']}' ---")
             action_latency_start = time.time()
+
+            # Reset per-step cost tracker (GPT mode only)
+            if self.use_gpt and hasattr(self.model, 'reset_step_cost'):
+                self.model.reset_step_cost()
+
             # Step 2: Prepare inputs for single task (stepImage + past history + instruction)
             print("="*20 , "[2/6] Input Preparation...", "="*20)
             
@@ -170,13 +175,17 @@ class SeeActPipeline:
                 "action_plan": output_plan
             })
 
-            
-            # Step 4: Grounding method selection and processing
-            print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
-            grounding_result = self.action_grounding.process(
-                annotation_id=annotation_id,
-                textual_plan=output_plan,
-                step_info=action)
+            # Skip grounding if plan is empty — record as failed step directly
+            if not output_plan.strip():
+                print("    ⚠ Empty action plan — skipping grounding, recording as failed step.")
+                grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
+            else:
+                # Step 4: Grounding method selection and processing
+                print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
+                grounding_result = self.action_grounding.process(
+                    annotation_id=annotation_id,
+                    textual_plan=output_plan,
+                    step_info=action)
 
             # Step 5: Parse the Grounding output 
             print("="*20 , "[5/6] Parsing output...", "="*20)
@@ -203,6 +212,13 @@ class SeeActPipeline:
                 latency=action_latency,
             )
 
+            # Print per-step GPT cost
+            if self.use_gpt and hasattr(self.model, 'get_step_cost'):
+                sc = self.model.get_step_cost()
+                print(f"        💰 Step cost: ${sc['cost_usd']:.6f} "
+                      f"({sc['prompt_tokens']} in + {sc['completion_tokens']} out = "
+                      f"{sc['total_tokens']} tokens, {sc['calls']} API calls)")
+
         print("="*20 , f"Each action executed for annotation ID {annotation_id}...", "="*20)
 
         # Compute and save evaluation metrics for this task
@@ -212,6 +228,20 @@ class SeeActPipeline:
 
         task_latency_end = time.time()
         total_task_latency = task_latency_end - task_latency_start
+
+        # Print task-level GPT cost summary
+        task_cost_data = {}
+        if self.use_gpt and hasattr(self.model, 'get_total_cost'):
+            tc = self.model.get_total_cost()
+            task_cost_data = tc
+            print("\n" + "=" * 60)
+            print(f"💰 TASK GPT COST SUMMARY  (model: {tc['model']})")
+            print(f"   Total API calls:      {tc['calls']}")
+            print(f"   Prompt tokens:        {tc['prompt_tokens']:,}")
+            print(f"   Completion tokens:    {tc['completion_tokens']:,}")
+            print(f"   Total tokens:         {tc['total_tokens']:,}")
+            print(f"   Total cost:           ${tc['cost_usd']:.6f}")
+            print("=" * 60)
 
         task_eval = self.evaluator.task_results.get(annotation_id)
 
@@ -224,6 +254,7 @@ class SeeActPipeline:
                 "task": task_eval.to_dict() if task_eval else {},
                 "saved_files": saved,
             },
+            "cost": task_cost_data,
         }  
 
 def run_single_prediction_example(

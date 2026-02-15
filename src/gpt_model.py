@@ -7,6 +7,8 @@ image-URL input (via Supabase temporary storage).
 The class exposes the same `infer()` signature so that SeeActActionGenerator
 and SeeActActionGrounding can use it without code changes.
 
+Tracks token usage and cost per call, per step, and per task.
+
 Usage:
     model = GPTVisionModel()          # reads OPENAI_API_KEY, OPENAI_MODEL from .env
     result = model.infer(
@@ -15,6 +17,8 @@ Usage:
         max_new_tokens=256,
     )
     print(result["output_text"])
+    print(result["cost"])             # $ cost for this single call
+    print(model.total_cost)           # cumulative $ cost across all calls
 """
 
 import time
@@ -27,8 +31,37 @@ from AutoWeb.src.config import get_openai_api_key, get_openai_model
 from AutoWeb.src.utils.supabase_image import SupabaseImageHelper
 
 
+# ── Pricing per 1M tokens (USD) as of Feb 2025 ──────────────────────
+# Source: https://openai.com/api/pricing/
+# Update these if OpenAI changes pricing.
+_PRICING: Dict[str, Dict[str, float]] = {
+    "gpt-4o": {
+        "input":  2.50,   # $2.50 / 1M input tokens
+        "output": 10.00,  # $10.00 / 1M output tokens
+    },
+    "gpt-4o-mini": {
+        "input":  0.15,   # $0.15 / 1M input tokens
+        "output": 0.60,   # $0.60 / 1M output tokens
+    },
+}
+# Fallback for unknown models — use gpt-4o pricing (safe upper bound)
+_DEFAULT_PRICING = _PRICING["gpt-4o"]
+
+
+def _calc_cost(model_name: str, prompt_tokens: int, completion_tokens: int) -> float:
+    """Calculate USD cost for a single API call."""
+    # Match pricing key (e.g. "gpt-4o-mini-2024-07-18" → "gpt-4o-mini")
+    pricing = _DEFAULT_PRICING
+    for key in _PRICING:
+        if key in model_name:
+            pricing = _PRICING[key]
+            break
+    cost = (prompt_tokens * pricing["input"] + completion_tokens * pricing["output"]) / 1_000_000
+    return cost
+
+
 class GPTVisionModel:
-    """OpenAI GPT-4o vision model with Supabase image hosting."""
+    """OpenAI GPT-4o vision model with Supabase image hosting and cost tracking."""
 
     def __init__(self):
         api_key = get_openai_api_key()
@@ -39,7 +72,50 @@ class GPTVisionModel:
         self.model_name = get_openai_model()
         self.supabase = SupabaseImageHelper()
 
+        # ── Cumulative cost tracking ──
+        self.total_prompt_tokens: int = 0
+        self.total_completion_tokens: int = 0
+        self.total_cost: float = 0.0      # USD
+        self.call_count: int = 0
+
+        # Per-step accumulator (reset between steps via reset_step_cost())
+        self._step_prompt_tokens: int = 0
+        self._step_completion_tokens: int = 0
+        self._step_cost: float = 0.0
+        self._step_calls: int = 0
+
         print(f"  ✓ GPTVisionModel ready (model: {self.model_name})")
+
+    # ------------------------------------------------------------------
+    # Cost helpers
+    # ------------------------------------------------------------------
+    def reset_step_cost(self):
+        """Call at the start of each pipeline step to reset per-step counters."""
+        self._step_prompt_tokens = 0
+        self._step_completion_tokens = 0
+        self._step_cost = 0.0
+        self._step_calls = 0
+
+    def get_step_cost(self) -> Dict:
+        """Return per-step cost summary."""
+        return {
+            "prompt_tokens": self._step_prompt_tokens,
+            "completion_tokens": self._step_completion_tokens,
+            "total_tokens": self._step_prompt_tokens + self._step_completion_tokens,
+            "cost_usd": round(self._step_cost, 6),
+            "calls": self._step_calls,
+        }
+
+    def get_total_cost(self) -> Dict:
+        """Return cumulative cost summary across all calls."""
+        return {
+            "prompt_tokens": self.total_prompt_tokens,
+            "completion_tokens": self.total_completion_tokens,
+            "total_tokens": self.total_prompt_tokens + self.total_completion_tokens,
+            "cost_usd": round(self.total_cost, 6),
+            "calls": self.call_count,
+            "model": self.model_name,
+        }
 
     # ------------------------------------------------------------------
     # Public API — matches VLModel.infer() signature
@@ -50,7 +126,7 @@ class GPTVisionModel:
         prompt_text: str = "",
         max_new_tokens: int = 256,
         do_sample: bool = False,
-        temperature: float = 0.0,
+        temperature: float = 0.2,
         **kwargs,
     ) -> Dict:
         """Run GPT-4o inference with an optional image.
@@ -63,11 +139,15 @@ class GPTVisionModel:
             temperature:     Sampling temperature (0 = deterministic).
 
         Returns:
-            Dict with keys: output_text, raw_text, latency.
+            Dict with keys: output_text, raw_text, latency,
+            prompt_tokens, completion_tokens, cost.
         """
         start = time.time()
         uploaded_filename: Optional[str] = None
         image_url: Optional[str] = None
+        prompt_tokens = 0
+        completion_tokens = 0
+        call_cost = 0.0
 
         # --- Strip Qwen-specific vision placeholders from prompt ---
         clean_prompt = self._strip_qwen_placeholders(prompt_text)
@@ -81,28 +161,69 @@ class GPTVisionModel:
         # --- Build messages ---
         messages = self._build_messages(clean_prompt, image_url)
 
-        # --- Call OpenAI ---
-        try:
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                max_tokens=max_new_tokens,
-                temperature=temperature,
-            )
-            output_text = response.choices[0].message.content.strip()
-        except Exception as e:
-            output_text = ""
-            print(f"    ✗ GPT-4o API call failed: {e}")
-        finally:
-            # --- Cleanup: delete image from Supabase immediately ---
-            if uploaded_filename:
-                self.supabase.delete(filename=uploaded_filename)
+        # --- Call OpenAI (with retry on empty response) ---
+        max_retries = 2
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    max_tokens=max_new_tokens,
+                    temperature=temperature,
+                )
+                # Safe extraction — content can be None (e.g. content filter)
+                raw_content = response.choices[0].message.content
+                output_text = (raw_content or "").strip()
+
+                # Extract token usage
+                usage = response.usage
+                if usage:
+                    prompt_tokens += usage.prompt_tokens or 0
+                    completion_tokens += usage.completion_tokens or 0
+                    _cost = _calc_cost(self.model_name, usage.prompt_tokens or 0, usage.completion_tokens or 0)
+                    call_cost += _cost
+
+                    # Accumulate
+                    self.total_prompt_tokens += usage.prompt_tokens or 0
+                    self.total_completion_tokens += usage.completion_tokens or 0
+                    self.total_cost += _cost
+                    self.call_count += 1
+
+                    self._step_prompt_tokens += usage.prompt_tokens or 0
+                    self._step_completion_tokens += usage.completion_tokens or 0
+                    self._step_cost += _cost
+                    self._step_calls += 1
+
+                # Retry if response is empty (sometimes GPT returns null content)
+                if not output_text and attempt < max_retries:
+                    print(f"    ⚠ GPT returned empty response (attempt {attempt}/{max_retries}), retrying...")
+                    continue
+
+                if not output_text:
+                    finish_reason = response.choices[0].finish_reason if response.choices else "unknown"
+                    print(f"    ⚠ GPT returned empty content after {attempt} attempts "
+                          f"(finish_reason={finish_reason}, content_was_none={raw_content is None})")
+
+                break  # success — exit retry loop
+
+            except Exception as e:
+                output_text = ""
+                print(f"    ✗ GPT-4o API call failed (attempt {attempt}/{max_retries}): {e}")
+                if attempt >= max_retries:
+                    break
+
+        # --- Cleanup: delete image from Supabase immediately ---
+        if uploaded_filename:
+            self.supabase.delete(filename=uploaded_filename)
 
         latency = time.time() - start
         return {
             "output_text": output_text,
             "raw_text": output_text,
             "latency": latency,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "cost": round(call_cost, 6),
         }
 
     # ------------------------------------------------------------------

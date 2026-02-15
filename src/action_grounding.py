@@ -113,9 +113,20 @@ Answer:
 """
 
         # Deterministic generation: low token budget, no sampling
+        # For GPT (API-based), send the full-resolution image — no downscaling needed.
+        # For local Qwen, downscale to limit VRAM / patch-token count.
+        _is_api_model = isinstance(self.model, GPTVisionModel)
+
+        def _prepare_image(img):
+            if img is None:
+                return None
+            if _is_api_model:
+                return img  # full quality, no resize
+            return downscale_image_if_needed(img)
+
         def call_model(p, max_tokens=6):
             r = self.model.infer(
-                image_or_tensor=downscale_image_if_needed(website_screenshot) if website_screenshot else None,
+                image_or_tensor=_prepare_image(website_screenshot),
                 prompt_text=p,
                 max_new_tokens=max_tokens,
                 do_sample=False,

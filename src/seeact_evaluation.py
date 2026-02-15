@@ -218,8 +218,12 @@ class SeeActEvaluator:
     @staticmethod
     def _extract_gt_element_repr(action: Dict) -> str:
         """Get a human-readable representation of the target element."""
-        # Prefer target_action_reprs from dataset
-        reprs = action.get("target_action_reprs") or action.get("action_reprs") or ""
+        # Prefer target_action_reprs from dataset (e.g. "[heading]  CAR -> CLICK")
+        reprs = action.get("target_action_reprs") or ""
+        if isinstance(reprs, str) and reprs.strip():
+            return reprs.strip()
+        # Fallback to action_reprs list
+        reprs = action.get("action_reprs") or ""
         if isinstance(reprs, list):
             return " | ".join(str(r) for r in reprs)
         return str(reprs)

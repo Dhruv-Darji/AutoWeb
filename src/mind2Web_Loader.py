@@ -192,6 +192,8 @@ class Mind2WebDataset:
         
         # Extract oracle action for evaluation
         sample["oracle_action"] = self._extract_oracle_action(row["operation"])
+        sample["action_reprs"] = row.get("action_reprs", [])
+        sample["target_action_reprs"] = row.get("target_action_reprs", "")
         
         sample["metadata"] = {
             "action_uid": row.get("action_uid"),
@@ -253,6 +255,8 @@ class Mind2WebDataset:
             sample["operation"] = r["operation"]
             sample["candidates"] = r.get("pos_candidates", [])
             sample["oracle_action"] = self._extract_oracle_action(r["operation"])
+            sample["action_reprs"] = r.get("action_reprs", [])
+            sample["target_action_reprs"] = r.get("target_action_reprs", "")
             sample["metadata"] = {
                 "website": r.get("website"),
                 "domain": r.get("domain"),

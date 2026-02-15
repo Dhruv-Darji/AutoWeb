@@ -48,16 +48,22 @@ class SupabaseImageHelper:
         self,
         pil_image: Image.Image,
         filename: Optional[str] = None,
-        quality: int = 85,
         folder: str = "autoweb_temp",
+        max_dim: int = 2048,
     ) -> str:
-        """Upload a PIL Image and return its public URL.
+        """Upload a PIL Image as JPEG and return its public URL.
+
+        Large images (e.g. Mind2Web full-page screenshots at 1280×5429) are
+        resized so the longest side fits within ``max_dim`` pixels.  This
+        matches OpenAI's internal limit — GPT-4o scales images to 2048×2048
+        anyway — and keeps file sizes small so the Supabase CDN can serve
+        them before OpenAI's download timeout.
 
         Args:
             pil_image:  PIL Image to upload.
             filename:   Optional custom filename. Auto-generated if omitted.
-            quality:    JPEG quality (1-100).
             folder:     Sub-folder inside the bucket.
+            max_dim:    Maximum width or height (default 2048).
 
         Returns:
             Public URL string for the uploaded image.
@@ -67,10 +73,18 @@ class SupabaseImageHelper:
 
         path = f"{folder}/{filename}" if folder else filename
 
-        # Convert PIL → JPEG bytes
-        buf = io.BytesIO()
         rgb_img = pil_image.convert("RGB") if pil_image.mode != "RGB" else pil_image
-        rgb_img.save(buf, format="JPEG", quality=quality, optimize=True)
+
+        # Resize if either dimension exceeds max_dim (keeps aspect ratio)
+        w, h = rgb_img.size
+        if w > max_dim or h > max_dim:
+            scale = max_dim / max(w, h)
+            new_size = (max(1, int(w * scale)), max(1, int(h * scale)))
+            rgb_img = rgb_img.resize(new_size, Image.Resampling.LANCZOS)
+
+        # Convert PIL → JPEG bytes (quality=85)
+        buf = io.BytesIO()
+        rgb_img.save(buf, format="JPEG", quality=85)
         file_bytes = buf.getvalue()
 
         # Upload (upsert so re-runs don't fail)
@@ -82,6 +96,9 @@ class SupabaseImageHelper:
 
         # Build public URL
         public_url = self.client.storage.from_(self.bucket).get_public_url(path)
+
+        # Brief pause to let CDN propagate before OpenAI tries to fetch
+        time.sleep(1)
 
         return public_url
 
