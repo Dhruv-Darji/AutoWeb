@@ -6,12 +6,11 @@ import os
 import sys
 from pathlib import Path
 import time
-from typing import Dict, Optional, Tuple
-from PIL import Image
-from transformers import pipeline
+from typing import Dict, Optional
 
 from AutoWeb.src.action_generation import SeeActActionGenerator
 from AutoWeb.src.action_grounding import SeeActActionGrounding
+from AutoWeb.src.seeact_evaluation import SeeActEvaluator
 
 
 # Add src to path for imports
@@ -19,7 +18,6 @@ src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
-from action_decoder import ActionDecoder
 from config import get_model_path, get_device, get_model_dtype, get_use_8bit
 from AutoWeb.src.model_interface import VLModel
 
@@ -95,9 +93,9 @@ class SeeActPipeline:
         # 5. Action Grounding (SeeAct Action Grounding Module)
         self.action_grounding = SeeActActionGrounding(model=self.model)
         
-        # 5. Action Decoder (JSON repair + validation)
-        self.decoder = ActionDecoder(strict_validation=False)
-        print("  ✓ Action decoder ready")
+        # 6. Evaluator (SeeAct offline metrics)
+        self.evaluator = SeeActEvaluator(output_dir="eval_results")
+        print("  ✓ Evaluator ready")
         
         print("[SeeActPipeline] ✓ Pipeline ready!")
     
@@ -168,70 +166,58 @@ class SeeActPipeline:
             
             # Step 4: Grounding method selection and processing
             print("="*20 , "[4/6] Running Action Grounding ...", "="*20)
-            self.action_grounding.process(
+            grounding_result = self.action_grounding.process(
                 annotation_id=annotation_id,
                 textual_plan=output_plan,
                 step_info=action)
-            
-            
-            # raw_output = inference_result["raw_text"]
-            # latency = inference_result["latency"]
-            
-            # print(f"        Latency: {latency:.2f}s")
-            # print(f"        Raw output (first 100 chars): {raw_output[:100]}...")
-            
+
             # Step 5: Parse the Grounding output 
             print("="*20 , "[5/6] Parsing output...", "="*20)
-            # decode_result = self.decoder.decode_with_metadata(raw_output)
-            
-            # prediction = decode_result["prediction"]
-            # parsed_json = decode_result["parsed_json"]
-            # error = decode_result["error"]
-            # success = decode_result["success"]
-            
-            # if success:
-            #     print(f"        ✓ Action: {prediction.action_type}")
-            #     print(f"        ✓ Confidence: {prediction.confidence:.2f}")
-            # else:
-            #     print(f"        ✗ Decode failed: {error}")
-            
-            # # Step 6: Evaluate
-            print("="*20 , "[6/6] Evaluating prediction...", "="*20)
-            # if prediction:
-            #     print("  [6/6] Validating schema...")
-            #     is_valid, validation_error = ActionSchema.validate_prediction(prediction)
-            #     if is_valid:
-            #         print("        ✓ Schema valid")
-            #     else:
-            #         print(f"        ⚠ Schema validation warning: {validation_error}")
-            # else:
-            #     print("  [6/6 ] Skipping validation (no prediction)")
-            
-            # return {
-            #     "prediction": prediction,
-            #     "raw_output": raw_output,
-            #     "parsed_json": parsed_json,
-            #     "error": error,
-            #     "success": success,
-            #     "latency": latency,
-            #     "prompt": prompt_text  # Include for debugging
-            # }
+            grounding_result = grounding_result or {}
+            if grounding_result.get("success"):
+                sel = grounding_result.get("selected_element", {})
+                print(f"        ✓ Grounded to: <{sel.get('tag', '?')}> "
+                      f"text='{(sel.get('text') or '')[:60]}' "
+                      f"bid={((sel.get('attributes') or {}).get('backend_node_id', '?'))}")
+            else:
+                print(f"        ✗ Grounding failed: {grounding_result.get('error', 'unknown')}")
 
+            # Step 6: Evaluate against ground truth
+            print("="*20 , "[6/6] Evaluating prediction...", "="*20)
             action_latency_end = time.time()
             action_latency = action_latency_end - action_latency_start
 
+            self.evaluator.record_step(
+                annotation_id=annotation_id,
+                action_uid=action.get("action_uid", ""),
+                ground_truth=action,
+                predicted_plan=output_plan,
+                grounding_result=grounding_result,
+                latency=action_latency,
+            )
+
         print("="*20 , f"Each action executed for annotation ID {annotation_id}...", "="*20)
+
+        # Compute and save evaluation metrics for this task
+        self.evaluator.compute_metrics()
+        self.evaluator.print_summary()
+        saved = self.evaluator.save_results(tag=annotation_id[:12])
 
         task_latency_end = time.time()
         total_task_latency = task_latency_end - task_latency_start
 
+        task_eval = self.evaluator.task_results.get(annotation_id)
+
         return {
-            "success": False,
-            "error": "Not implemented yet",
+            "success": True,
+            "error": None,
             "latency": total_task_latency,
-            "raw_output": "",
-            "prediction": None            
-            }  
+            "evaluation": {
+                "aggregate": self.evaluator.aggregate.to_dict() if self.evaluator.aggregate else {},
+                "task": task_eval.to_dict() if task_eval else {},
+                "saved_files": saved,
+            },
+        }  
 
 def run_single_prediction_example(
     model_folder: str,
@@ -262,15 +248,15 @@ def run_single_prediction_example(
     print("RESULTS")
     print("=" * 80)
     
-    if result["success"]:
-        pred = result["prediction"]
-        print(f"\n✓ SUCCESS: Valid action prediction generated!")
-        print(f"\nPredicted Action:")
-        print(pred.to_json())
+    if result.get("success"):
+        print(f"\n✓ Pipeline completed successfully")
+        eval_data = result.get("evaluation", {})
+        if eval_data.get("saved_files"):
+            print(f"\nEvaluation files:")
+            for kind, path in eval_data["saved_files"].items():
+                print(f"  {kind}: {path}")
     else:
-        print(f"\n✗ FAILED: {result['error']}")
-        print(f"\nRaw model output:")
-        print(result["raw_output"])
+        print(f"\n✗ FAILED: {result.get('error', 'unknown')}")
     
     print(f"\nLatency: {result['latency']:.2f}s")
     print("\n" + "=" * 80)
