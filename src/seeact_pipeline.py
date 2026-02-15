@@ -224,7 +224,7 @@ class SeeActPipeline:
         # Compute and save evaluation metrics for this task
         self.evaluator.compute_metrics()
         self.evaluator.print_summary()
-        saved = self.evaluator.save_results(tag=annotation_id[:12])
+        saved = self.evaluator.save_results(tag=annotation_id)
 
         task_latency_end = time.time()
         total_task_latency = task_latency_end - task_latency_start

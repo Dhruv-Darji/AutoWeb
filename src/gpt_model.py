@@ -44,18 +44,30 @@ _PRICING: Dict[str, Dict[str, float]] = {
         "output": 0.60,   # $0.60 / 1M output tokens
     },
 }
-# Fallback for unknown models — use gpt-4o pricing (safe upper bound)
-_DEFAULT_PRICING = _PRICING["gpt-4o"]
+# Fallback for unknown models — use gpt-4o-mini pricing (safe upper bound)
+_DEFAULT_PRICING = _PRICING["gpt-4o-mini"]
+
+
+def _resolve_pricing_key(model_name: str) -> str:
+    """Resolve pricing profile key from model name."""
+    normalized = (model_name or "").lower()
+    # Try exact key or prefix key first.
+    if normalized in _PRICING:
+        return normalized
+    for key in sorted(_PRICING.keys(), key=len, reverse=True):
+        if normalized.startswith(key):
+            return key
+    # Fallback: contains-match (handles model version suffixes and provider tags)
+    for key in sorted(_PRICING.keys(), key=len, reverse=True):
+        if key in normalized:
+            return key
+    return "gpt-4o-mini"
 
 
 def _calc_cost(model_name: str, prompt_tokens: int, completion_tokens: int) -> float:
     """Calculate USD cost for a single API call."""
-    # Match pricing key (e.g. "gpt-4o-mini-2024-07-18" → "gpt-4o-mini")
-    pricing = _DEFAULT_PRICING
-    for key in _PRICING:
-        if key in model_name:
-            pricing = _PRICING[key]
-            break
+    pricing_key = _resolve_pricing_key(model_name)
+    pricing = _PRICING.get(pricing_key, _DEFAULT_PRICING)
     cost = (prompt_tokens * pricing["input"] + completion_tokens * pricing["output"]) / 1_000_000
     return cost
 
@@ -70,6 +82,7 @@ class GPTVisionModel:
 
         self.client = OpenAI(api_key=api_key)
         self.model_name = get_openai_model()
+        self.pricing_key = _resolve_pricing_key(self.model_name)
         self.supabase = SupabaseImageHelper()
 
         # ── Cumulative cost tracking ──
@@ -84,7 +97,9 @@ class GPTVisionModel:
         self._step_cost: float = 0.0
         self._step_calls: int = 0
 
-        print(f"  ✓ GPTVisionModel ready (model: {self.model_name})")
+        print(
+            f"  ✓ GPTVisionModel ready (model: {self.model_name}, pricing_profile: {self.pricing_key})"
+        )
 
     # ------------------------------------------------------------------
     # Cost helpers
@@ -115,6 +130,7 @@ class GPTVisionModel:
             "cost_usd": round(self.total_cost, 6),
             "calls": self.call_count,
             "model": self.model_name,
+            "pricing_profile": self.pricing_key,
         }
 
     # ------------------------------------------------------------------
@@ -161,8 +177,8 @@ class GPTVisionModel:
         # --- Build messages ---
         messages = self._build_messages(clean_prompt, image_url)
 
-        # --- Call OpenAI (with retry on empty response) ---
-        max_retries = 2
+        # --- Call OpenAI (with retry on empty response and transient image fetch issues) ---
+        max_retries = 4
         for attempt in range(1, max_retries + 1):
             try:
                 response = self.client.chat.completions.create(
@@ -208,7 +224,31 @@ class GPTVisionModel:
 
             except Exception as e:
                 output_text = ""
+                err_str = str(e)
+                is_invalid_image_url = (
+                    "invalid_image_url" in err_str.lower()
+                    or "timeout while downloading" in err_str.lower()
+                )
+
                 print(f"    ✗ GPT-4o API call failed (attempt {attempt}/{max_retries}): {e}")
+
+                if is_invalid_image_url and image_url:
+                    # Re-check URL readiness and apply stronger backoff for CDN propagation.
+                    try:
+                        self.supabase.wait_until_public(
+                            image_url, timeout_s=20.0, interval_s=0.75
+                        )
+                    except Exception:
+                        pass
+
+                    if attempt < max_retries:
+                        backoff_s = min(2 * attempt, 8)
+                        print(
+                            f"    ⚠ image URL not ready for OpenAI fetch, retrying in {backoff_s}s..."
+                        )
+                        time.sleep(backoff_s)
+                        continue
+
                 if attempt >= max_retries:
                     break
 

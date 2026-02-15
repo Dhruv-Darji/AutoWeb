@@ -79,35 +79,74 @@ class SeeActActionGrounding:
         # Here we would have the actual code to perform grounding using element attributes.
         pass
 
+    @staticmethod
+    def _normalize_ws(text: str) -> str:
+        return " ".join((text or "").split())
+
+    def _compact_candidate_line(self, rank_idx: int, candidate: Dict) -> str:
+        """
+        Build a compact candidate representation for LLM grounding prompts.
+        This prevents TPM blow-ups from massive subtree text payloads.
+        """
+        element = candidate.get("element", {}) if isinstance(candidate, dict) else {}
+        tag = element.get("tag", "?")
+        raw_text = self._normalize_ws(str(element.get("text", "")))
+        if len(raw_text) > 120:
+            raw_text = raw_text[:120] + "..."
+
+        attrs = element.get("attributes", {}) if isinstance(element.get("attributes"), dict) else {}
+        keep_keys = (
+            "backend_node_id",
+            "role",
+            "name",
+            "aria_label",
+            "placeholder",
+            "type",
+            "value",
+            "input_value",
+        )
+        compact_attrs = {}
+        for key in keep_keys:
+            val = attrs.get(key)
+            if val is None:
+                continue
+            sval = self._normalize_ws(str(val))
+            compact_attrs[key] = (sval[:80] + "...") if len(sval) > 80 else sval
+
+        score = candidate.get("score", 0.0)
+        return f'{rank_idx}. <{tag}> text="{raw_text}" attrs={compact_attrs} (score: {score:.4f})'
+
     def select_element_from_candidates(self, textual_plan: str, candidates: List[Dict], website_screenshot, user_instruction: str = ""):
         """
         Grounding Using Textual Choice - Select the best matching element from the top candidates using the Qwen model.
         """
-        # Build a compact enumerated candidate list for the few-shot prompt
-        enumerated_candidates = "\n".join([f"{i}. {c['element']['representation']} (score: {c['score']:.4f})" for i, c in enumerate(candidates)])
+        safe_instruction = self._normalize_ws(str(user_instruction))
+        safe_plan = self._normalize_ws(str(textual_plan))
+        if len(safe_instruction) > 220:
+            safe_instruction = safe_instruction[:220] + "..."
+        if len(safe_plan) > 200:
+            safe_plan = safe_plan[:200] + "..."
 
-        # Few-shot prompt that forces a single-line 'Answer: <index|NO_MATCH>' output
+        # Build compact candidate list for GPT grounding to avoid massive token payload.
+        enumerated_candidates = "\n".join(
+            [self._compact_candidate_line(i, c) for i, c in enumerate(candidates)]
+        )
+
+        # Compact prompt that forces a single-line 'Answer: <index|NO_MATCH>' output
         prompt = f"""
-You are an assistant that selects the best candidate from a numbered list. Return EXACTLY ONE token only: the 0-based index of the chosen candidate, or the token NO_MATCH if none apply. Do NOT output JSON, explanation or other text.
+You select the best UI element candidate for the next single action.
+Return EXACTLY ONE token only:
+- 0-based candidate index (e.g., 3), or
+- NO_MATCH
+Do not return JSON or explanations.
 
-EXAMPLES:
-Candidates: 0. "Search"  1. "Sign in"  2. "Add to cart"
-Plan: Click on the search box
-Answer: 0
-
-Candidates: 0. "Price"  1. "Reviews"  2. "Buy now"
-Plan: Click the buy button
-Answer: 2
-
-NOW:
-user instruction: {user_instruction}
+user instruction: {safe_instruction}
+plan: {safe_plan}
 
 Website screenshot: <|vision_start|><|image_pad|><|vision_end|>
 
 Candidates:
 {enumerated_candidates}
-
-Plan: {textual_plan}
 
 Answer:
 """
@@ -133,7 +172,9 @@ Answer:
                 temperature=0.0
             )
             if isinstance(r, dict):
-                return (r.get('output_text') or r.get('raw_text') or str(r)).strip(), r
+                # IMPORTANT: do not stringify full dict on empty output.
+                # It can contain unrelated numbers (latency/tokens) that break index parsing.
+                return (r.get('output_text') or r.get('raw_text') or "").strip(), r
             return str(r).strip(), r
 
         resp_text, raw_resp = call_model(prompt, max_tokens=6)
@@ -150,7 +191,7 @@ Answer:
         
         # Diagnostics: show top candidates (reprs) to help debugging
         try:
-            preview_candidates = [c["element"]["representation"] for c in candidates[:5]]
+            preview_candidates = [self._compact_candidate_line(i, c) for i, c in enumerate(candidates[:5])]
             print(f"    Candidate count={len(candidates)}, top previews={preview_candidates}")
         except Exception:
             pass
@@ -271,7 +312,9 @@ Answer:
 
 
         # select top-k elements based on cross-encoder relevance scores
-        top_k_elements = scored_elements[:top_k]
+        # GPT grounding uses a smaller top-k to keep token load under TPM limits.
+        effective_top_k = 12 if isinstance(self.model, GPTVisionModel) else top_k
+        top_k_elements = scored_elements[:effective_top_k]
 
         # Free CUDA cache before Qwen VL inference to avoid OOM on small GPUs
         if torch.cuda.is_available():

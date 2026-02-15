@@ -15,6 +15,8 @@ import io
 import uuid
 import time
 from typing import Optional
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 
 from PIL import Image
 from supabase import create_client, Client
@@ -44,6 +46,48 @@ class SupabaseImageHelper:
     # ------------------------------------------------------------------
     # Upload
     # ------------------------------------------------------------------
+    def wait_until_public(
+        self,
+        public_url: str,
+        timeout_s: float = 20.0,
+        interval_s: float = 0.75,
+    ) -> bool:
+        """Poll public URL until it becomes reachable (HTTP 200)."""
+        deadline = time.time() + timeout_s
+        while time.time() < deadline:
+            # Try HEAD first (faster). If not allowed, fallback to GET.
+            try:
+                req = Request(public_url, method="HEAD")
+                with urlopen(req, timeout=5) as resp:
+                    if getattr(resp, "status", 200) == 200:
+                        return True
+            except HTTPError as e:
+                if e.code in (403, 404, 425):
+                    time.sleep(interval_s)
+                    continue
+                if e.code not in (405, 501):
+                    time.sleep(interval_s)
+                    continue
+            except URLError:
+                time.sleep(interval_s)
+                continue
+            except Exception:
+                time.sleep(interval_s)
+                continue
+
+            # HEAD unsupported -> GET fallback.
+            try:
+                req = Request(public_url, method="GET")
+                with urlopen(req, timeout=5) as resp:
+                    if getattr(resp, "status", 200) == 200:
+                        return True
+            except Exception:
+                pass
+
+            time.sleep(interval_s)
+
+        return False
+
     def upload(
         self,
         pil_image: Image.Image,
@@ -97,8 +141,11 @@ class SupabaseImageHelper:
         # Build public URL
         public_url = self.client.storage.from_(self.bucket).get_public_url(path)
 
-        # Brief pause to let CDN propagate before OpenAI tries to fetch
-        time.sleep(1)
+        # Wait until URL is actually reachable before handing it to OpenAI.
+        ready = self.wait_until_public(public_url, timeout_s=20.0, interval_s=0.75)
+        if not ready:
+            # Keep moving; infer() handles retry on invalid_image_url.
+            print(f"  ⚠ Public URL not confirmed within timeout: {public_url}")
 
         return public_url
 
