@@ -112,8 +112,33 @@ def get_use_8bit(default: bool = False) -> bool:
 
 
 def get_deberta_model_path(default: Optional[str] = None) -> Optional[str]:
-
     return os.getenv("DEBERTA_MODEL_PATH", default)
+
+
+def get_crossencoder_model_path(default: str = "cross-encoder/ms-marco-MiniLM-L-6-v2") -> str:
+    """Local or HuggingFace path for the pre-trained cross-encoder."""
+    return os.getenv("CROSSENCODER_MODEL_PATH", default)
+
+
+def get_openai_api_key() -> Optional[str]:
+    return os.getenv("OPENAI_API_KEY")
+
+
+def get_openai_model(default: str = "gpt-4o-mini") -> str:
+    return os.getenv("OPENAI_MODEL", default)
+
+
+def get_supabase_url() -> Optional[str]:
+    return os.getenv("SUPABASE_URL")
+
+
+def get_supabase_service_role_key() -> Optional[str]:
+    return os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+
+def get_supabase_bucket(default: str = "ai-preprocessed-steps") -> str:
+    return os.getenv("SUPABASE_BUCKET", default)
+
 
 def print_config():
     """Print current configuration."""

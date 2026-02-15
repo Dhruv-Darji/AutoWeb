@@ -9,13 +9,14 @@ Input:
 """
 
 import time
-from typing import Dict
+from typing import Dict, Union
 
 from AutoWeb.src.model_interface import VLModel
+from AutoWeb.src.gpt_model import GPTVisionModel
 
 
 class SeeActActionGenerator:
-    def __init__(self, model:VLModel):
+    def __init__(self, model: Union[VLModel, GPTVisionModel]):
         self.model = model
 
     def generate_plans(self, input_data: Dict) -> str:

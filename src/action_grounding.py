@@ -18,7 +18,8 @@ import time
 import torch
 from AutoWeb.src.config import get_deberta_model_path
 from AutoWeb.src.model_interface import VLModel
-from typing import Dict, List
+from AutoWeb.src.gpt_model import GPTVisionModel
+from typing import Dict, List, Union
 
 from AutoWeb.src.utils.html_to_dom import extract_interactive_elements
 from AutoWeb.src.utils.img_downscaler import downscale_image_if_needed
@@ -31,7 +32,7 @@ import ast
 class SeeActActionGrounding:
     def __init__(
             self, 
-            model:VLModel,
+            model: Union[VLModel, GPTVisionModel],
             method: str = "2"
             ):
         self.model = model
@@ -61,12 +62,16 @@ class SeeActActionGrounding:
 
     def load_deberta(self):        
         deberta_model_path = get_deberta_model_path()
-        if not deberta_model_path:
-            raise ValueError("DeBERTa model path not specified. Please set the DEBERTA_MODEL_PATH environment variable or provide a default path.")
         
-        self.deberta_loader = DeBERTaLoader(model_path=deberta_model_path)
+        # Use pre-trained cross-encoder from sentence-transformers (recommended).
+        # Falls back to legacy DeBERTa-base + random head only if explicitly disabled.
+        self.deberta_loader = DeBERTaLoader(
+            model_path=deberta_model_path,
+            use_pretrained_crossencoder=True,           # ← pre-trained cross-encoder
+            crossencoder_name="cross-encoder/ms-marco-MiniLM-L-6-v2",
+        )
         self.deberta_loader.load_model()
-        self.deberta_model = self.deberta_loader.model
+        self.deberta_model = self.deberta_loader.model  # may be None for pre-trained path
 
     def _ground_using_element_attributes(self, annotation_id:str, textual_plan: str, step_info: Dict):
         # Placeholder for grounding logic using element attributes

@@ -20,6 +20,7 @@ sys.path.insert(0, str(src_path))
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
 from config import get_model_path, get_device, get_model_dtype, get_use_8bit
 from AutoWeb.src.model_interface import VLModel
+from AutoWeb.src.gpt_model import GPTVisionModel
 
 
 # New imports:
@@ -45,8 +46,10 @@ class SeeActPipeline:
                  model_folder: str,
                  target_width: int = 1280,
                  target_height: int = 720,
-                 device: Optional[str] = None):
+                 device: Optional[str] = None,
+                 use_gpt: bool = False):
         print("[SeeActPipeline] Initializing components...")
+        self.use_gpt = use_gpt
         
         # 1. Mind2Web Dataset Loader (for retrieving task data based on annotation ID)
         self.mind2web_loader = Mind2WebDataset(root_dir="D:\\Environments\\Datasets\\multimodal-mind2web")
@@ -56,33 +59,37 @@ class SeeActPipeline:
         self.input_preparator = SeeActInputPreparator()
         print("  ✓ Input preparator ready")
         
-        # 3. Model Interface (local Qwen2-VL-2B)
-        print(f"  ⏳ Loading model from {model_folder}...")
-        # decide device: prefer explicit argument, else fall back to config.get_device()
-        device_to_use = device or get_device()
-        try:
-            self.model = VLModel(
-                model_folder=model_folder,
-                device=device_to_use
-            )
-            print("  ✓ Model loaded and ready for inference")
-        except Exception as e:
-            # provide extra diagnostics to help debug GPU/device-related hangs
-            print("[SeeActPipeline] Error loading model:", e)
+        # 3. Model Interface — GPT-4o (API) or local Qwen2-VL-2B
+        if self.use_gpt:
+            print("  ⏳ Initializing GPT-4o model (OpenAI API)...")
+            self.model = GPTVisionModel()
+            print("  ✓ GPT-4o model ready for inference")
+        else:
+            print(f"  ⏳ Loading local Qwen model from {model_folder}...")
+            # decide device: prefer explicit argument, else fall back to config.get_device()
+            device_to_use = device or get_device()
             try:
-                import torch
-                print(f"[SeeActPipeline] torch.cuda.is_available(): {torch.cuda.is_available()}")
-                if torch.cuda.is_available():
-                    try:
-                        print(f"[SeeActPipeline] cuda memory allocated: {torch.cuda.memory_allocated(0)}")
-                        print(f"[SeeActPipeline] cuda memory reserved: {torch.cuda.memory_reserved(0)}")
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-            print("[SeeActPipeline] Falling back to CPU model load (this may be slower). To force GPU, pass device='cuda' when initializing the pipeline.")
-            self.model = VLModel(model_folder=model_folder, device="cpu")
-            print("  ✓ Model loaded on CPU (fallback)")
+                self.model = VLModel(
+                    model_folder=model_folder,
+                    device=device_to_use
+                )
+                print("  ✓ Qwen model loaded and ready for inference")
+            except Exception as e:
+                print("[SeeActPipeline] Error loading model:", e)
+                try:
+                    import torch
+                    print(f"[SeeActPipeline] torch.cuda.is_available(): {torch.cuda.is_available()}")
+                    if torch.cuda.is_available():
+                        try:
+                            print(f"[SeeActPipeline] cuda memory allocated: {torch.cuda.memory_allocated(0)}")
+                            print(f"[SeeActPipeline] cuda memory reserved: {torch.cuda.memory_reserved(0)}")
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+                print("[SeeActPipeline] Falling back to CPU model load (this may be slower).")
+                self.model = VLModel(model_folder=model_folder, device="cpu")
+                print("  ✓ Model loaded on CPU (fallback)")
         
 
         # 4. Action Generator (SeeAct Action Generation Module)
@@ -224,12 +231,14 @@ def run_single_prediction_example(
     annotation_id: Optional[str] = None,
     dataset_file_name: Optional[str] = None,
     device: Optional[str] = None,
+    use_gpt: bool = False,
 ):
     """    
     # Pass the annoation ID and dataset file name to retrieve the screenshot and instruction for that particular annotation ID and then run the prediction on that.
     """
     print("=" * 80)
     print("SeeAct Single-Step UI Action Predictor")
+    print(f"  Model backend: {'GPT-4o (OpenAI API)' if use_gpt else 'Qwen2-VL-2B (local)'}")
     print("=" * 80)
     
     # Initialize pipeline
@@ -237,6 +246,7 @@ def run_single_prediction_example(
         model_folder=model_folder,
         target_width=1280,
         target_height=720,
+        use_gpt=use_gpt,
     )
     
     # Run prediction
