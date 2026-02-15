@@ -15,6 +15,7 @@ Input:
 """
 
 import time
+import torch
 from AutoWeb.src.config import get_deberta_model_path
 from AutoWeb.src.model_interface import VLModel
 from typing import Dict, List
@@ -22,7 +23,6 @@ from typing import Dict, List
 from AutoWeb.src.utils.html_to_dom import extract_interactive_elements
 from AutoWeb.src.utils.img_downscaler import downscale_image_if_needed
 from AutoWeb.src.utils.load_DeBERTa import DeBERTaLoader
-import torch.nn.functional as F
 import re
 import json
 import ast
@@ -134,7 +134,7 @@ Answer:
         
         # Diagnostics: show top candidates (reprs) to help debugging
         try:
-            preview_candidates = [c["element"]["representation"] for c in candidates[:10]]
+            preview_candidates = [c["element"]["representation"] for c in candidates[:5]]
             print(f"    Candidate count={len(candidates)}, top previews={preview_candidates}")
         except Exception:
             pass
@@ -229,7 +229,7 @@ Answer:
                                      annotation_id:str, 
                                      textual_plan: str, 
                                      step_info: Dict,
-                                     top_k: int = 100):        
+                                     top_k: int = 50):        
         print(f"    Grounding using Textual Choice for annotation '{annotation_id}'...")
         start_time = time.time()
 
@@ -239,29 +239,32 @@ Answer:
         # Get DOM like interactive elements
         elements = extract_interactive_elements(cleaned_html)
         
-        # iterate through elements in the DOM and compute similarity with textual plan using DeBERTa embeddings
-        plan_emd = self.deberta_loader.get_embeddings(textual_plan).mean(dim=1)
+        # Cross-encoder ranking: feed (plan, element) pairs through DeBERTa
+        # so the model can do token-level cross-attention between the plan and
+        # each candidate element (much stronger than bi-encoder cosine).
+        element_reprs = [el["representation"] for el in elements]
+        scores = self.deberta_loader.compute_cross_scores_batch(
+            textual_plan, element_reprs
+        )
 
-        scored_elements = []
-        for el in elements:
-            el_emb = self.deberta_loader.get_embeddings(el["representation"]).mean(dim=1)
-            score = F.cosine_similarity(plan_emd, el_emb).item()
-
-            scored_elements.append({
-                "score": score,
-                "element": el
-            })
-        
+        scored_elements = [
+            {"score": score, "element": el}
+            for score, el in zip(scores, elements)
+        ]
         scored_elements.sort(key=lambda x: x["score"], reverse=True)
 
 
-        # select top 100 elements based on similarity scores
+        # select top-k elements based on cross-encoder relevance scores
         top_k_elements = scored_elements[:top_k]
 
-        # ask qwen model to select best matching element from top 100 
+        # Free CUDA cache before Qwen VL inference to avoid OOM on small GPUs
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        # ask qwen model to select best matching element from top-k
         website_screenshot = step_info.get("screenshot", None)
 
-        selected_element = self.select_element_from_candidates(textual_plan, top_k_elements, website_screenshot)
+        selected_element = self.select_element_from_candidates(textual_plan, top_k_elements, website_screenshot, step_info["instruction"])
 
         # return the selected element as the grounded action
         if selected_element is None:

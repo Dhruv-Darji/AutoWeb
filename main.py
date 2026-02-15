@@ -1,5 +1,5 @@
-from src.config import get_model_path
-from src.seeact_pipeline import run_single_prediction_example
+from AutoWeb.src.config import get_model_path
+from AutoWeb.src.seeact_pipeline import run_single_prediction_example
 
 if __name__ == "__main__":
 

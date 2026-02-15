@@ -1,0 +1,183 @@
+(ml-env) D:\Mtech\Sem 3\Codes>python -m AutoWeb.main
+✓ Loaded configuration from D:\Mtech\Sem 3\Codes\AutoWeb\.env
+[VLModel] bitsandbytes available: True
+✓ Loaded configuration from D:\Mtech\Sem 3\Codes\AutoWeb\.env
+================================================================================
+SeeAct Single-Step UI Action Predictor
+================================================================================
+[SeeActPipeline] Initializing components...
+[MultiModal-Mind2Web] Loaded split 'train' with 7775 rows (raw).
+[MultiModal-Mind2Web] Columns: ['action_uid', 'raw_html', 'cleaned_html', 'operation', 'pos_candidates', 'neg_candidates', 'website', 'domain', 'subdomain', 'annotation_id', 'confirmed_task', 'screenshot', 'action_reprs', 'target_action_index', 'target_action_reprs']
+  ✓ Mind2Web dataset loader ready(root: D:\Environments\Datasets\multimodal-mind2web)
+  ✓ Input preparator ready
+  ⏳ Loading model from D:\Environments\Models\Qwen2-VL-2B...
+[VLModel] loading processor from D:\Environments\Models\Qwen2-VL-2B ...
+[VLModel] loading model with kwargs: {'torch_dtype': torch.float16, 'device_map': 'auto'}
+D:\Environments\ml-env\Lib\site-packages\transformers\models\auto\modeling_auto.py:2284: FutureWarning: The class `AutoModelForVision2Seq` is deprecated and will be removed in v5.0. Please use `AutoModelForImageTextToText` instead.
+  warnings.warn(
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████| 2/2 [00:06<00:00,  3.24s/it]
+[VLModel] model loaded. device = cuda, use_8bit=False
+  ✓ Model loaded and ready for inference
+  ⏳ Initializing action generator...
+  ✓ Action generator ready
+  ⏳ Loading DeBERTa model 'microsoft/deberta-base'...
+  ✅ DeBERTa model 'microsoft/deberta-base' loaded successfully (cross-encoder mode, CPU).
+  ✅ DeBERTa model loaded successfully.
+  ✓ Action decoder ready
+[SeeActPipeline] ✓ Pipeline ready!
+
+[SeeActPipeline] Predicting action for: '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'
+==================== [1/6] Loading task data... ====================
+Instruction: rent a car in Brooklyn - Central, NY on from April 9 to April 15.
+==================== For each action in Task 401c4e6f-6b0b-47b4-8157-92d7ca468bbc... ====================
+
+--- Processing action: '6c7a7082-2897-41c7-9688-4b0f3d778cdb' ---
+==================== [2/6] Input Preparation... ====================
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+    saved processed screenshot to processed_images\6c7a7082-2897-41c7-9688-4b0f3d778cdb_input.jpg (quality=92)
+==================== [3/6] Running Action Generation... ====================
+  ⏳ Generating action plan using the model...
+    - screenshot type: <class 'PIL.Image.Image'>, prompt length: 2869
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 1606]), pixel_values=torch.Size([3840, 1176])
+    ✓ model.infer() returned in 3.49s (used max_new_tokens=256)
+Generated Action Plan: Action Type: click
+Action Detail: Click on "Explore destinations" tab
+==================== [4/6] Running Action Grounding ... ====================
+  ⏳ Processing action grounding for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+    Grounding using Textual Choice for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 3641]), pixel_values=torch.Size([3840, 1176])
+    Model response for element selection (text): 0
+    Candidate count=50, top previews=["<a> text='U.S. military and government travel' attrs={'backend_node_id': '4331'}", "<button> text='Travel with a pet' attrs={'backend_node_id': '1434', 'type': 'button', 'aria_label': 'Travel with a pet. This link would take you to the advance search page in the section to select the number of pets and flights.'}", "<button> text='Get 1,000 bonus miles when you book with United Packages.' attrs={'backend_node_id': '1520', 'type': 'button', 'aria_label': 'Get 1,000 bonus miles when you book with United Packages., you will be redirect away from united.com homepage'}", "<a> text='Help Center' attrs={'backend_node_id': '4165', 'aria_label': 'Help Center, opens in a new tab'}", "<button> text='Flexible dates\n                                                            \n                                                            Use the arrow keys to navigate between days and weeks. Use page up, page down to move between months and years. Press enter to select the date, and escape to close the calendar.' attrs={'backend_node_id': '1630', 'type': 'button', 'aria_label': 'Flexible dates'}"]
+   Selected element : {'index': 168, 'tag': 'a', 'text': 'U.S. military and government travel', 'attributes': {'backend_node_id': '4331'}, 'representation': "<a> text='U.S. military and government travel' attrs={'backend_node_id': '4331'}"},  (index 0)
+==================== [5/6] Parsing output... ====================
+==================== [6/6] Evaluating prediction... ====================
+
+--- Processing action: 'b64c2417-c44e-46c4-bb0b-ff1775e7da29' ---
+==================== [2/6] Input Preparation... ====================
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+    saved processed screenshot to processed_images\b64c2417-c44e-46c4-bb0b-ff1775e7da29_input.jpg (quality=92)
+==================== [3/6] Running Action Generation... ====================
+  ⏳ Generating action plan using the model...
+    - screenshot type: <class 'PIL.Image.Image'>, prompt length: 2942
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 1624]), pixel_values=torch.Size([3840, 1176])
+    ✓ model.infer() returned in 4.42s (used max_new_tokens=256)
+Generated Action Plan: ACTION_TYPE = click
+ACTION_DETAIL = Input "pickup location*"
+==================== [4/6] Running Action Grounding ... ====================
+  ⏳ Processing action grounding for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+    Grounding using Textual Choice for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 3730]), pixel_values=torch.Size([3840, 1176])
+    Model response for element selection (text): 1
+    Candidate count=50, top previews=["<button> text='10:00 a.m.' attrs={'backend_node_id': '11119', 'type': 'button', 'role': 'combobox', 'aria_label': 'Pickup time Selected 10:00 a.m.', 'name': 'pickupTime', 'value': '10|0'}", "<button> text='10:00 a.m.' attrs={'backend_node_id': '11320', 'type': 'button', 'role': 'combobox', 'aria_label': 'Drop off time Selected 10:00 a.m.', 'name': 'dropoffTime', 'value': '10|0'}", "<button> text='Find cars' attrs={'backend_node_id': '11529', 'type': 'submit', 'aria_label': 'Find cars button.'}", "<a> text='U.S. military and government travel' attrs={'backend_node_id': '14341'}", "<button> text='Your reward is waiting at the finish line with Mile Play.' attrs={'backend_node_id': '9982', 'type': 'button', 'aria_label': 'Your reward is waiting at the finish line with Mile Play., you will be redirect away from united.com homepage'}"]
+   Selected element : {'index': 27, 'tag': 'button', 'text': '10:00 a.m.', 'attributes': {'backend_node_id': '11320', 'type': 'button', 'role': 'combobox', 'aria_label': 'Drop off time Selected 10:00 a.m.', 'name': 'dropoffTime', 'value': '10|0'}, 'representation': "<button> text='10:00 a.m.' attrs={'backend_node_id': '11320', 'type': 'button', 'role': 'combobox', 'aria_label': 'Drop off time Selected 10:00 a.m.', 'name': 'dropoffTime', 'value': '10|0'}"},  (index 1)
+==================== [5/6] Parsing output... ====================
+==================== [6/6] Evaluating prediction... ====================
+
+--- Processing action: 'dad6690b-9b3e-4395-bd06-9aa065bf4027' ---
+==================== [2/6] Input Preparation... ====================
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+    saved processed screenshot to processed_images\dad6690b-9b3e-4395-bd06-9aa065bf4027_input.jpg (quality=92)
+==================== [3/6] Running Action Generation... ====================
+  ⏳ Generating action plan using the model...
+    - screenshot type: <class 'PIL.Image.Image'>, prompt length: 3006
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 1640]), pixel_values=torch.Size([3840, 1176])
+    ✓ model.infer() returned in 4.37s (used max_new_tokens=256)
+Generated Action Plan: ACTION_TYPE=click
+ACTIONDETAIL="Continue booking"
+==================== [4/6] Running Action Grounding ... ====================
+  ⏳ Processing action grounding for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+    Grounding using Textual Choice for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 3659]), pixel_values=torch.Size([3840, 1176])
+    Model response for element selection (text): 2
+    Candidate count=50, top previews=["<a> text='U.S. military and government travel' attrs={'backend_node_id': '24374'}", "<button> text='Continue booking' attrs={'backend_node_id': '21623', 'type': 'button'}", "<button> text='10:00 a.m.' attrs={'backend_node_id': '21353', 'type': 'button', 'role': 'combobox', 'aria_label': 'Drop off time Selected 10:00 a.m.', 'name': 'dropoffTime', 'value': '10|0'}", "<button> text='10:00 a.m.' attrs={'backend_node_id': '21152', 'type': 'button', 'role': 'combobox', 'aria_label': 'Pickup time Selected 10:00 a.m.', 'name': 'pickupTime', 'value': '10|0'}", "<button> text='Book now' attrs={'backend_node_id': '23981', 'type': 'button'}"]
+   Selected element : {'index': 30, 'tag': 'button', 'text': '10:00 a.m.', 'attributes': {'backend_node_id': '21353', 'type': 'button', 'role': 'combobox', 'aria_label': 'Drop off time Selected 10:00 a.m.', 'name': 'dropoffTime', 'value': '10|0'}, 'representation': "<button> text='10:00 a.m.' attrs={'backend_node_id': '21353', 'type': 'button', 'role': 'combobox', 'aria_label': 'Drop off time Selected 10:00 a.m.', 'name': 'dropoffTime', 'value': '10|0'}"},  (index 2)
+==================== [5/6] Parsing output... ====================
+==================== [6/6] Evaluating prediction... ====================
+
+--- Processing action: 'e0fd3f28-3f04-455d-8bde-a480f0ec1b0a' ---
+==================== [2/6] Input Preparation... ====================
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+    saved processed screenshot to processed_images\e0fd3f28-3f04-455d-8bde-a480f0ec1b0a_input.jpg (quality=92)
+==================== [3/6] Running Action Generation... ====================
+  ⏳ Generating action plan using the model...
+    - screenshot type: <class 'PIL.Image.Image'>, prompt length: 3059
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 1653]), pixel_values=torch.Size([3840, 1176])
+    ✓ model.infer() returned in 4.50s (used max_new_tokens=256)
+Generated Action Plan: ACTION_TYPE=input
+ACTIONlijah="United Airlines Flight Status"
+==================== [4/6] Running Action Grounding ... ====================
+  ⏳ Processing action grounding for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+    Grounding using Textual Choice for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 3560]), pixel_values=torch.Size([3840, 1176])
+    Model response for element selection (text): NO_MATCH
+    Candidate count=50, top previews=["<button> text='10:00 a.m.' attrs={'backend_node_id': '31159', 'type': 'button', 'role': 'combobox', 'aria_label': 'Pickup time Selected 10:00 a.m.', 'name': 'pickupTime', 'value': '10|0'}", "<a> text='U.S. military and government travel' attrs={'backend_node_id': '34381'}", "<button> text='10:00 a.m.' attrs={'backend_node_id': '31360', 'type': 'button', 'role': 'combobox', 'aria_label': 'Drop off time Selected 10:00 a.m.', 'name': 'dropoffTime', 'value': '10|0'}", "<input> text='' attrs={'backend_node_id': '31746', 'type': 'checkbox', 'input_checked': 'true'}", "<input> text='' attrs={'backend_node_id': '31696', 'type': 'text', 'value': '2000', 'input_value': '2000'}"]
+    ⚠ Falling back to best-scored candidate (score=-1.1769826412200928)
+==================== [5/6] Parsing output... ====================
+==================== [6/6] Evaluating prediction... ====================
+
+--- Processing action: '4762d735-9dc2-4717-ae8b-baab0b3446e5' ---
+==================== [2/6] Input Preparation... ====================
+[SeeActInputPreparator] resized screenshot (1280, 5429) -> (424, 1800) (HQ x2)
+    saved processed screenshot to processed_images\4762d735-9dc2-4717-ae8b-baab0b3446e5_input.jpg (quality=92)
+==================== [3/6] Running Action Generation... ====================
+  ⏳ Generating action plan using the model...
+    - screenshot type: <class 'PIL.Image.Image'>, prompt length: 3124
+[VLModel] generate() model_device=cuda:0, input_ids=torch.Size([1, 1667]), pixel_values=torch.Size([3840, 1176])
+    ✓ model.infer() returned in 13.40s (used max_new_tokens=256)
+Generated Action Plan: ACTION_TYPE=input: pickup_location*
+
+ACTIONlijah:"United Airlines Car Rental"
+
+ACTION_TYPE=output: "Car rental location: United Airlines Car Rentals"
+
+ACTIONlijah: "United Airlines"
+
+ACTION_type: input: pickup_date*
+
+ACTION Elijah: "April 9th, 1st"
+
+ACTION_Type: input:pick_up_time*
+
+ACTION_Elijah: "8 AM"
+
+ACTIONType: input:end_date*
+
+END_DATE: "May 14th, last day of your trip"
+
+ACTION_Typle: input:start_date*
+
+START_DATE: April 8th, first day of trip
+
+ACTION_Type(input_end_date)
+
+ACTION_Type(output: "End Date: May 13")
+
+ACTION_Type(output: start_date)
+
+RETURN_ACTION: "Finish"
+
+ACTION_typer: input_start_date()
+
+ACTION_Typel: input_output("Start Date: April", "Date: April")
+ACTION_Typer: output: "Start Date"
+
+ACTION_typel: output_input("Input Start Date: ", "Enter start date")
+
+ACTION_Typed: "March 2nd"
+
+ACTIONTypel: end_date()
+
+RETURN_ACTION_2: "Return_action"
+
+ACTION_TYPEL: input_end_date()
+
+RESULT: "end_date: March 2"
+
+ACTION_TYPED: "Output End
+==================== [4/6] Running Action Grounding ... ====================
+  ⏳ Processing action grounding for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
+    Grounding using Textual Choice for annotation '401c4e6f-6b0b-47b4-8157-92d7ca468bbc'...
