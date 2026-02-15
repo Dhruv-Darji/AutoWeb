@@ -143,6 +143,7 @@ class GPTVisionModel:
         max_new_tokens: int = 256,
         do_sample: bool = False,
         temperature: float = 0.2,
+        image_detail: str = "high",
         **kwargs,
     ) -> Dict:
         """Run GPT-4o inference with an optional image.
@@ -153,6 +154,10 @@ class GPTVisionModel:
             max_new_tokens:  Maps to OpenAI ``max_tokens``.
             do_sample:       Ignored (OpenAI uses temperature).
             temperature:     Sampling temperature (0 = deterministic).
+            image_detail:    OpenAI vision detail level: ``"high"`` (~25K tokens),
+                             ``"low"`` (85 tokens), or ``"auto"``.  Use ``"low"``
+                             for tasks that don't need fine visual detail (e.g.
+                             selecting from pre-ranked text candidates).
 
         Returns:
             Dict with keys: output_text, raw_text, latency,
@@ -175,7 +180,7 @@ class GPTVisionModel:
             image_url = self.supabase.upload(image_or_tensor, filename=uploaded_filename)
 
         # --- Build messages ---
-        messages = self._build_messages(clean_prompt, image_url)
+        messages = self._build_messages(clean_prompt, image_url, detail=image_detail)
 
         # --- Call OpenAI (with retry on empty response and transient image fetch issues) ---
         max_retries = 4
@@ -194,10 +199,19 @@ class GPTVisionModel:
                 # Extract token usage
                 usage = response.usage
                 if usage:
+                    # Use self.pricing_key (resolved once at init from self.model_name)
+                    # rather than response.model to avoid mismatches (e.g. response
+                    # may return a dated alias that resolves to a different tier).
                     prompt_tokens += usage.prompt_tokens or 0
                     completion_tokens += usage.completion_tokens or 0
                     _cost = _calc_cost(self.model_name, usage.prompt_tokens or 0, usage.completion_tokens or 0)
                     call_cost += _cost
+
+                    # Log response model on first call for debugging
+                    if self.call_count == 0:
+                        resp_model = getattr(response, "model", "?")
+                        print(f"    ℹ OpenAI response model: {resp_model} "
+                              f"(pricing: {self.pricing_key})")
 
                     # Accumulate
                     self.total_prompt_tokens += usage.prompt_tokens or 0
@@ -286,14 +300,20 @@ class GPTVisionModel:
         return text.strip()
 
     @staticmethod
-    def _build_messages(prompt: str, image_url: Optional[str] = None):
-        """Build OpenAI chat messages with optional image content."""
+    def _build_messages(prompt: str, image_url: Optional[str] = None, detail: str = "high"):
+        """Build OpenAI chat messages with optional image content.
+
+        Args:
+            detail: ``"high"`` (~25K tokens per image, fine detail),
+                    ``"low"``  (85 tokens, 512×512 thumbnail), or
+                    ``"auto"`` (let OpenAI decide).
+        """
         content_parts = []
 
         if image_url:
             content_parts.append({
                 "type": "image_url",
-                "image_url": {"url": image_url, "detail": "high"},
+                "image_url": {"url": image_url, "detail": detail},
             })
 
         content_parts.append({"type": "text", "text": prompt})

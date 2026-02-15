@@ -15,9 +15,8 @@ import io
 import uuid
 import time
 from typing import Optional
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
 
+import requests as _requests          # used for preflight image verification
 from PIL import Image
 from supabase import create_client, Client
 
@@ -50,42 +49,36 @@ class SupabaseImageHelper:
         self,
         public_url: str,
         timeout_s: float = 20.0,
-        interval_s: float = 0.75,
+        interval_s: float = 1.0,
     ) -> bool:
-        """Poll public URL until it becomes reachable (HTTP 200)."""
+        """Poll public URL until the **image body** is actually downloadable.
+
+        Uses a real HTTP GET with ``Range: bytes=0-1023`` so the CDN is
+        forced to serve (and cache) the object body — not just headers.
+        This prevents the race condition where OpenAI's servers hit a
+        different CDN edge that hasn't replicated the object yet.
+        """
         deadline = time.time() + timeout_s
         while time.time() < deadline:
-            # Try HEAD first (faster). If not allowed, fallback to GET.
             try:
-                req = Request(public_url, method="HEAD")
-                with urlopen(req, timeout=5) as resp:
-                    if getattr(resp, "status", 200) == 200:
+                resp = _requests.get(
+                    public_url,
+                    headers={"Range": "bytes=0-1023"},
+                    timeout=6,
+                    stream=True,      # don't buffer full image
+                )
+                # 200 = full body, 206 = partial content — both mean the
+                # image body is available on this CDN edge.
+                if resp.status_code in (200, 206):
+                    # Read the chunk to ensure it's real bytes, not an
+                    # error page.
+                    chunk = resp.content
+                    if len(chunk) > 0:
                         return True
-            except HTTPError as e:
-                if e.code in (403, 404, 425):
-                    time.sleep(interval_s)
-                    continue
-                if e.code not in (405, 501):
-                    time.sleep(interval_s)
-                    continue
-            except URLError:
-                time.sleep(interval_s)
-                continue
-            except Exception:
-                time.sleep(interval_s)
-                continue
-
-            # HEAD unsupported -> GET fallback.
-            try:
-                req = Request(public_url, method="GET")
-                with urlopen(req, timeout=5) as resp:
-                    if getattr(resp, "status", 200) == 200:
-                        return True
+                resp.close()
             except Exception:
                 pass
-
             time.sleep(interval_s)
-
         return False
 
     def upload(
@@ -141,11 +134,12 @@ class SupabaseImageHelper:
         # Build public URL
         public_url = self.client.storage.from_(self.bucket).get_public_url(path)
 
-        # Wait until URL is actually reachable before handing it to OpenAI.
-        ready = self.wait_until_public(public_url, timeout_s=20.0, interval_s=0.75)
+        # Wait until URL is actually downloadable (body bytes, not just headers)
+        # before handing it to OpenAI — eliminates CDN propagation race.
+        ready = self.wait_until_public(public_url, timeout_s=20.0, interval_s=1.0)
         if not ready:
-            # Keep moving; infer() handles retry on invalid_image_url.
-            print(f"  ⚠ Public URL not confirmed within timeout: {public_url}")
+            print(f"  ⚠ Image URL not confirmed downloadable within 20 s — "
+                  f"OpenAI may still timeout: {public_url}")
 
         return public_url
 

@@ -13,6 +13,7 @@ from typing import Dict, Union
 
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
+from AutoWeb.src.config import get_seeact_image_detail
 
 
 class SeeActActionGenerator:
@@ -62,12 +63,17 @@ class SeeActActionGenerator:
 
         try:
             t0 = time.time()
-            generated_action_plan = self.model.infer(
+            # For GPT API models, respect the SEEACT_IMAGE_DETAIL env var
+            # ("high" = best quality / ~25K tokens; "low" = 85 tokens; "auto").
+            infer_kwargs = dict(
                 image_or_tensor=screenshot,
                 prompt_text=prompt,
-                max_new_tokens= 256,
-                do_sample=False
+                max_new_tokens=128,  # default 256 is overkill for most steps and can cause timeouts; 128 is usually sufficient and more stable
+                do_sample=False,
             )
+            if isinstance(self.model, GPTVisionModel):
+                infer_kwargs["image_detail"] = get_seeact_image_detail()
+            generated_action_plan = self.model.infer(**infer_kwargs)
             t1 = time.time()
             print(f"    ✓ model.infer() returned in {t1 - t0:.2f}s (used max_new_tokens={256})")
         except Exception as e:

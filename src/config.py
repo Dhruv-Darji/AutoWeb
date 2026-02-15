@@ -140,6 +140,24 @@ def get_supabase_bucket(default: str = "ai-preprocessed-steps") -> str:
     return os.getenv("SUPABASE_BUCKET", default)
 
 
+def get_seeact_image_detail(default: str = "low") -> str:
+    """Image detail level for action-generation GPT calls.
+
+    Controls OpenAI's vision *detail* parameter:
+      - ``"high"`` — full tile analysis (~25K tokens per image, best quality)
+      - ``"low"``  — 512×512 thumbnail (85 tokens, ~99% cheaper but lower quality)
+      - ``"auto"`` — let OpenAI decide
+
+    Set via `SEEACT_IMAGE_DETAIL` in .env.  Grounding calls always skip the
+    image entirely for API models (DeBERTa handles ranking).
+    """
+    val = os.getenv("SEEACT_IMAGE_DETAIL", default).strip().lower()
+    if val not in ("high", "low", "auto"):
+        print(f"  ⚠ Unknown SEEACT_IMAGE_DETAIL='{val}', falling back to '{default}'")
+        return default
+    return val
+
+
 def print_config():
     """Print current configuration."""
     print("\n" + "=" * 80)

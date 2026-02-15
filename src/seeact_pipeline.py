@@ -18,7 +18,7 @@ src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
-from config import get_model_path, get_device, get_model_dtype, get_use_8bit
+from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
 
@@ -267,9 +267,12 @@ def run_single_prediction_example(
     """    
     # Pass the annoation ID and dataset file name to retrieve the screenshot and instruction for that particular annotation ID and then run the prediction on that.
     """
+    backend_label = (
+        f"{get_openai_model()} (OpenAI API)" if use_gpt else "Qwen2-VL-2B (local)"
+    )
     print("=" * 80)
     print("SeeAct Single-Step UI Action Predictor")
-    print(f"  Model backend: {'GPT-4o (OpenAI API)' if use_gpt else 'Qwen2-VL-2B (local)'}")
+    print(f"  Model backend: {backend_label}")
     print("=" * 80)
     
     # Initialize pipeline

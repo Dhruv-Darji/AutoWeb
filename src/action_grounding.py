@@ -132,8 +132,30 @@ class SeeActActionGrounding:
             [self._compact_candidate_line(i, c) for i, c in enumerate(candidates)]
         )
 
-        # Compact prompt that forces a single-line 'Answer: <index|NO_MATCH>' output
-        prompt = f"""
+        # Compact prompt that forces a single-line 'Answer: <index|NO_MATCH>' output.
+        # For API models the image is skipped (DeBERTa already ranked candidates),
+        # so we omit the screenshot placeholder to avoid confusing the LLM.
+        _is_api_model = isinstance(self.model, GPTVisionModel)
+
+        if _is_api_model:
+            # Text-only prompt — no image, no screenshot reference
+            prompt = f"""You select the best UI element candidate for the next single action.
+Return EXACTLY ONE token only:
+- 0-based candidate index (e.g., 3), or
+- NO_MATCH
+Do not return JSON or explanations.
+
+user instruction: {safe_instruction}
+plan: {safe_plan}
+
+Candidates (scored by relevance model, descending):
+{enumerated_candidates}
+
+Answer:
+"""
+        else:
+            # Local Qwen model — include image placeholder
+            prompt = f"""
 You select the best UI element candidate for the next single action.
 Return EXACTLY ONE token only:
 - 0-based candidate index (e.g., 3), or
@@ -152,9 +174,7 @@ Answer:
 """
 
         # Deterministic generation: low token budget, no sampling
-        # For GPT (API-based), send the full-resolution image — no downscaling needed.
         # For local Qwen, downscale to limit VRAM / patch-token count.
-        _is_api_model = isinstance(self.model, GPTVisionModel)
 
         def _prepare_image(img):
             if img is None:
@@ -164,13 +184,27 @@ Answer:
             return downscale_image_if_needed(img)
 
         def call_model(p, max_tokens=6):
-            r = self.model.infer(
-                image_or_tensor=_prepare_image(website_screenshot),
+            # For API models (GPT-4o), grounding is text-only: no image.
+            # DeBERTa already ranked candidates by relevance; GPT only
+            # confirms the best index from compact text descriptions.
+            # Skipping the image eliminates:
+            #   • Supabase upload + CDN propagation wait per grounding call
+            #   • CDN timeout errors ("Timeout while downloading ...")
+            #   • ~85–25K image tokens per grounding call (depending on detail)
+            # For local Qwen, the image is still sent (downscaled).
+            if _is_api_model:
+                grounding_image = None   # text-only for API models
+            else:
+                grounding_image = _prepare_image(website_screenshot)
+
+            infer_kwargs = dict(
+                image_or_tensor=grounding_image,
                 prompt_text=p,
                 max_new_tokens=max_tokens,
                 do_sample=False,
-                temperature=0.0
+                temperature=0.0,
             )
+            r = self.model.infer(**infer_kwargs)
             if isinstance(r, dict):
                 # IMPORTANT: do not stringify full dict on empty output.
                 # It can contain unrelated numbers (latency/tokens) that break index parsing.
