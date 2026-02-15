@@ -13,6 +13,7 @@ from typing import Dict, Union
 
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
+from AutoWeb.src.logger import logger
 from AutoWeb.src.config import get_seeact_image_detail
 
 
@@ -38,8 +39,8 @@ class SeeActActionGenerator:
         # Here we would have the actual code to feed the prompt and screenshot into the model and get the generated action plan.
         # For now, we will just return a placeholder string.
         # Diagnostics: verify inputs before calling the model
-        print("  ⏳ Generating action plan using the model...")
-        print(f"    - screenshot type: {type(screenshot)}, prompt length: {len(prompt) if prompt is not None else 0}")
+        logger.info("  ⏳ Generating action plan using the model...")
+        logger.debug(f"    - screenshot type: {type(screenshot)}, prompt length: {len(prompt) if prompt is not None else 0}")
 
         # # Short prompt preview + stable hash so we can compare notebook vs pipeline
         # try:
@@ -56,7 +57,7 @@ class SeeActActionGenerator:
             preferred = getattr(self.model, "get_preferred_image_key", lambda _=None: "")
             pref_key = preferred(screenshot)
             if pref_key and pref_key not in prompt:
-                print(f"    ⚠ prompt does not contain model-preferred image token '{pref_key}' (prompt may not be using correct placeholder)")
+                logger.warning(f"    ⚠ prompt does not contain model-preferred image token '{pref_key}' (prompt may not be using correct placeholder)")
         except Exception:
             # non-fatal
             pass
@@ -75,9 +76,9 @@ class SeeActActionGenerator:
                 infer_kwargs["image_detail"] = get_seeact_image_detail()
             generated_action_plan = self.model.infer(**infer_kwargs)
             t1 = time.time()
-            print(f"    ✓ model.infer() returned in {t1 - t0:.2f}s (used max_new_tokens={256})")
+            logger.info(f"    ✓ model.infer() returned in {t1 - t0:.2f}s (used max_new_tokens={256})")
         except Exception as e:
-            print(f"    ✗ Model inference failed: {e}")
+            logger.exception(f"    ✗ Model inference failed: {e}")
             return {"error": str(e),"output_text": "", "raw_text": "", "latency": 0.0}
 
         # Normalize return shape: if model.infer returns dict, keep as-is; if it returned string, wrap it

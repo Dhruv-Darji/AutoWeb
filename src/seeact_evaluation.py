@@ -440,8 +440,9 @@ class SeeActEvaluator:
 
         # Print step-level verdict
         verdict = "✓" if step_ok else "✗"
-        print(f"    [{verdict}] Step {step_index}: op={op_match} ele={el_match} val={val_match}  "
-              f"(pred={pred_type or '?'} gt={gt_op or '?'}, bid={pred_backend_id or 'none'})")
+        from AutoWeb.src.logger import logger
+        logger.info(f"    [{verdict}] Step {step_index}: op={op_match} ele={el_match} val={val_match}  "
+                    f"(pred={pred_type or '?'} gt={gt_op or '?'}, bid={pred_backend_id or 'none'})")
 
         return result
 
@@ -548,7 +549,8 @@ class SeeActEvaluator:
         with open(step_path, "w", encoding="utf-8") as f:
             json.dump(step_data, f, indent=2, ensure_ascii=False, default=str)
         paths["steps"] = step_path
-        print(f"  📄 Step results saved to {step_path}")
+        from AutoWeb.src.logger import logger
+        logger.info(f"  📄 Step results saved to {step_path}")
 
         # --- Task-level results ---
         task_path = os.path.join(self.output_dir, f"task_results{suffix}.json")
@@ -585,14 +587,16 @@ class SeeActEvaluator:
         with open(task_path, "w", encoding="utf-8") as f:
             json.dump(task_data, f, indent=2, ensure_ascii=False, default=str)
         paths["tasks"] = task_path
-        print(f"  📄 Task results saved to {task_path}")
+        from AutoWeb.src.logger import logger
+        logger.info(f"  📄 Task results saved to {task_path}")
 
         # --- Aggregate metrics ---
         agg_path = os.path.join(self.output_dir, f"aggregate_metrics{suffix}.json")
         with open(agg_path, "w", encoding="utf-8") as f:
             json.dump(self.aggregate.to_dict(), f, indent=2, ensure_ascii=False, default=str)
         paths["aggregate"] = agg_path
-        print(f"  📄 Aggregate metrics saved to {agg_path}")
+        from AutoWeb.src.logger import logger
+        logger.info(f"  📄 Aggregate metrics saved to {agg_path}")
 
         return paths
 
@@ -602,34 +606,37 @@ class SeeActEvaluator:
             self.compute_metrics()
 
         a = self.aggregate
-        print("\n" + "=" * 70)
-        print("  SeeAct Evaluation Summary")
-        print("=" * 70)
+        from AutoWeb.src.logger import logger
+        logger.info("\n" + "=" * 70)
+        logger.info("  SeeAct Evaluation Summary")
+        logger.info("=" * 70)
 
-        print(f"\n  Tasks evaluated  : {a.total_tasks}")
-        print(f"  Total steps      : {a.total_steps}")
+        logger.info(f"\n  Tasks evaluated  : {a.total_tasks}")
+        logger.info(f"  Total steps      : {a.total_steps}")
 
-        print(f"\n  ── Step-Level Metrics ────────────────────────────")
-        print(f"  Element Accuracy : {a.element_accuracy:>7.2%}  ({a.correct_elements}/{a.total_steps})")
-        print(f"  Operation F1     : {a.operation_f1:>7.2%}  ({a.correct_operations}/{a.total_steps})")
-        print(f"  Value Accuracy   : {a.value_accuracy:>7.2%}  ({a.correct_values}/{a.total_steps})")
-        print(f"  Step Success Rate: {a.step_success_rate:>7.2%}  ({a.successful_steps}/{a.total_steps})")
+        logger.info(f"\n  ── Step-Level Metrics ────────────────────────────")
+        logger.info(f"  Element Accuracy : {a.element_accuracy:>7.2%}  ({a.correct_elements}/{a.total_steps})")
+        logger.info(f"  Operation F1     : {a.operation_f1:>7.2%}  ({a.correct_operations}/{a.total_steps})")
+        logger.info(f"  Value Accuracy   : {a.value_accuracy:>7.2%}  ({a.correct_values}/{a.total_steps})")
+        logger.info(f"  Step Success Rate: {a.step_success_rate:>7.2%}  ({a.successful_steps}/{a.total_steps})")
 
-        print(f"\n  ── Task-Level Metrics ────────────────────────────")
-        print(f"  Offline0 (strict)   : {a.offline0_rate:>7.2%}  ({a.offline0_tasks}/{a.total_tasks})")
-        print(f"  Offline1 (tolerance): {a.offline1_rate:>7.2%}  ({a.offline1_tasks}/{a.total_tasks})")
+        logger.info(f"\n  ── Task-Level Metrics ────────────────────────────")
+        logger.info(f"  Offline0 (strict)   : {a.offline0_rate:>7.2%}  ({a.offline0_tasks}/{a.total_tasks})")
+        logger.info(f"  Offline1 (tolerance): {a.offline1_rate:>7.2%}  ({a.offline1_tasks}/{a.total_tasks})")
 
         # Per-task breakdown
         if self.task_results:
-            print(f"\n  ── Per-Task Breakdown ────────────────────────────")
+            from AutoWeb.src.logger import logger
+            logger.info("\n  ── Per-Task Breakdown ────────────────────────────")
             for t in self.task_results.values():
                 status0 = "✓" if t.offline0 else "✗"
                 status1 = "✓" if t.offline1 else "✗"
-                print(f"  [{status0}/{status1}] {t.annotation_id[:20]:20s}  "
-                      f"steps={t.total_steps}  ele={t.element_accuracy:.0%}  "
-                      f"op={t.operation_f1:.0%}  sr={t.step_success_rate:.0%}")
+                logger.info(f"  [{status0}/{status1}] {t.annotation_id[:20]:20s}  "
+                            f"steps={t.total_steps}  ele={t.element_accuracy:.0%}  "
+                            f"op={t.operation_f1:.0%}  sr={t.step_success_rate:.0%}")
 
-        print("\n" + "=" * 70)
+        from AutoWeb.src.logger import logger
+        logger.info("\n" + "=" * 70)
 
     def reset(self):
         """Clear all accumulated results."""

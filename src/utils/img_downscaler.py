@@ -20,13 +20,15 @@ def downscale_image_if_needed(website_screenshot, max_w=1280, max_h=720):
 
                 # perform high-quality resize with LANCZOS (anti-aliased)
                 website_screenshot = website_screenshot.resize(new_size, Image.Resampling.LANCZOS)
-                print(f"[SeeActInputPreparator] resized screenshot {orig_size} -> {website_screenshot.size} (HQ x2)")
+                from AutoWeb.src.logger import logger
+                logger.debug(f"[SeeActInputPreparator] resized screenshot {orig_size} -> {website_screenshot.size} (HQ x2)")
                 # warn: larger images increase token/patch count and may slow inference or increase memory use
                 if website_screenshot.size[0] * website_screenshot.size[1] > 1920 * 1080:
-                    print("[SeeActInputPreparator] ⚠ using higher-quality image; this will increase tokenization size and GPU memory usage")
+                    logger.warning("[SeeActInputPreparator] ⚠ using higher-quality image; this will increase tokenization size and GPU memory usage")
                 
                 return website_screenshot
                 
     except Exception as e:
-        print(f"[SeeActInputPreparator] error downscaling image: {e}")
+        from AutoWeb.src.logger import logger
+        logger.exception(f"[SeeActInputPreparator] error downscaling image: {e}")
         return website_screenshot

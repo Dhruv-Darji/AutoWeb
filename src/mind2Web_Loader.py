@@ -62,9 +62,10 @@ class Mind2WebDataset:
 
         self.df = pd.concat(dfs, ignore_index=True)
 
-        print(f"[MultiModal-Mind2Web] Loaded split '{split}' with {len(self.df)} rows (raw).")
+        from AutoWeb.src.logger import logger
+        logger.info(f"[MultiModal-Mind2Web] Loaded split '{split}' with {len(self.df)} rows (raw).")
 
-        print(f"[MultiModal-Mind2Web] Columns: {self.df.columns.tolist()}")
+        logger.debug(f"[MultiModal-Mind2Web] Columns: {self.df.columns.tolist()}")
 
         if sample_frac is not None:
             self.df = self.df.sample(frac=sample_frac, random_state=seed)

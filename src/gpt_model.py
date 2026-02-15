@@ -29,6 +29,7 @@ from openai import OpenAI
 
 from AutoWeb.src.config import get_openai_api_key, get_openai_model
 from AutoWeb.src.utils.supabase_image import SupabaseImageHelper
+from AutoWeb.src.logger import logger
 
 
 # ── Pricing per 1M tokens (USD) as of Feb 2025 ──────────────────────
@@ -97,8 +98,8 @@ class GPTVisionModel:
         self._step_cost: float = 0.0
         self._step_calls: int = 0
 
-        print(
-            f"  ✓ GPTVisionModel ready (model: {self.model_name}, pricing_profile: {self.pricing_key})"
+        logger.info(
+            f"✓ GPTVisionModel ready (model: {self.model_name}, pricing_profile: {self.pricing_key})"
         )
 
     # ------------------------------------------------------------------
@@ -210,8 +211,7 @@ class GPTVisionModel:
                     # Log response model on first call for debugging
                     if self.call_count == 0:
                         resp_model = getattr(response, "model", "?")
-                        print(f"    ℹ OpenAI response model: {resp_model} "
-                              f"(pricing: {self.pricing_key})")
+                        logger.info(f"    ℹ OpenAI response model: {resp_model} (pricing: {self.pricing_key})")
 
                     # Accumulate
                     self.total_prompt_tokens += usage.prompt_tokens or 0
@@ -226,13 +226,12 @@ class GPTVisionModel:
 
                 # Retry if response is empty (sometimes GPT returns null content)
                 if not output_text and attempt < max_retries:
-                    print(f"    ⚠ GPT returned empty response (attempt {attempt}/{max_retries}), retrying...")
+                    logger.warning(f"⚠ GPT returned empty response (attempt {attempt}/{max_retries}), retrying...")
                     continue
 
                 if not output_text:
                     finish_reason = response.choices[0].finish_reason if response.choices else "unknown"
-                    print(f"    ⚠ GPT returned empty content after {attempt} attempts "
-                          f"(finish_reason={finish_reason}, content_was_none={raw_content is None})")
+                    logger.warning(f"⚠ GPT returned empty content after {attempt} attempts (finish_reason={finish_reason}, content_was_none={raw_content is None})")
 
                 break  # success — exit retry loop
 
@@ -244,7 +243,7 @@ class GPTVisionModel:
                     or "timeout while downloading" in err_str.lower()
                 )
 
-                print(f"    ✗ GPT-4o API call failed (attempt {attempt}/{max_retries}): {e}")
+                logger.error(f"✗ GPT-4o API call failed (attempt {attempt}/{max_retries}): {e}")
 
                 if is_invalid_image_url and image_url:
                     # Re-check URL readiness and apply stronger backoff for CDN propagation.
@@ -257,9 +256,7 @@ class GPTVisionModel:
 
                     if attempt < max_retries:
                         backoff_s = min(2 * attempt, 8)
-                        print(
-                            f"    ⚠ image URL not ready for OpenAI fetch, retrying in {backoff_s}s..."
-                        )
+                        logger.warning(f"⚠ image URL not ready for OpenAI fetch, retrying in {backoff_s}s...")
                         time.sleep(backoff_s)
                         continue
 

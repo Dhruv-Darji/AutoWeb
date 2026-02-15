@@ -17,7 +17,8 @@ try:
 except Exception:
     BNB_AVAILABLE = False
     
-print(f"[VLModel] bitsandbytes available: {BNB_AVAILABLE}")
+from AutoWeb.src.logger import logger
+logger.info(f"[VLModel] bitsandbytes available: {BNB_AVAILABLE}")
 
 class VLModel:
     """
@@ -48,7 +49,8 @@ class VLModel:
         self.dtype = dtype
 
         # load processor
-        print(f"[VLModel] loading processor from {self.model_folder} ...")
+        from AutoWeb.src.logger import logger
+        logger.info(f"[VLModel] loading processor from {self.model_folder} ...")
         self.processor = AutoProcessor.from_pretrained(
             self.model_folder, 
             trust_remote_code=True,
@@ -86,7 +88,7 @@ class VLModel:
                 # CPU: keep default dtype
                 model_kwargs["device_map"] = "cpu"
 
-        print(f"[VLModel] loading model with kwargs: {model_kwargs}")
+        logger.info(f"[VLModel] loading model with kwargs: {model_kwargs}")
         try:
             # Use AutoModelForVision2Seq for Qwen2-VL (vision-language model with generation)
             self.model = AutoModelForVision2Seq.from_pretrained(
@@ -96,8 +98,8 @@ class VLModel:
                 **model_kwargs
             )
         except Exception as e:
-            print("[VLModel] Warning: model loading with preferred strategy failed:", e)
-            print("[VLModel] Falling back to safe CPU load (may be slow).")
+            logger.exception("[VLModel] Warning: model loading with preferred strategy failed: %s", e)
+            logger.warning("[VLModel] Falling back to safe CPU load (may be slow).")
             # clear any cached CUDA allocations before fallback
             try:
                 if torch.cuda.is_available():
@@ -116,7 +118,7 @@ class VLModel:
         # ensure model in eval mode
         self.model.eval()
 
-        print(f"[VLModel] model loaded. device = {self.device}, use_8bit={self.use_8bit}")
+        logger.info(f"[VLModel] model loaded. device = {self.device}, use_8bit={self.use_8bit}")
 
     # ---------------------
     # Helper: build inputs
@@ -331,12 +333,13 @@ class VLModel:
         try:
             input_ids = inputs.get('input_ids', None)
             pixel_values = inputs.get('pixel_values', None)
-            print(f"[VLModel] generate() model_device={model_dev}, input_ids={getattr(input_ids, 'shape', None)}, pixel_values={getattr(pixel_values, 'shape', None)}")
+            from AutoWeb.src.logger import logger
+            logger.debug(f"[VLModel] generate() model_device={model_dev}, input_ids={getattr(input_ids, 'shape', None)}, pixel_values={getattr(pixel_values, 'shape', None)}")
             if input_ids is not None and getattr(self, 'tokenizer', None) is not None:
                 toks_preview = self.tokenizer.convert_ids_to_tokens(input_ids[0].tolist()[:120])
                 # print(f"[VLModel] token preview (first 120 tokens): {toks_preview}")
                 if len(input_ids[0]) > 4096:
-                    print('[VLModel] ⚠ input token length > 4096 — this may cause very long generation or memory pressure')
+                    logger.warning('[VLModel] ⚠ input token length > 4096 — this may cause very long generation or memory pressure')
         except Exception as _:
             pass
 
@@ -364,7 +367,7 @@ class VLModel:
         except (RuntimeError, torch.cuda.OutOfMemoryError) as oom_err:
             # Attempt graceful recovery for OOM during generation: free cache and retry once with reduced token budget
             try:
-                print("[VLModel] CUDA out of memory during generate(): freeing cache and retrying with reduced max_new_tokens...")
+                logger.warning("[VLModel] CUDA out of memory during generate(): freeing cache and retrying with reduced max_new_tokens...")
                 torch.cuda.empty_cache()
             except Exception:
                 pass

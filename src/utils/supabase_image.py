@@ -25,6 +25,7 @@ from AutoWeb.src.config import (
     get_supabase_service_role_key,
     get_supabase_bucket,
 )
+from AutoWeb.src.logger import logger
 
 
 class SupabaseImageHelper:
@@ -40,7 +41,7 @@ class SupabaseImageHelper:
 
         self.client: Client = create_client(url, key)
         self.bucket = bucket or get_supabase_bucket()
-        print(f"  ✓ Supabase storage helper ready (bucket: {self.bucket})")
+        logger.info(f"  ✓ Supabase storage helper ready (bucket: {self.bucket})")
 
     # ------------------------------------------------------------------
     # Upload
@@ -70,6 +71,7 @@ class SupabaseImageHelper:
                 # 200 = full body, 206 = partial content — both mean the
                 # image body is available on this CDN edge.
                 if resp.status_code in (200, 206):
+                    logger.info(f"  ✓ Image URL is now publicly accessible and CDN-cached (status code: {resp.status_code})")
                     # Read the chunk to ensure it's real bytes, not an
                     # error page.
                     chunk = resp.content
@@ -138,8 +140,7 @@ class SupabaseImageHelper:
         # before handing it to OpenAI — eliminates CDN propagation race.
         ready = self.wait_until_public(public_url, timeout_s=20.0, interval_s=1.0)
         if not ready:
-            print(f"  ⚠ Image URL not confirmed downloadable within 20 s — "
-                  f"OpenAI may still timeout: {public_url}")
+            logger.warning(f"  ⚠ Image URL not confirmed downloadable within 20 s — OpenAI may still timeout: {public_url}")
 
         return public_url
 
@@ -161,5 +162,5 @@ class SupabaseImageHelper:
             self.client.storage.from_(self.bucket).remove([path])
             return True
         except Exception as e:
-            print(f"  ⚠ Supabase delete failed for {path}: {e}")
+            logger.warning(f"  ⚠ Supabase delete failed for {path}: {e}")
             return False

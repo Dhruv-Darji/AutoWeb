@@ -72,13 +72,15 @@ class DeBERTaLoader:
 
     def _load_pretrained_crossencoder(self):
         """Load a purpose-trained cross-encoder from local path onto best device."""
-        print(f"  ⏳ Loading pre-trained cross-encoder from '{self.crossencoder_name}' → {self.device}...")
+        from AutoWeb.src.logger import logger
+        logger.info(f"  ⏳ Loading pre-trained cross-encoder from '{self.crossencoder_name}' → {self.device}...")
         self._cross_encoder = STCrossEncoder(self.crossencoder_name, device=self.device)
-        print(f"  ✅ Cross-encoder loaded on {self.device} (~80 MB VRAM).")
+        logger.info(f"  ✅ Cross-encoder loaded on {self.device} (~80 MB VRAM).")
 
     def _load_legacy_deberta(self):
         """Load DeBERTa-base with a random projection head (legacy path)."""
-        print(f"  ⏳ Loading DeBERTa model '{self.model_name}'...")
+        from AutoWeb.src.logger import logger
+        logger.info(f"  ⏳ Loading DeBERTa model '{self.model_name}'...")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModel.from_pretrained(self.model_path)
         self.model.to("cpu")
@@ -90,7 +92,7 @@ class DeBERTaLoader:
         torch.nn.init.zeros_(self._score_head.bias)
         self._score_head.to("cpu")
         self._score_head.eval()
-        print(f"  ✅ DeBERTa model '{self.model_name}' loaded (legacy cross-encoder, CPU).")
+        logger.info(f"  ✅ DeBERTa model '{self.model_name}' loaded (legacy cross-encoder, CPU).")
 
     # ------------------------------------------------------------------
     # Primary API — cross-encoder relevance score

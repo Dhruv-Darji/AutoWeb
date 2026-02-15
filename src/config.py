@@ -11,17 +11,20 @@ from typing import Optional
 # Try to load .env file if python-dotenv is available
 try:
     from dotenv import load_dotenv
-    
+
     # Look for .env file in project root
     env_path = Path(__file__).parent.parent / ".env"
     if env_path.exists():
         load_dotenv(env_path)
-        print(f"✓ Loaded configuration from {env_path}")
+        from AutoWeb.src.logger import logger
+        logger.info(f"✓ Loaded configuration from {env_path}")
     else:
-        print(f"ℹ No .env file found at {env_path}. Using defaults or command-line arguments.")
+        from AutoWeb.src.logger import logger
+        logger.info(f"ℹ No .env file found at {env_path}. Using defaults or command-line arguments.")
 except ImportError:
-    print("ℹ python-dotenv not installed. Install with: pip install python-dotenv")
-    print("  Using defaults or command-line arguments only.")
+    from AutoWeb.src.logger import logger
+    logger.warning("ℹ python-dotenv not installed. Install with: pip install python-dotenv")
+    logger.info("  Using defaults or command-line arguments only.")
 
 
 def get_model_path(default: Optional[str] = None) -> Optional[str]:
@@ -153,20 +156,22 @@ def get_seeact_image_detail(default: str = "low") -> str:
     """
     val = os.getenv("SEEACT_IMAGE_DETAIL", default).strip().lower()
     if val not in ("high", "low", "auto"):
-        print(f"  ⚠ Unknown SEEACT_IMAGE_DETAIL='{val}', falling back to '{default}'")
+        from AutoWeb.src.logger import logger
+        logger.warning(f"  ⚠ Unknown SEEACT_IMAGE_DETAIL='{val}', falling back to '{default}'")
         return default
     return val
 
 
 def print_config():
     """Print current configuration."""
-    print("\n" + "=" * 80)
-    print("Current Configuration")
-    print("=" * 80)
-    print(f"MODEL_PATH:    {get_model_path() or '(not set)'}")
-    print(f"DATASET_PATH:  {get_dataset_path() or '(not set)'}")
-    print(f"RESULTS_PATH:  {get_results_path()}")
-    print(f"DEVICE:        {get_device()}")
-    print(f"MODEL_DTYPE:   {get_model_dtype()}")
-    print(f"USE_8BIT:      {get_use_8bit()}")
-    print("=" * 80 + "\n")
+    from AutoWeb.src.logger import logger
+    logger.info("\n" + "=" * 80)
+    logger.info("Current Configuration")
+    logger.info("=" * 80)
+    logger.info(f"MODEL_PATH:    {get_model_path() or '(not set)'}")
+    logger.info(f"DATASET_PATH:  {get_dataset_path() or '(not set)'}")
+    logger.info(f"RESULTS_PATH:  {get_results_path()}")
+    logger.info(f"DEVICE:        {get_device()}")
+    logger.info(f"MODEL_DTYPE:   {get_model_dtype()}")
+    logger.info(f"USE_8BIT:      {get_use_8bit()}")
+    logger.info("=" * 80 + "\n")

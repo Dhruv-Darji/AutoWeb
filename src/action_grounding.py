@@ -24,6 +24,7 @@ from typing import Dict, List, Union
 from AutoWeb.src.utils.html_to_dom import extract_interactive_elements
 from AutoWeb.src.utils.img_downscaler import downscale_image_if_needed
 from AutoWeb.src.utils.load_DeBERTa import DeBERTaLoader
+from AutoWeb.src.logger import logger
 import re
 import json
 import ast
@@ -47,7 +48,7 @@ class SeeActActionGrounding:
         self.grounding_function = self.switcher.get(self.method, self._invalid_method)
 
         if self.grounding_function == self._invalid_method:
-            print(f"  ⚠️ Warning: Invalid grounding method '{self.method}' specified. Defaulting to invalid method handler.")
+            logger.warning(f"⚠️ Warning: Invalid grounding method '{self.method}' specified. Defaulting to invalid method handler.")
             # Block execution if the method is invalid
             raise ValueError(f"Invalid grounding method '{self.method}' specified. Please choose a valid method (1, 2, or 3).") 
         
@@ -56,7 +57,7 @@ class SeeActActionGrounding:
         self.deberta_model = None
         if self.method == "2":
             self.load_deberta()
-            print(f"  ✅ DeBERTa model loaded successfully.")
+            logger.info(f"  ✅ DeBERTa model loaded successfully.")
         
 
 
@@ -75,7 +76,7 @@ class SeeActActionGrounding:
 
     def _ground_using_element_attributes(self, annotation_id:str, textual_plan: str, step_info: Dict):
         # Placeholder for grounding logic using element attributes
-        print(f"    Grounding using Element Attributes for annotation '{annotation_id}'...")
+        logger.info(f"    Grounding using Element Attributes for annotation '{annotation_id}'...")
         # Here we would have the actual code to perform grounding using element attributes.
         pass
 
@@ -212,39 +213,35 @@ Answer:
             return str(r).strip(), r
 
         resp_text, raw_resp = call_model(prompt, max_tokens=6)
-        print(f"    Model response for element selection (text): {resp_text}")
+        logger.info(f"    Model response for element selection (text): {resp_text}")
 
         # quick retry with stricter instruction if response is not a single token
         retry_prompt = prompt + "\n(Reply with a single token: an integer index or NO_MATCH)"
         retry_attempted = False
         if not re.search(r"\b(NO_MATCH|\d+)\b", resp_text, re.IGNORECASE):
             retry_attempted = True
-            print("    ⚠ Initial response not parseable — retrying with stricter prompt")
+            logger.warning("    ⚠ Initial response not parseable — retrying with stricter prompt")
             resp_text, raw_resp = call_model(retry_prompt, max_tokens=4)
-            print(f"    Retry response: {resp_text}")
+            logger.info(f"    Retry response: {resp_text}")
         
         # Diagnostics: show top candidates (reprs) to help debugging
         try:
             preview_candidates = [self._compact_candidate_line(i, c) for i, c in enumerate(candidates[:5])]
-            print(f"    Candidate count={len(candidates)}, top previews={preview_candidates}")
+            logger.debug(f"    Candidate count={len(candidates)}, top previews={preview_candidates}")
         except Exception:
-            pass
-
+                    pass
         # 1) Try plain integer extraction (single digit or multi-digit)
         m = re.search(r"\b(\d+)\b", resp_text)
         if m:
             try:
                 idx = int(m.group(1))
                 if 0 <= idx < len(candidates):
-                    print(f"   Selected element : {candidates[idx]['element']},  (index {idx})")
+                    logger.info(f"   Selected element : {candidates[idx]['element']},  (index {idx})")
                     return candidates[idx]["element"]
                 else:
-                    print(f"    Parsed index {idx} out of range (0..{len(candidates)-1})")
+                    logger.warning(f"    Parsed index {idx} out of range (0..{len(candidates)-1})")
             except Exception as e:
-                print(f"    Error converting parsed index: {e}")
-
-        # 2) Try to locate JSON object after the token (e.g. Selected element: {...})
-        json_obj = None
+                logger.exception(f"    Error converting parsed index: {e}")
         jmatch = re.search(r"Selected element\s*[:\-\[]\s*(\{.*\})", resp_text, re.DOTALL | re.IGNORECASE)
         if jmatch:
             js = jmatch.group(1)
@@ -295,24 +292,24 @@ Answer:
                         best_score = score
                         best_idx = i
                 if best_idx is not None and best_score > 0:
-                    print(f"    Matched JSON 'text' to candidate index={best_idx} (score={best_score})")
+                    logger.info(f"    Matched JSON 'text' to candidate index={best_idx} (score={best_score})")
                     return candidates[best_idx]['element']
                 else:
-                    print("    JSON returned by model contained text but no candidate matched confidently")
+                    logger.warning("    JSON returned by model contained text but no candidate matched confidently")
             else:
-                print("    JSON returned by model is empty or has no text/attributes")
+                logger.warning("    JSON returned by model is empty or has no text/attributes")
 
         # 5) As a robust fallback, pick the top DeBERTa/scored candidate (best similarity)
         try:
             if candidates:
                 # candidates are pre-scored by DeBERTa in the caller; pick the highest score
                 best = max(candidates, key=lambda x: x.get('score', 0))
-                print(f"    ⚠ Falling back to best-scored candidate (score={best.get('score')})")
+                logger.warning(f"    ⚠ Falling back to best-scored candidate (score={best.get('score')})")
                 return best['element']
         except Exception as e:
-            print(f"    Fallback selection failed: {e}")
+            logger.exception(f"    Fallback selection failed: {e}")
 
-        print("    ✗ No element selected after parsing and fallback")
+        logger.error("    ✗ No element selected after parsing and fallback")
         return None
 
 
@@ -321,7 +318,7 @@ Answer:
                                      textual_plan: str, 
                                      step_info: Dict,
                                      top_k: int = 50):        
-        print(f"    Grounding using Textual Choice for annotation '{annotation_id}'...")
+        logger.info(f"    Grounding using Textual Choice for annotation '{annotation_id}'...")
         start_time = time.time()
 
         # get cleaned HTML value
@@ -361,7 +358,7 @@ Answer:
 
         # return the selected element as the grounded action
         if selected_element is None:
-            print(f"    ✗ No element selected for annotation '{annotation_id}'.")
+            logger.error(f"    ✗ No element selected for annotation '{annotation_id}'.")
             return {
                 "success": False,
                 "error": "No element selected",
@@ -378,12 +375,12 @@ Answer:
 
     def _ground_using_image_annotation(self, annotation_id:str, textual_plan: str, step_info: Dict):
         # Placeholder for grounding logic using image annotation
-        print(f"    Grounding using Image Annotation for annotation '{annotation_id}'...")
+        logger.info(f"    Grounding using Image Annotation for annotation '{annotation_id}'...")
         # Here we would have the actual code to perform grounding using image annotation.
         pass
 
     def _invalid_method(self, annotation_id:str, textual_plan: str, step_info: Dict):
-        print(f"    ✗ Invalid grounding method specified for annotation '{annotation_id}'.")
+        logger.error(f"    ✗ Invalid grounding method specified for annotation '{annotation_id}'.")
         return None
 
     def process(
@@ -403,7 +400,7 @@ Answer:
             Grounded action details (format may vary based on method).
         """
 
-        print(f"  ⏳ Processing action grounding for annotation '{annotation_id}'...")       
+        logger.info(f"  ⏳ Processing action grounding for annotation '{annotation_id}'...")       
         
         result = self.grounding_function(annotation_id, textual_plan, step_info)
 
