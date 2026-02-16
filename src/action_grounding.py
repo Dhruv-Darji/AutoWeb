@@ -242,6 +242,8 @@ Answer:
                     logger.warning(f"    Parsed index {idx} out of range (0..{len(candidates)-1})")
             except Exception as e:
                 logger.exception(f"    Error converting parsed index: {e}")
+
+        json_obj = None
         jmatch = re.search(r"Selected element\s*[:\-\[]\s*(\{.*\})", resp_text, re.DOTALL | re.IGNORECASE)
         if jmatch:
             js = jmatch.group(1)
