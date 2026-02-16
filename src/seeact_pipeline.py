@@ -45,8 +45,6 @@ class SeeActPipeline:
     
     def __init__(self,
                  model_folder: str,
-                 target_width: int = 1280,
-                 target_height: int = 720,
                  device: Optional[str] = None,
                  use_gpt: bool = False):
         logger.info("[SeeActPipeline] Initializing components...")
@@ -267,8 +265,16 @@ def run_single_prediction_example(
     device: Optional[str] = None,
     use_gpt: bool = False,
 ):
-    """    
-    # Pass the annoation ID and dataset file name to retrieve the screenshot and instruction for that particular annotation ID and then run the prediction on that.
+    """
+    Run SeeAct on either a single annotation_id (if provided) or on *all*
+    unique annotation_ids found inside `dataset_file_name`.
+
+    Behavior:
+      - If `annotation_id` is set (non-empty) -> run single-task pipeline for that id.
+      - Else -> run the pipeline for every unique `annotation_id` present in
+        the given `dataset_file_name` (batch mode).
+
+    End-of-run: aggregated evaluation is computed & saved for all processed tasks.
     """
     backend_label = (
         f"{get_openai_model()} (OpenAI API)" if use_gpt else "Qwen2-VL-2B (local)"
@@ -277,24 +283,76 @@ def run_single_prediction_example(
     logger.info("SeeAct Single-Step UI Action Predictor")
     logger.info(f"  Model backend: {backend_label}")
     logger.info("=" * 80)
-    
-    # Initialize pipeline
+
+    # Initialize pipeline once so evaluator accumulates across tasks
     pipeline = SeeActPipeline(
         model_folder=model_folder,
         target_width=1280,
         target_height=720,
         use_gpt=use_gpt,
     )
-    
-    # Run prediction
-    """THIS IS THE ACTUAL PREDICTION CALL FOR SINGLE TASK SEEACT"""
-    result = pipeline.predict_single_task( annotation_id=annotation_id, dataset_file_name=dataset_file_name)
-    
-    # Display results
+
+    processed_results = []
+
+    # Helper to run a single annotation and collect result
+    # `use_file=True` means pass `dataset_file_name` to predict_single_task (legacy behavior).
+    # In batch mode we use `use_file=False` so predict_single_task will read from
+    # the loader's in-memory `df` (avoids re-reading the parquet for each task).
+    def _run_one(ann_id: str, use_file: bool = True):
+        logger.info(f"\n--- Running annotation: {ann_id} ---")
+        fn = dataset_file_name if use_file else None
+        res = pipeline.predict_single_task(annotation_id=ann_id, dataset_file_name=fn)
+        processed_results.append((ann_id, res))
+        return res
+
+    # If a specific annotation_id is provided -> single-run (preserve file arg)
+    if annotation_id:
+        result = _run_one(annotation_id, use_file=True)
+
+    else:
+        # Batch mode: process every unique annotation_id in the specified parquet
+        if not dataset_file_name:
+            raise ValueError("dataset_file_name must be provided for batch mode (when annotation_id is None)")
+
+        # Find matching parquet(s) in the dataset loader (one-time read)
+        matched_paths = [p for p in pipeline.mind2web_loader.parquet_files if p.endswith(dataset_file_name) or os.path.basename(p) == dataset_file_name]
+        if not matched_paths:
+            # fallback: use the loader's in-memory concatenated DataFrame (already loaded at init)
+            df = pipeline.mind2web_loader.df
+        else:
+            import pandas as _pd
+            dfs = [_pd.read_parquet(p) for p in matched_paths]
+            df = _pd.concat(dfs, ignore_index=True)
+
+        unique_ids = list(df["annotation_id"].dropna().unique())
+        logger.info(f"Batch mode: found {len(unique_ids)} unique annotation_id(s) in '{dataset_file_name}'")
+
+        # Iterate and run pipeline for each annotation id using in-memory df (avoid re-read)
+        for ann in unique_ids:
+            _run_one(ann, use_file=False)
+
+        # After batch run, compute & save aggregate metrics for the whole batch
+        pipeline.evaluator.compute_metrics()
+        batch_tag = f"batch_{os.path.basename(dataset_file_name)}" if dataset_file_name else "batch_all"
+        saved = pipeline.evaluator.save_results(tag=batch_tag)
+        logger.info(f"Batch evaluation saved: {saved}")
+
+        # Prepare a consolidated result object
+        result = {
+            "success": all(r.get("success", False) for _, r in processed_results),
+            "processed": [ann for ann, _ in processed_results],
+            "evaluation": {
+                "aggregate": pipeline.evaluator.aggregate.to_dict() if pipeline.evaluator.aggregate else {},
+                "saved_files": saved,
+            },
+            "latency": sum(r.get("latency", 0.0) for _, r in processed_results),
+        }
+
+    # Display consolidated results (single or batch)
     logger.info("\n" + "=" * 80)
     logger.info("RESULTS")
     logger.info("=" * 80)
-    
+
     if result.get("success"):
         logger.info(f"\n✓ Pipeline completed successfully")
         eval_data = result.get("evaluation", {})
@@ -304,9 +362,9 @@ def run_single_prediction_example(
                 logger.info(f"  {kind}: {path}")
     else:
         logger.error(f"\n✗ FAILED: {result.get('error', 'unknown')}")
-    
-    logger.info(f"\nLatency: {result['latency']:.2f}s")
+
+    logger.info(f"\nLatency: {result.get('latency', 0.0):.2f}s")
     logger.info("\n" + "=" * 80)
-    
+
     return result
 
