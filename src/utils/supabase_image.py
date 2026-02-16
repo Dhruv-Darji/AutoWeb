@@ -75,8 +75,13 @@ class SupabaseImageHelper:
                     # Read the chunk to ensure it's real bytes, not an
                     # error page.
                     chunk = resp.content
+                    # still keep delay of 2s between try:
+                    time.sleep(2)
                     if len(chunk) > 0:
                         return True
+                    else:
+                        logger.warning(f"  ⚠ Image URL responded with empty body (status code: {resp.status_code}) — may not be fully cached yet: {public_url}")
+                        raise ValueError("Empty body")
                 resp.close()
             except Exception:
                 pass

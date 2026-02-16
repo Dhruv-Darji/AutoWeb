@@ -22,6 +22,7 @@ from config import get_model_path, get_device, get_model_dtype, get_use_8bit, ge
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
 from AutoWeb.src.logger import logger
+from AutoWeb.src.utils.processed_store import ProcessedStore
 
 
 # New imports:
@@ -264,6 +265,7 @@ def run_single_prediction_example(
     dataset_file_name: Optional[str] = None,
     device: Optional[str] = None,
     use_gpt: bool = False,
+    force_reprocess: bool = False,
 ):
     """
     Run SeeAct on either a single annotation_id (if provided) or on *all*
@@ -287,21 +289,45 @@ def run_single_prediction_example(
     # Initialize pipeline once so evaluator accumulates across tasks
     pipeline = SeeActPipeline(
         model_folder=model_folder,
-        target_width=1280,
-        target_height=720,
         use_gpt=use_gpt,
     )
 
     processed_results = []
+
+    # Persistent checkpoint store (skip processed tasks across restarts)
+    store = ProcessedStore()
+    logger.debug(f"ProcessedStore loaded ({store.count()} entries): {store.path}")
 
     # Helper to run a single annotation and collect result
     # `use_file=True` means pass `dataset_file_name` to predict_single_task (legacy behavior).
     # In batch mode we use `use_file=False` so predict_single_task will read from
     # the loader's in-memory `df` (avoids re-reading the parquet for each task).
     def _run_one(ann_id: str, use_file: bool = True):
+        # If already processed and not forcing re-run, skip immediately
+        if not force_reprocess and store.contains(ann_id):
+            logger.info(f"Skipping annotation {ann_id}: already processed (checkpoint)")
+            skipped_res = {"success": True, "skipped": True, "latency": 0.0}
+            processed_results.append((ann_id, skipped_res))
+            return skipped_res
+
         logger.info(f"\n--- Running annotation: {ann_id} ---")
         fn = dataset_file_name if use_file else None
-        res = pipeline.predict_single_task(annotation_id=ann_id, dataset_file_name=fn)
+        try:
+            res = pipeline.predict_single_task(annotation_id=ann_id, dataset_file_name=fn)
+        except Exception as e:
+            logger.exception(f"Task {ann_id} failed: {e}")
+            failed = {"success": False, "error": str(e)}
+            processed_results.append((ann_id, failed))
+            return failed
+
+        # Mark processed only on successful completion
+        if res.get("success"):
+            try:
+                store.add(ann_id)
+                logger.info(f"Checkpointed annotation: {ann_id}")
+            except Exception:
+                logger.exception(f"Failed to checkpoint annotation: {ann_id}")
+
         processed_results.append((ann_id, res))
         return res
 

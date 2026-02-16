@@ -10,12 +10,12 @@ if __name__ == "__main__":
     # `annotation_id = None` and provide `dataset_file_name`.
 
     # Example: single-task run (default)
-    annotation_id = "1bb8d48f-dac7-472d-b2b2-651ab184baf2"  # single task (7 steps)
+    annotation_id = "401c4e6f-6b0b-47b4-8157-92d7ca468bbc"
 
     # Example: batch run (process all unique annotation_id in the parquet)
     # annotation_id = None
 
-    dataset_file_name = "train-00001-of-00027-2011d8e72a165f62.parquet"
+    dataset_file_name = "train-00000-of-00027-4d11798d7219186d.parquet"
 
     # Set use_gpt=True to use GPT-4o-mini (OpenAI API) instead of local Qwen2-VL-2B.
     # Requires OPENAI_API_KEY + SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env
