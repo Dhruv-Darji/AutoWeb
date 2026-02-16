@@ -4,9 +4,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-import torch
-
 # Transformers imports
+import torch
 from transformers import AutoProcessor, AutoTokenizer, AutoModelForVision2Seq, logging
 logging.set_verbosity_error()
 
@@ -18,7 +17,8 @@ try:
 except Exception:
     BNB_AVAILABLE = False
     
-print(f"[VLModel] bitsandbytes available: {BNB_AVAILABLE}")
+from AutoWeb.src.logger import logger
+logger.info(f"[VLModel] bitsandbytes available: {BNB_AVAILABLE}")
 
 class VLModel:
     """
@@ -49,7 +49,8 @@ class VLModel:
         self.dtype = dtype
 
         # load processor
-        print(f"[VLModel] loading processor from {self.model_folder} ...")
+        from AutoWeb.src.logger import logger
+        logger.info(f"[VLModel] loading processor from {self.model_folder} ...")
         self.processor = AutoProcessor.from_pretrained(
             self.model_folder, 
             trust_remote_code=True,
@@ -87,7 +88,7 @@ class VLModel:
                 # CPU: keep default dtype
                 model_kwargs["device_map"] = "cpu"
 
-        print(f"[VLModel] loading model with kwargs: {model_kwargs}")
+        logger.info(f"[VLModel] loading model with kwargs: {model_kwargs}")
         try:
             # Use AutoModelForVision2Seq for Qwen2-VL (vision-language model with generation)
             self.model = AutoModelForVision2Seq.from_pretrained(
@@ -97,20 +98,27 @@ class VLModel:
                 **model_kwargs
             )
         except Exception as e:
-            print("[VLModel] Warning: model loading with preferred strategy failed:", e)
-            print("[VLModel] Falling back to safe CPU load (may be slow).")
+            logger.exception("[VLModel] Warning: model loading with preferred strategy failed: %s", e)
+            logger.warning("[VLModel] Falling back to safe CPU load (may be slow).")
+            # clear any cached CUDA allocations before fallback
+            try:
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            except Exception:
+                pass
             # fallback: load to CPU
             self.model = AutoModelForVision2Seq.from_pretrained(
                 self.model_folder, 
                 trust_remote_code=True,
                 local_files_only=True,
-                device_map="cpu"
+                device_map="cpu",
+                low_cpu_mem_usage=True
             )
 
         # ensure model in eval mode
         self.model.eval()
 
-        print(f"[VLModel] model loaded. device = {self.device}, use_8bit={self.use_8bit}")
+        logger.info(f"[VLModel] model loaded. device = {self.device}, use_8bit={self.use_8bit}")
 
     # ---------------------
     # Helper: build inputs
@@ -280,10 +288,10 @@ class VLModel:
     def infer(self,
               image_or_tensor: Union[Any, Dict],
               prompt_text: str,
-              max_new_tokens: int = 256,
+              max_new_tokens: int = 128,
               do_sample: bool = False,
               top_p: float = 0.95,
-              temperature: float = 0.0,
+              temperature: float = 0.2,
               return_tensors: str = "pt") -> Dict[str, Any]:
         """
         Run inference and return decoded text + latency.
@@ -295,7 +303,7 @@ class VLModel:
             do_sample: whether to sample
             top_p, temperature: sampling params (if sampling)
         Returns:
-            {"raw_text": str, "latency": float, "generated_ids": tensor (optional)}
+            {"output_text": str, "raw_text": str, "latency": float, "generated_ids": tensor (optional)}
         """
         start = time.time()
         inputs = self._prepare_inputs(image_or_tensor, prompt_text, return_tensors=return_tensors)
@@ -304,9 +312,38 @@ class VLModel:
         generate_kwargs = dict(
             max_new_tokens=max_new_tokens,
             do_sample=do_sample,
-            temperature=temperature if do_sample else 1.0,  # temperature must be > 0
-            top_p=top_p
+            temperature=temperature,
+            top_p=top_p,
+            repetition_penalty=1.2,
+            no_repeat_ngram_size=3,
+            return_dict_in_generate=True
         )
+        # add eos_token_id only when tokenizer exposes it
+        try:
+            if getattr(self, 'tokenizer', None) is not None and getattr(self.tokenizer, 'eos_token_id', None) is not None:
+                generate_kwargs['eos_token_id'] = self.tokenizer.eos_token_id
+        except Exception:
+            pass
+
+        # --- Diagnostics: print input tensor shapes and token preview before generation ---
+        try:
+            model_dev = next(self.model.parameters()).device
+        except Exception:
+            model_dev = 'unknown'
+        try:
+            input_ids = inputs.get('input_ids', None)
+            pixel_values = inputs.get('pixel_values', None)
+            from AutoWeb.src.logger import logger
+            logger.debug(f"[VLModel] generate() model_device={model_dev}, input_ids={getattr(input_ids, 'shape', None)}, pixel_values={getattr(pixel_values, 'shape', None)}")
+            if input_ids is not None and getattr(self, 'tokenizer', None) is not None:
+                toks_preview = self.tokenizer.convert_ids_to_tokens(input_ids[0].tolist()[:120])
+                # print(f"[VLModel] token preview (first 120 tokens): {toks_preview}")
+                if len(input_ids[0]) > 4096:
+                    logger.warning('[VLModel] ⚠ input token length > 4096 — this may cause very long generation or memory pressure')
+        except Exception as _:
+            pass
+
+        # print(f"[VLModel] generate kwargs: {generate_kwargs}")
 
         # Run generation (catch common image/token mismatches and provide actionable message)
         try:
@@ -327,18 +364,64 @@ class VLModel:
                     f"Original error: {msg}"
                 ) from e
             raise
+        except (RuntimeError, torch.cuda.OutOfMemoryError) as oom_err:
+            # Attempt graceful recovery for OOM during generation: free cache and retry once with reduced token budget
+            try:
+                logger.warning("[VLModel] CUDA out of memory during generate(): freeing cache and retrying with reduced max_new_tokens...")
+                torch.cuda.empty_cache()
+            except Exception:
+                pass
+
+            # reduce token budget and retry once
+            if generate_kwargs.get("max_new_tokens", 0) > 16:
+                reduced = max(16, generate_kwargs.get("max_new_tokens") // 2)
+                generate_kwargs["max_new_tokens"] = reduced
+                try:
+                    with torch.no_grad():
+                        outputs = self.model.generate(**inputs, **generate_kwargs)
+                except Exception as retry_exc:
+                    # still failed — raise a clearer error
+                    raise RuntimeError(
+                        "Generation failed due to CUDA OOM even after retry with reduced max_new_tokens. "
+                        "Consider lowering batch size/max_new_tokens, enabling 8-bit (USE_8BIT), or switching to CPU/quantized model."
+                    ) from retry_exc
+            else:
+                raise RuntimeError(
+                    "Generation failed due to CUDA OOM. Consider lowering max_new_tokens, enabling 8-bit (USE_8BIT), "
+                    "or switching to CPU/quantized model."
+                ) from oom_err
         
-        # Decode output
+        # Decode output — handle both ReturnDict (sequences) and raw tensor returns
+        try:
+            seq_tensor = outputs.sequences[0] if hasattr(outputs, 'sequences') else outputs[0]
+        except Exception:
+            seq_tensor = outputs[0]
+
         try:
             # Try processor.decode first (preferred for vision models)
-            raw_text = self.processor.decode(outputs[0], skip_special_tokens=True)
+            raw_text = self.processor.decode(seq_tensor, skip_special_tokens=True)
         except Exception:
             # Fallback to tokenizer if processor doesn't have decode
             if self.tokenizer is not None:
-                raw_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+                raw_text = self.tokenizer.decode(seq_tensor, skip_special_tokens=True)
             else:
-                raw_text = str(outputs[0].tolist())
+                raw_text = str(seq_tensor.tolist())
+
+        try:
+            input_len = inputs.get("input_ids", None).shape[1] if inputs.get("input_ids", None) is not None else 0
+            generated_tokens = seq_tensor[input_len:] if input_len < seq_tensor.shape[0] else seq_tensor
+            output_text = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
+        except Exception:
+            if self.tokenizer is not None:
+                output_text = self.tokenizer.decode(seq_tensor, skip_special_tokens=True)
+            else:
+                output_text = str(seq_tensor.tolist())
 
         latency = time.time() - start
-        return {"raw_text": raw_text, "latency": latency, "generated_ids": outputs}
+        return {
+            "output_text": output_text, 
+            "raw_text": raw_text, 
+            "latency": latency, 
+            "generated_ids": outputs
+            }
 

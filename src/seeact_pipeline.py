@@ -1,335 +1,396 @@
 """
-SeeAct-Style Single-Step UI Action Predictor Pipeline
-
-This is the main pipeline that integrates all components:
-1. Load dataset sample (image + instruction)
-2. Preprocess image (minimal, SeeAct-style)
-3. Build strict prompt
-4. Run model inference
-5. Decode and validate JSON output
-6. Return structured ActionPrediction
-
-STOPPING CRITERION:
-"I can give a screenshot + instruction and my system outputs a valid JSON action prediction locally."
+Final plan available at AutoWeb/Docs/SeeAct_understanding.md
 """
 
 import os
 import sys
 from pathlib import Path
-from typing import Dict, Optional, Tuple
-from PIL import Image
+import time
+from typing import Dict, Optional
+
+from AutoWeb.src.action_generation import SeeActActionGenerator
+from AutoWeb.src.action_grounding import SeeActActionGrounding
+from AutoWeb.src.seeact_evaluation import SeeActEvaluator
+
 
 # Add src to path for imports
 src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
-from action_schema import ActionPrediction, ActionSchema
-from action_decoder import ActionDecoder
-from image_preprocessor import SeeActImagePreprocessor
-from prompt_engine import PromptEngine
-from model_interface import VLModel
-from config import get_model_path, get_device, get_model_dtype, get_use_8bit
+from AutoWeb.src.Input_Prepration import SeeActInputPreparator
+from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model
+from AutoWeb.src.model_interface import VLModel
+from AutoWeb.src.gpt_model import GPTVisionModel
+from AutoWeb.src.logger import logger
+from AutoWeb.src.utils.processed_store import ProcessedStore
 
+
+# New imports:
+from mind2Web_Loader import Mind2WebDataset
 
 class SeeActPipeline:
     """
-    Complete SeeAct-style single-step UI action prediction pipeline.
+    Complete SeeAct-style single-Task UI action prediction pipeline.
     
     This class integrates:
-    - Image preprocessing (minimal, vision-only)
-    - Prompt engineering (strict JSON output)
-    - Model inference (local Qwen2-VL-2B)
-    - JSON repair and validation
-    - Action decoding
+    - Dataset Loading
+    - Input prepration (Prompt Template + Task , Screenshot Image (i), History of Previous Actions for task)        
+    - Action Generation (take input from previous block, result a planning for task)
+    - Action Grounding (3 methods: Element Attributes, Textual Choices, Image Annotation)
+    - Action decoding (as per user method selection retrieve the output)
+    - Evaluation
     
-    Input: screenshot (PIL.Image) + instruction (str)
-    Output: ActionPrediction (validated JSON)
+    Input: screenshot (PIL.Image) + instruction (str) + Cleaned HTML
+    Output: Action to be perform with target
     """
     
     def __init__(self,
                  model_folder: str,
-                 target_width: int = 1280,
-                 target_height: int = 720,
                  device: Optional[str] = None,
-                 use_8bit: bool = False):
-        """
-        Initialize the SeeAct pipeline.
+                 use_gpt: bool = False):
+        logger.info("[SeeActPipeline] Initializing components...")
+        self.use_gpt = use_gpt
         
-        Args:
-            model_folder: Path to local Qwen2-VL-2B model
-            target_width: Target image width for preprocessing
-            target_height: Target image height for preprocessing
-            device: "cuda" or "cpu" (None = auto)
-            use_8bit: Whether to use 8-bit quantization
-        """
-        print("[SeeActPipeline] Initializing components...")
-        
-        # 1. Image Preprocessor (minimal, SeeAct-style)
-        self.preprocessor = SeeActImagePreprocessor(
-            target_width=target_width,
-            target_height=target_height,
-            keep_aspect_ratio=True,
-            normalize=False  # Model handles normalization
-        )
-        print(f"  ✓ Image preprocessor ready ({target_width}x{target_height})")
+        # 1. Mind2Web Dataset Loader (for retrieving task data based on annotation ID)
+        self.mind2web_loader = Mind2WebDataset(root_dir="D:\\Environments\\Datasets\\multimodal-mind2web")
+        logger.info(f"  ✓ Mind2Web dataset loader ready(root: D:\\Environments\\Datasets\\multimodal-mind2web)")
         
         # 2. Prompt Engine (strict JSON enforcement)
-        self.prompt_engine = PromptEngine()
-        print("  ✓ Prompt engine ready (strict JSON mode)")
+        self.input_preparator = SeeActInputPreparator()
+        logger.info("  ✓ Input preparator ready")
         
-        # 3. Model Interface (local Qwen2-VL-2B)
-        print(f"  ⏳ Loading model from {model_folder}...")
-        self.model = VLModel(
-            model_folder=model_folder,
-            device=device,
-            use_8bit=use_8bit
-        )
-        print("  ✓ Model loaded")
+        # 3. Model Interface — GPT-4o (API) or local Qwen2-VL-2B
+        if self.use_gpt:
+            logger.info("  ⏳ Initializing GPT-4o model (OpenAI API)...")
+            self.model = GPTVisionModel()
+            logger.info("  ✓ GPT-4o model ready for inference")
+        else:
+            logger.info(f"  ⏳ Loading local Qwen model from {model_folder}...")
+            # decide device: prefer explicit argument, else fall back to config.get_device()
+            device_to_use = device or get_device()
+            try:
+                self.model = VLModel(
+                    model_folder=model_folder,
+                    device=device_to_use
+                )
+                logger.info("  ✓ Qwen model loaded and ready for inference")
+            except Exception as e:
+                logger.exception(f"[SeeActPipeline] Error loading model: {e}")
+                try:
+                    import torch
+                    logger.debug(f"[SeeActPipeline] torch.cuda.is_available(): {torch.cuda.is_available()}")
+                    if torch.cuda.is_available():
+                        try:
+                            logger.debug(f"[SeeActPipeline] cuda memory allocated: {torch.cuda.memory_allocated(0)}")
+                            logger.debug(f"[SeeActPipeline] cuda memory reserved: {torch.cuda.memory_reserved(0)}")
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+                logger.warning("[SeeActPipeline] Falling back to CPU model load (this may be slower).")
+                self.model = VLModel(model_folder=model_folder, device="cpu")
+                logger.info("  ✓ Model loaded on CPU (fallback)")
         
-        # 4. Action Decoder (JSON repair + validation)
-        self.decoder = ActionDecoder(strict_validation=False)
-        print("  ✓ Action decoder ready")
-        
-        print("[SeeActPipeline] ✓ Pipeline ready!")
-    
-    def predict(self,
-               image: Image.Image,
-               instruction: str,
-               max_new_tokens: int = 256,
-               temperature: float = 0.0) -> Dict:
-        """
-        Predict a single UI action from screenshot + instruction.
-        
-        Args:
-            image: PIL.Image of webpage screenshot
-            instruction: Task instruction (e.g., "Click the login button")
-            max_new_tokens: Max tokens to generate
-            temperature: Sampling temperature (0.0 = greedy)
-        
-        Returns:
-            {
-                "prediction": ActionPrediction or None,
-                "raw_output": str (model raw text),
-                "parsed_json": dict or None,
-                "error": str or None,
-                "success": bool,
-                "latency": float (seconds),
-                "scale_info": dict (for coordinate transformation)
-            }
-        """
-        print(f"\n[SeeActPipeline] Predicting action for: '{instruction}'")
-        
-        # Step 1: Preprocess image
-        print("  [1/5] Preprocessing image...")
-        preprocessed = self.preprocessor.preprocess(image)
-        processed_image = preprocessed["image"]
-        scale_info = preprocessed["scale_info"]
-        
-        # Update decoder with image dimensions for coordinate normalization
-        self.decoder.set_image_dimensions(
-            scale_info["new_width"],
-            scale_info["new_height"]
-        )
-        
-        print(f"        Original: {scale_info['original_width']}x{scale_info['original_height']}")
-        print(f"        Resized:  {scale_info['new_width']}x{scale_info['new_height']}")
-        print(f"        Scale:    {scale_info['scale_x']:.3f}")
-        
-        # Step 2: Build prompt
-        print("  [2/5] Building prompt...")
-        # Ask model/processor what image placeholder (if any) it prefers so tokenization and
-        # when the processor prefers implicit image tokens.
-        try:
-            image_key = self.model.get_preferred_image_key(processed_image)
-            if image_key == "":
-                print("        Using implicit image tokens (no explicit placeholder)")
-            else:
-                print(f"        Using image placeholder: {image_key!r}")
-        except Exception as e:
-            image_key = "<image>"
-            print(f"        ⚠ could not detect image placeholder (falling back to '<image>'): {e}")
 
-        prompt_text, _ = self.prompt_engine.build_prompt(
-            task_text=instruction,
-            variant="strict_json",
-            include_dom=False,  # SeeAct: no DOM, vision-only
-            image_key=image_key or "<image>"
+        # 4. Action Generator (SeeAct Action Generation Module)
+        logger.info("  ⏳ Initializing action generator...")
+        self.actionGenration = SeeActActionGenerator(model=self.model)
+        logger.info("  ✓ Action generator ready")
+
+        # 5. Action Grounding (SeeAct Action Grounding Module)
+        self.action_grounding = SeeActActionGrounding(model=self.model)
+        
+        # 6. Evaluator (SeeAct offline metrics)
+        self.evaluator = SeeActEvaluator(output_dir="eval_results")
+        logger.info("  ✓ Evaluator ready")
+        
+        logger.info("[SeeActPipeline] ✓ Pipeline ready!")
+    
+    def predict_single_task(
+            self, 
+            annotation_id: str, 
+            dataset_file_name: str,
+            seeAct_method: str = "2" #1. Element Attributes 2. Textual Choice 3. Image Annotation
+        ) -> Dict:
+        """
+        Run the full SeeAct-style prediction for a single task (multiple steps).
+        Available methods for action grounding:
+        1. Element Attributes
+        2. Textual Choice
+        3. Image Annotation
+        """
+
+        logger.info(f"\n[SeeActPipeline] Predicting action for: '{annotation_id}'")
+        
+        # Step 1: Load single task data (multiple steps (with details like screenshot, cleaned HTML) + instruction)
+        logger.info("="*20 + " [1/6] Loading task data... " + "="*20)
+        single_task = self.mind2web_loader.get_task(
+            annotation_id=annotation_id,
+            file_name=dataset_file_name
         )
         
-        # Step 3: Run model inference
-        print("  [3/5] Running model inference...")
-        inference_result = self.model.infer(
-            image_or_tensor=processed_image,
-            prompt_text=prompt_text,
-            max_new_tokens=max_new_tokens,
-            do_sample=temperature > 0,
-            temperature=max(temperature, 0.01)  # Avoid temp=0 issues
-        )
+        logger.info(f"Instruction: {single_task[0]['instruction']}")
         
-        raw_output = inference_result["raw_text"]
-        latency = inference_result["latency"]
+        logger.info("="*20 + f" For each action in Task {annotation_id}... " + "="*20)
+
+        task_latency_start = time.time()
+
+        # Initialize history of previous actions for the task (if needed for input preparation)
+        action_history = ["None"]
+
+        for action in single_task:
+            logger.info(f"\n--- Processing action: '{action['action_uid']}' ---")
+            action_latency_start = time.time()
+
+            # Reset per-step cost tracker (GPT mode only)
+            if self.use_gpt and hasattr(self.model, 'reset_step_cost'):
+                self.model.reset_step_cost()
+
+            # Step 2: Prepare inputs for single task (stepImage + past history + instruction)
+            logger.info("="*20 + " [2/6] Input Preparation... " + "="*20)
+            
+            action_generation_input = self.input_preparator.prepare_input(
+                action=action,
+                history=action_history
+            )
         
-        print(f"        Latency: {latency:.2f}s")
-        print(f"        Raw output (first 100 chars): {raw_output[:100]}...")
-        
-        # Step 4: Decode and repair JSON
-        print("  [4/5] Decoding action...")
-        decode_result = self.decoder.decode_with_metadata(raw_output)
-        
-        prediction = decode_result["prediction"]
-        parsed_json = decode_result["parsed_json"]
-        error = decode_result["error"]
-        success = decode_result["success"]
-        
-        if success:
-            print(f"        ✓ Action: {prediction.action_type}")
-            print(f"        ✓ Confidence: {prediction.confidence:.2f}")
-        else:
-            print(f"        ✗ Decode failed: {error}")
-        
-        # Step 5: Validate schema
-        if prediction:
-            print("  [5/5] Validating schema...")
-            is_valid, validation_error = ActionSchema.validate_prediction(prediction)
-            if is_valid:
-                print("        ✓ Schema valid")
+            # Step 3: Action Generation (take input from previous block, result a planning for task)
+            logger.info("="*20 + " [3/6] Running Action Generation... " + "="*20)
+            action_generation_plan = self.actionGenration.generate_plans(
+                input_data=action_generation_input
+            )
+
+            output_plan = action_generation_plan.get("output_text", "")
+            err = action_generation_plan.get("error")
+
+            logger.info(f"Generated Action Plan: {output_plan}")
+
+            if err:
+                logger.error(f"✗ Action generation failed with error: {err}")
+                # continue to next action or decide how to handle this case (e.g., skip grounding/decoding for this step)
+                continue
+
+            # store the input and action plan in history for potential use in future steps
+            action_history.append({                
+                "action_plan": output_plan
+            })
+
+            # Skip grounding if plan is empty — record as failed step directly
+            if not output_plan.strip():
+                logger.warning("    ⚠ Empty action plan — skipping grounding, recording as failed step.")
+                grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
             else:
-                print(f"        ⚠ Schema validation warning: {validation_error}")
-        else:
-            print("  [5/5] Skipping validation (no prediction)")
-        
+                # Step 4: Grounding method selection and processing
+                logger.info("="*20 + " [4/6] Running Action Grounding ... " + "="*20)
+                grounding_result = self.action_grounding.process(
+                    annotation_id=annotation_id,
+                    textual_plan=output_plan,
+                    step_info=action)
+
+            # Step 5: Parse the Grounding output 
+            logger.info("="*20 + " [5/6] Parsing output... " + "="*20)
+            grounding_result = grounding_result or {}
+            if grounding_result.get("success"):
+                sel = grounding_result.get("selected_element", {})
+                logger.info(
+                    f"        ✓ Grounded to: <{sel.get('tag', '?')}> "
+                    f"text='{(sel.get('text') or '')[:60]}' "
+                    f"bid={((sel.get('attributes') or {}).get('backend_node_id', '?'))}"
+                )
+            else:
+                logger.error(f"        ✗ Grounding failed: {grounding_result.get('error', 'unknown')}")
+
+            # Step 6: Evaluate against ground truth
+            logger.info("="*20 + " [6/6] Evaluating prediction... " + "="*20)
+            action_latency_end = time.time()
+            action_latency = action_latency_end - action_latency_start
+
+            self.evaluator.record_step(
+                annotation_id=annotation_id,
+                action_uid=action.get("action_uid", ""),
+                ground_truth=action,
+                predicted_plan=output_plan,
+                grounding_result=grounding_result,
+                latency=action_latency,
+            )
+
+            # Print per-step GPT cost
+            if self.use_gpt and hasattr(self.model, 'get_step_cost'):
+                sc = self.model.get_step_cost()
+                logger.info(
+                    f"        💰 Step cost: ${sc['cost_usd']:.6f} "
+                    f"({sc['prompt_tokens']} in + {sc['completion_tokens']} out = "
+                    f"{sc['total_tokens']} tokens, {sc['calls']} API calls)"
+                )
+
+        # Compute and save evaluation metrics for this task
+        self.evaluator.compute_metrics()
+        self.evaluator.print_summary()
+        saved = self.evaluator.save_results(tag=annotation_id)
+
+        task_latency_end = time.time()
+        total_task_latency = task_latency_end - task_latency_start
+
+        # Print task-level GPT cost summary
+        task_cost_data = {}
+        if self.use_gpt and hasattr(self.model, 'get_total_cost'):
+            tc = self.model.get_total_cost()
+            task_cost_data = tc
+            logger.info("\n" + "=" * 60)
+            logger.info(f"💰 TASK GPT COST SUMMARY  (model: {tc['model']})")
+            logger.info(f"   Total API calls:      {tc['calls']}")
+            logger.info(f"   Prompt tokens:        {tc['prompt_tokens']:,}")
+            logger.info(f"   Completion tokens:    {tc['completion_tokens']:,}")
+            logger.info(f"   Total tokens:         {tc['total_tokens']:,}")
+            logger.info(f"   Total cost:           ${tc['cost_usd']:.6f}")
+            logger.info("=" * 60)
+
+        task_eval = self.evaluator.task_results.get(annotation_id)
+
         return {
-            "prediction": prediction,
-            "raw_output": raw_output,
-            "parsed_json": parsed_json,
-            "error": error,
-            "success": success,
-            "latency": latency,
-            "scale_info": scale_info,
-            "prompt": prompt_text  # Include for debugging
-        }
-    
-    def predict_from_path(self,
-                         image_path: str,
-                         instruction: str,
-                         **kwargs) -> Dict:
-        """
-        Convenience method to predict from image file path.
-        
-        Args:
-            image_path: Path to image file
-            instruction: Task instruction
-            **kwargs: Additional arguments for predict()
-        
-        Returns:
-            Prediction result dict (same as predict())
-        """
-        image = Image.open(image_path).convert("RGB")
-        return self.predict(image, instruction, **kwargs)
-
+            "success": True,
+            "error": None,
+            "latency": total_task_latency,
+            "evaluation": {
+                "aggregate": self.evaluator.aggregate.to_dict() if self.evaluator.aggregate else {},
+                "task": task_eval.to_dict() if task_eval else {},
+                "saved_files": saved,
+            },
+            "cost": task_cost_data,
+        }  
 
 def run_single_prediction_example(
     model_folder: str,
-    image_path: str,
-    instruction: str,
+    annotation_id: Optional[str] = None,
+    dataset_file_name: Optional[str] = None,
     device: Optional[str] = None,
-    use_8bit: bool = False
+    use_gpt: bool = False,
+    force_reprocess: bool = False,
 ):
     """
-    Example: Run a single prediction.
-    
-    This demonstrates the STOPPING CRITERION:
-    "I can give a screenshot + instruction and my system outputs a valid JSON action prediction locally."
-    
-    Args:
-        model_folder: Path to model directory
-        image_path: Path to screenshot image
-        instruction: Task instruction
-        device: Device to use ("cuda", "cpu", or None for auto)
-        use_8bit: Whether to use 8-bit quantization
+    Run SeeAct on either a single annotation_id (if provided) or on *all*
+    unique annotation_ids found inside `dataset_file_name`.
+
+    Behavior:
+      - If `annotation_id` is set (non-empty) -> run single-task pipeline for that id.
+      - Else -> run the pipeline for every unique `annotation_id` present in
+        the given `dataset_file_name` (batch mode).
+
+    End-of-run: aggregated evaluation is computed & saved for all processed tasks.
     """
-    print("=" * 80)
-    print("SeeAct Single-Step UI Action Predictor")
-    print("=" * 80)
-    
-    # Initialize pipeline
+    backend_label = (
+        f"{get_openai_model()} (OpenAI API)" if use_gpt else "Qwen2-VL-2B (local)"
+    )
+    logger.info("=" * 80)
+    logger.info("SeeAct Single-Step UI Action Predictor")
+    logger.info(f"  Model backend: {backend_label}")
+    logger.info("=" * 80)
+
+    # Initialize pipeline once so evaluator accumulates across tasks
     pipeline = SeeActPipeline(
         model_folder=model_folder,
-        target_width=1280,
-        target_height=720,
-        device=device,
-        use_8bit=use_8bit
+        use_gpt=use_gpt,
     )
-    
-    # Run prediction
-    result = pipeline.predict_from_path(image_path, instruction)
-    
-    # Display results
-    print("\n" + "=" * 80)
-    print("RESULTS")
-    print("=" * 80)
-    
-    if result["success"]:
-        pred = result["prediction"]
-        print(f"\n✓ SUCCESS: Valid action prediction generated!")
-        print(f"\nPredicted Action:")
-        print(pred.to_json())
+
+    processed_results = []
+
+    # Persistent checkpoint store (skip processed tasks across restarts)
+    store = ProcessedStore()
+    logger.debug(f"ProcessedStore loaded ({store.count()} entries): {store.path}")
+
+    # Helper to run a single annotation and collect result
+    # `use_file=True` means pass `dataset_file_name` to predict_single_task (legacy behavior).
+    # In batch mode we use `use_file=False` so predict_single_task will read from
+    # the loader's in-memory `df` (avoids re-reading the parquet for each task).
+    def _run_one(ann_id: str, use_file: bool = True):
+        # If already processed and not forcing re-run, skip immediately
+        if not force_reprocess and store.contains(ann_id):
+            logger.info(f"Skipping annotation {ann_id}: already processed (checkpoint)")
+            skipped_res = {"success": True, "skipped": True, "latency": 0.0}
+            processed_results.append((ann_id, skipped_res))
+            return skipped_res
+
+        logger.info(f"\n--- Running annotation: {ann_id} ---")
+        fn = dataset_file_name if use_file else None
+        try:
+            res = pipeline.predict_single_task(annotation_id=ann_id, dataset_file_name=fn)
+        except Exception as e:
+            logger.exception(f"Task {ann_id} failed: {e}")
+            failed = {"success": False, "error": str(e)}
+            processed_results.append((ann_id, failed))
+            return failed
+
+        # Mark processed only on successful completion
+        if res.get("success"):
+            try:
+                store.add(ann_id)
+                logger.info(f"Checkpointed annotation: {ann_id}")
+            except Exception:
+                logger.exception(f"Failed to checkpoint annotation: {ann_id}")
+
+        processed_results.append((ann_id, res))
+        return res
+
+    # If a specific annotation_id is provided -> single-run (preserve file arg)
+    if annotation_id:
+        result = _run_one(annotation_id, use_file=True)
+
     else:
-        print(f"\n✗ FAILED: {result['error']}")
-        print(f"\nRaw model output:")
-        print(result["raw_output"])
-    
-    print(f"\nLatency: {result['latency']:.2f}s")
-    print("\n" + "=" * 80)
-    
+        # Batch mode: process every unique annotation_id in the specified parquet
+        if not dataset_file_name:
+            raise ValueError("dataset_file_name must be provided for batch mode (when annotation_id is None)")
+
+        # Find matching parquet(s) in the dataset loader (one-time read)
+        matched_paths = [p for p in pipeline.mind2web_loader.parquet_files if p.endswith(dataset_file_name) or os.path.basename(p) == dataset_file_name]
+        if not matched_paths:
+            # fallback: use the loader's in-memory concatenated DataFrame (already loaded at init)
+            df = pipeline.mind2web_loader.df
+        else:
+            import pandas as _pd
+            dfs = [_pd.read_parquet(p) for p in matched_paths]
+            df = _pd.concat(dfs, ignore_index=True)
+
+        unique_ids = list(df["annotation_id"].dropna().unique())
+        logger.info(f"Batch mode: found {len(unique_ids)} unique annotation_id(s) in '{dataset_file_name}'")
+
+        # Iterate and run pipeline for each annotation id using in-memory df (avoid re-read)
+        for ann in unique_ids:
+            _run_one(ann, use_file=False)
+
+        # After batch run, compute & save aggregate metrics for the whole batch
+        pipeline.evaluator.compute_metrics()
+        batch_tag = f"batch_{os.path.basename(dataset_file_name)}" if dataset_file_name else "batch_all"
+        saved = pipeline.evaluator.save_results(tag=batch_tag)
+        logger.info(f"Batch evaluation saved: {saved}")
+
+        # Prepare a consolidated result object
+        result = {
+            "success": all(r.get("success", False) for _, r in processed_results),
+            "processed": [ann for ann, _ in processed_results],
+            "evaluation": {
+                "aggregate": pipeline.evaluator.aggregate.to_dict() if pipeline.evaluator.aggregate else {},
+                "saved_files": saved,
+            },
+            "latency": sum(r.get("latency", 0.0) for _, r in processed_results),
+        }
+
+    # Display consolidated results (single or batch)
+    logger.info("\n" + "=" * 80)
+    logger.info("RESULTS")
+    logger.info("=" * 80)
+
+    if result.get("success"):
+        logger.info(f"\n✓ Pipeline completed successfully")
+        eval_data = result.get("evaluation", {})
+        if eval_data.get("saved_files"):
+            logger.info(f"\nEvaluation files:")
+            for kind, path in eval_data["saved_files"].items():
+                logger.info(f"  {kind}: {path}")
+    else:
+        logger.error(f"\n✗ FAILED: {result.get('error', 'unknown')}")
+
+    logger.info(f"\nLatency: {result.get('latency', 0.0):.2f}s")
+    logger.info("\n" + "=" * 80)
+
     return result
 
-
-if __name__ == "__main__":
-    # Example usage
-    import argparse
-    from pathlib import Path
-    
-    # Get default model path from .env
-    default_model_path = get_model_path()
-    
-    parser = argparse.ArgumentParser(
-        description="Run SeeAct single-step prediction"
-    )
-    
-    parser.add_argument(
-        "--demo",
-        action="store_true",
-        help="Run a lightweight bundled demo (creates a placeholder screenshot and example instruction)"
-    )
-    
-    args = parser.parse_args()
-    
-    # CLI validation / demo fallback
-    if args.demo:
-        # create a lightweight placeholder image next to the script for reproducible demo runs
-        demo_path = Path(__file__).parent / "demo_screenshot.jpg"
-        if not demo_path.exists():
-            from PIL import Image
-            Image.new("RGB", (1280, 720), color=(240, 240, 240)).save(demo_path)
-        image_path = str(demo_path)
-        instruction = "Click the login button"
-    else:
-        # Temporary Default demo added
-        demo_path = Path(__file__).parent / "demo_screenshot.jpg"
-        if not demo_path.exists():
-            from PIL import Image
-            Image.new("RGB", (1280, 720), color=(240, 240, 240)).save(demo_path)
-        image_path = str(demo_path)
-        instruction = "Click the login button"
-        # parser.error(
-        #     "--demomust be provided.\n"
-        #     "Example (Windows PowerShell):\n"
-        #     "  python .\\seeact_pipeline.py --demo\n"
-        # )
-    
-    run_single_prediction_example(
-        model_folder= default_model_path,
-        image_path=image_path,
-        instruction=instruction
-    )
