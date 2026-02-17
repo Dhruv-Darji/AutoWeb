@@ -144,7 +144,7 @@ class GPTVisionModel:
         max_new_tokens: int = 256,
         do_sample: bool = False,
         temperature: float = 0.2,
-        image_detail: str = "high",
+        image_detail: str = "low",
         **kwargs,
     ) -> Dict:
         """Run GPT-4o inference with an optional image.
@@ -297,7 +297,7 @@ class GPTVisionModel:
         return text.strip()
 
     @staticmethod
-    def _build_messages(prompt: str, image_url: Optional[str] = None, detail: str = "high"):
+    def _build_messages(prompt: str, image_url: Optional[str] = None, detail: str = "low"):
         """Build OpenAI chat messages with optional image content.
 
         Args:

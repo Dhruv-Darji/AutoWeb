@@ -128,7 +128,7 @@ class SupabaseImageHelper:
 
         # Convert PIL → JPEG bytes (quality=85)
         buf = io.BytesIO()
-        rgb_img.save(buf, format="JPEG", quality=85)
+        rgb_img.save(buf, format="JPEG", quality=92)
         file_bytes = buf.getvalue()
 
         # Upload (upsert so re-runs don't fail)

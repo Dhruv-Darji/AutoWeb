@@ -176,6 +176,7 @@ Answer:
 
         # Deterministic generation: low token budget, no sampling
         # For local Qwen, downscale to limit VRAM / patch-token count.
+        _is_api_model = isinstance(self.model, GPTVisionModel)
 
         def _prepare_image(img):
             if img is None:
@@ -194,7 +195,8 @@ Answer:
             #   • ~85–25K image tokens per grounding call (depending on detail)
             # For local Qwen, the image is still sent (downscaled).
             if _is_api_model:
-                grounding_image = None   # text-only for API models
+                # grounding_image = None   # text-only for API models
+                grounding_image = _prepare_image(website_screenshot)
             else:
                 grounding_image = _prepare_image(website_screenshot)
 
@@ -204,6 +206,7 @@ Answer:
                 max_new_tokens=max_tokens,
                 do_sample=False,
                 temperature=0.0,
+                image_detail="low" if _is_api_model else "high",
             )
             r = self.model.infer(**infer_kwargs)
             if isinstance(r, dict):
