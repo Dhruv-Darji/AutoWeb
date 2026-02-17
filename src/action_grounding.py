@@ -344,9 +344,7 @@ Answer:
         scored_elements.sort(key=lambda x: x["score"], reverse=True)
 
 
-        # select top-k elements based on cross-encoder relevance scores
-        # GPT grounding uses a smaller top-k to keep token load under TPM limits.
-        effective_top_k = 12 if isinstance(self.model, GPTVisionModel) else top_k
+        effective_top_k = 50 if isinstance(self.model, GPTVisionModel) else top_k
         top_k_elements = scored_elements[:effective_top_k]
 
         # Free CUDA cache before Qwen VL inference to avoid OOM on small GPUs
