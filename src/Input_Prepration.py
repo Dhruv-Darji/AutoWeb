@@ -119,12 +119,14 @@ History of actions already taken:
 ────────────────────────────────────────────────────────────────────────────
 THE ACTION SPACE (allowed actions):
 
-1) click — Click on a specific UI element  
-2) input — Type text into a field  
-3) select — Choose an option from a dropdown  
-4) finish — No more actions needed
+1) click — Click a target element
+2) type — Enter text into an input field
+3) select — Choose an option from a dropdown or similar control
+4) FINISH — No more actions needed
 
-All actions must follow this exact output format.
+Only use the three UI-action types above (click, type, select). Do NOT output `scroll` or any other action.
+
+All actions must follow the exact, concise output format described below.
 
 ────────────────────────────────────────────────────────────────────────────
 RESPONSE RULES (IMPORTANT):
@@ -137,24 +139,36 @@ RESPONSE RULES (IMPORTANT):
 
 ────────────────────────────────────────────────────────────────────────────
 OUTPUT FORMAT (one line only):
-ACTION_TYPE: ACTION_DETAIL
+Follow one of these concise dataset-style formats (one line only):
 
-• ACTION_TYPE must be exactly one of: click, input, select, FINISH  
-• ACTION_DETAIL must clearly describe where and what to do on the UI
+- For click:   `[div/button/url/a/link/img/label] ELEMENT_TEXT -> CLICK`
+- For type:    `[input/textarea] ELEMENT_TEXT -> TYPE: <typed value>`
+- For select:  `[select/option] ELEMENT_TEXT -> SELECT`
+- For finish:  `FINISH`
+
+Examples (match Multimodal-Mind2Web style exactly):
+[div/button/url/a/link/img/label]  CAR -> CLICK
+[input/textarea]  Enter pick up city, airport name, or airport code. -> TYPE: Brooklyn Central
+[div/button/url/a/link/img/label]   Pickup -> CLICK
+[div/button/url/a/link/img/label]   Sunday, April 9, 2023 -> CLICK
+[div/button/url/a/link/img/label]  Saturday, April 15, 2023 -> CLICK
+[div/button/url/a/link/img/label]  Community -> CLICK
+
+• ACTION_TYPE must be exactly one of: `click`, `type`, `select`, `FINISH`.
+• ACTION_DETAIL must be concise (<= 40 characters when possible) and use visible UI text. Do NOT add extra commentary or multi-step lists.
 
 ────────────────────────────────────────────────────────────────────────────
-COMPLETE TASK EXAMPLES:
+COMPLETE TASK EXAMPLES (Given for understanding):
 
-Task Goal: 
+Task Goal: "rent a car in Brooklyn - Central, NY on from April 9 to April 15."
 Given Textual plan for all steps (which is expected output of the Action Generation for single step at point):
-1. CLICK : Click on heading "CAR" 
-2. INPUT : Enter pick up city, airport name, or airport code and TYPE: "Brooklyn Central"
-3. CLICK : Click on the suggestion "Brooklyn - Central (New York), US"
-4. CLICK : Click on the "Pickup" textbox
-5. CLICK : Click on the date "Sunday, April 9, 2023"
-6. CLICK : Click on the date "Saturday, April 15, 2023"
-7. CLICK : Click on the "Find cars button"
-
+1. [heading]  CAR -> CLICK
+2. [combobox]  Enter pick up city, airport name, or airport code. -> TYPE: Brooklyn Central
+3. [div]  Brooklyn - Central (New York), US -> CLICK
+4. [textbox]  Pickup -> CLICK
+5. [button]  Sunday, April 9, 2023 -> CLICK
+6. [button]  Saturday, April 15, 2023 -> CLICK
+7. [button]  Find cars button. -> CLICK
 FINISH
 
 INVALID OUTPUTS (don’t generate these):

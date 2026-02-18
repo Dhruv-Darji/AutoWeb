@@ -294,7 +294,12 @@ class SeeActEvaluator:
         if m:
             return m.group(1).upper().strip()
 
-        # Pattern 4: FINISH as standalone
+        # Pattern 4: arrow-suffix forms used in dataset-style plans: "[...] TEXT -> CLICK" or "[...] TEXT -> TYPE: value"
+        m = re.search(r"->\s*(click|input|type|select|scroll|finish|hover)\b", text, re.IGNORECASE)
+        if m:
+            return m.group(1).upper().strip()
+
+        # Pattern 5: FINISH as standalone
         if re.match(r"\s*FINISH\s*$", text, re.IGNORECASE):
             return "FINISH"
 
