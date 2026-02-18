@@ -194,8 +194,36 @@ class SeeActEvaluator:
 
     @staticmethod
     def _extract_gt_pos_backend_ids(action: Dict) -> List[str]:
-        """Collect all backend_node_ids from pos_candidates."""
-        candidates = action.get("candidates") or action.get("pos_candidates") or []
+        """Collect all backend_node_ids from pos_candidates.
+
+        Robustly handle different container types (list, numpy.ndarray, pandas.Series,
+        JSON string, single dict/string) and avoid using truth-value checks on
+        array-like objects which raise ValueError.
+        """
+        # Retrieve without using `or` (numpy arrays raise on truth checks)
+        candidates = action.get("candidates")
+        if candidates is None:
+            candidates = action.get("pos_candidates")
+
+        # Normalize array-like objects that expose `tolist()` (numpy / pandas)
+        if hasattr(candidates, "tolist") and not isinstance(candidates, (str, bytes, dict)):
+            try:
+                candidates = candidates.tolist()
+            except Exception:
+                pass
+
+        # Ensure we have a well-formed iterable of candidates
+        if candidates is None:
+            candidates = []
+        elif isinstance(candidates, str):
+            try:
+                parsed = json.loads(candidates)
+                candidates = parsed if isinstance(parsed, (list, tuple)) else [parsed]
+            except Exception:
+                candidates = [candidates]
+        elif not isinstance(candidates, (list, tuple, set)):
+            candidates = [candidates]
+
         ids = []
         for c in candidates:
             if isinstance(c, str):

@@ -10,7 +10,7 @@ if __name__ == "__main__":
     # `annotation_id = None` and provide `dataset_file_name`.
 
     # Example: single-task run (default)
-    # annotation_id = "401c4e6f-6b0b-47b4-8157-92d7ca468bbc"
+    annotation_id = "0b2c1886-0345-4ca7-a555-8b1cd1b1c40a"
 
     # Example: batch run (process all unique annotation_id in the parquet)
     # annotation_id = None
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Requires OPENAI_API_KEY + SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env
     run_single_prediction_example(
         model_folder= default_model_path,
-        annotation_id=None,
+        annotation_id=annotation_id,
         dataset_file_name=dataset_file_name,
         use_gpt=True,
     )
