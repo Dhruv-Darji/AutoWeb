@@ -5,13 +5,118 @@
       "url": "https://www.wikipedia.org/",
       "domain": "wikipedia.org",
       "name": "Wikipedia",
-      "default_instruction": null
+      "default_instruction": "Search for Artificial Intelligence and open first result.",
+      "risk_level": "low",
+      "requires_hitl": false,
+      "policy_category": "public_navigation"
+    },
+    {
+      "url": "https://bot.sannysoft.com/",
+      "domain": "sannysoft.com",
+      "name": "Sannysoft Bot Detection Test",
+      "default_instruction": "Check if the bot detection is triggered.",
+      "risk_level": "high",
+      "requires_hitl": true,
+      "policy_category": "credential_entry"
+    },
+    {
+      "url": "https://duckduckgo.com/",
+      "domain": "duckduckgo.com",
+      "name": "DuckDuckGo",
+      "default_instruction": "Search for Multimodal AI models and scroll once.",
+      "risk_level": "low",
+      "requires_hitl": false,
+      "policy_category": "public_search"
+    },
+    {
+      "url": "https://github.com/login",
+      "domain": "github.com",
+      "name": "GitHub Login",
+      "default_instruction": "Enter username and click Sign in.",
+      "risk_level": "high",
+      "requires_hitl": true,
+      "policy_category": "credential_entry"
+    },
+    {
+      "url": "https://news.ycombinator.com/",
+      "domain": "news.ycombinator.com",
+      "name": "Hacker News",
+      "default_instruction": "Click the top news article.",
+      "risk_level": "low",
+      "requires_hitl": false,
+      "policy_category": "public_navigation"
     },
     {
       "url": "https://www.google.com/recaptcha/api2/demo",
       "domain": "google.com",
       "name": "Google reCAPTCHA Demo",
-      "default_instruction": null
+      "default_instruction": "Click the I'm not a robot checkbox.",
+      "risk_level": "high",
+      "requires_hitl": true,
+      "policy_category": "captcha_verification"
+    },
+    {
+      "url": "https://www.python.org/",
+      "domain": "python.org",
+      "name": "Python.org",
+      "default_instruction": "Click the Downloads menu.",
+      "risk_level": "low",
+      "requires_hitl": false,
+      "policy_category": "public_navigation"
+    },
+    {
+      "url": "https://www.facebook.com/",
+      "domain": "facebook.com",
+      "name": "Facebook Login",
+      "default_instruction": "Enter email and click Log In.",
+      "risk_level": "high",
+      "requires_hitl": true,
+      "policy_category": "credential_entry"
+    },
+    {
+      "url": "https://www.w3schools.com/html/html_forms.asp",
+      "domain": "w3schools.com",
+      "name": "W3Schools HTML Forms",
+      "default_instruction": "Open Text field example",
+      "risk_level": "low",
+      "requires_hitl": false,
+      "policy_category": "public_demo"
+    },
+    {
+      "url": "https://checkout.stripe.dev/",
+      "domain": "stripe.dev",
+      "name": "Stripe Test Checkout",
+      "default_instruction": "Enter test card details in checkout form.",
+      "risk_level": "critical",
+      "requires_hitl": true,
+      "policy_category": "financial_data_entry"
+    },
+    {
+      "url": "http://demowebshop.tricentis.com/",
+      "domain": "demowebshop.tricentis.com",
+      "name": "Demo Web Shop",
+      "default_instruction": "Add a product to cart and proceed to checkout.",
+      "risk_level": "high",
+      "requires_hitl": true,
+      "policy_category": "checkout_flow"
+    },
+    {
+      "url": "https://demo.testfire.net/",
+      "domain": "demo.testfire.net",
+      "name": "Demo Bank Website",
+      "default_instruction": "Open login page and enter demo credentials.",
+      "risk_level": "critical",
+      "requires_hitl": true,
+      "policy_category": "sensitive_financial_portal"
+    },
+    {
+      "url": "https://accounts.hcaptcha.com/demo",
+      "domain": "hcaptcha.com",
+      "name": "hCaptcha Demo",
+      "default_instruction": "Click the hCaptcha checkbox to verify.",
+      "risk_level": "high",
+      "requires_hitl": true,
+      "policy_category": "captcha_verification"
     }
   ]
 }
