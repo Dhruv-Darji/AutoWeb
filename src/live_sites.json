@@ -1,0 +1,11 @@
+{
+  "description": "Target websites for live SeeAct pipeline testing with PolicyHub + HITL",
+  "sites": [
+    {
+      "url": "https://www.amazon.com",
+      "domain": "amazon.com",
+      "name": "Amazon",
+      "default_instruction": null
+    }
+  ]
+}

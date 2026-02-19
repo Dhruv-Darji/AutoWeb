@@ -300,6 +300,156 @@ class SeeActPipeline:
             "cost": task_cost_data,
         }  
 
+    # ------------------------------------------------------------------
+    # Live-mode: predict a single step from a live browser capture
+    # ------------------------------------------------------------------
+
+    def predict_live_step(
+        self,
+        screenshot,
+        cleaned_html: str,
+        instruction: str,
+        website: str = "",
+        action_history: list = None,
+    ) -> Dict:
+        """
+        Run one prediction cycle on a live page capture (no ground truth).
+
+        Flow:  Input Prep → Action Gen → HITL Gate → (if passed) Grounding
+
+        Args:
+            screenshot:    PIL.Image of the current viewport.
+            cleaned_html:  Body HTML string (used for grounding element extraction).
+            instruction:   User-specified task instruction.
+            website:       Website domain (used for PolicyHub policy lookup).
+            action_history: List of previous action plan strings (or None).
+
+        Returns:
+            Dict with prediction results including HITL gate outcome.
+        """
+        import uuid
+        step_start = time.time()
+
+        # Build a synthetic action dict matching Mind2Web format
+        step_id = str(uuid.uuid4())[:8]
+        action = {
+            "action_uid": f"live_{step_id}",
+            "instruction": instruction,
+            "screenshot": screenshot,
+            "cleaned_html": cleaned_html,
+            "website": website,
+        }
+
+        # Reset per-step cost tracker (GPT mode only)
+        if self.use_gpt and hasattr(self.model, 'reset_step_cost'):
+            self.model.reset_step_cost()
+
+        # PolicyHub: resolve active policy for this website
+        policy_text = self.policy_hub.get_active_policy(domain=website)
+        policy_risk_keywords = self.policy_hub.get_policy_risk_keywords()
+        logger.info(f"  PolicyHub: domain='{website}', policy={len(policy_text)} chars")
+
+        # Step 1: Input Preparation
+        logger.info("=" * 20 + " [1/4] Input Preparation... " + "=" * 20)
+        history = action_history if action_history else ["None"]
+        action_generation_input = self.input_preparator.prepare_input(
+            action=action,
+            history=history,
+            policy_text=policy_text,
+        )
+
+        # Step 2: Action Generation
+        logger.info("=" * 20 + " [2/4] Running Action Generation... " + "=" * 20)
+        action_generation_plan = self.actionGenration.generate_plans(
+            input_data=action_generation_input
+        )
+
+        output_plan = action_generation_plan.get("output_text", "")
+        llm_confidence = action_generation_plan.get("confidence", 0.0)
+        hitl_reason_from_llm = action_generation_plan.get("hitl_reason", "")
+        err = action_generation_plan.get("error")
+
+        logger.info(f"Generated Action Plan: {output_plan}")
+        logger.info(f"  LLM confidence: {llm_confidence}, hitl_reason: {hitl_reason_from_llm}")
+
+        if err:
+            logger.error(f"✗ Action generation failed: {err}")
+            return {
+                "success": False,
+                "error": err,
+                "output_plan": "",
+                "hitl_triggered": False,
+                "composite_confidence": 0.0,
+                "grounding_result": None,
+                "latency": time.time() - step_start,
+            }
+
+        # Step 2.5: HITL Confidence Gate (before grounding to save cost)
+        logger.info("=" * 20 + " [2.5/4] HITL Confidence Gate... " + "=" * 20)
+        hitl_result = self.hitl_gate.compute_composite_confidence(
+            llm_confidence=llm_confidence,
+            action_text=output_plan,
+            policy_risk_keywords=policy_risk_keywords,
+        )
+        composite_confidence = hitl_result["final_confidence"]
+        hitl_triggered = hitl_result["hitl_triggered"]
+        hitl_reason = hitl_reason_from_llm or "; ".join(hitl_result.get("matched_keywords", []))
+
+        if hitl_triggered:
+            logger.warning(
+                f"  ⚡ HITL TRIGGERED — skipping grounding  composite={composite_confidence:.1f}  "
+                f"threshold={hitl_result['threshold']}  reason='{hitl_reason}'  "
+                f"keywords={hitl_result.get('matched_keywords', [])}"
+            )
+            grounding_result = {"success": False, "error": "hitl_triggered", "selected_element": None}
+
+        elif not output_plan.strip():
+            logger.warning("    ⚠ Empty action plan — skipping grounding.")
+            grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
+
+        else:
+            logger.info(f"  ✓ Confidence OK  composite={composite_confidence:.1f}")
+            # Step 3: Action Grounding
+            logger.info("=" * 20 + " [3/4] Running Action Grounding... " + "=" * 20)
+            grounding_result = self.action_grounding.process(
+                annotation_id=f"live_{step_id}",
+                textual_plan=output_plan,
+                step_info=action,
+            )
+
+        # Step 4: Parse grounding output
+        logger.info("=" * 20 + " [4/4] Parsing output... " + "=" * 20)
+        grounding_result = grounding_result or {}
+        if grounding_result.get("success"):
+            sel = grounding_result.get("selected_element", {})
+            logger.info(
+                f"        ✓ Grounded to: <{sel.get('tag', '?')}> "
+                f"text='{(sel.get('text') or '')[:60]}' "
+                f"bid={((sel.get('attributes') or {}).get('backend_node_id', '?'))}"
+            )
+        else:
+            logger.error(f"        ✗ Grounding failed: {grounding_result.get('error', 'unknown')}")
+
+        step_latency = time.time() - step_start
+
+        # Step cost (GPT mode)
+        step_cost = {}
+        if self.use_gpt and hasattr(self.model, 'get_step_cost'):
+            step_cost = self.model.get_step_cost()
+
+        return {
+            "success": True,
+            "output_plan": output_plan,
+            "llm_confidence": llm_confidence,
+            "composite_confidence": composite_confidence,
+            "hitl_triggered": hitl_triggered,
+            "hitl_reason": hitl_reason,
+            "hitl_details": hitl_result,
+            "grounding_result": grounding_result,
+            "latency": step_latency,
+            "cost": step_cost,
+        }
+
 def run_single_prediction_example(
     model_folder: str,
     annotation_id: Optional[str] = None,
