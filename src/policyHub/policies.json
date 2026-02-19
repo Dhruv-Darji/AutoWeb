@@ -33,6 +33,7 @@
     "login",
     "verify",
     "captcha",
+    "robot",
     "security",
     "confirm",
     "withdraw",

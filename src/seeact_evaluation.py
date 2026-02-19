@@ -78,6 +78,7 @@ class StepEvalResult:
     # HITL / Confidence (PolicyHub integration)
     llm_confidence: float = 0.0         # model self-reported confidence (0-100)
     composite_confidence: float = 0.0   # weighted composite score (0-100)
+    policy_risk_flag: bool = False       # model-reported policy risk boolean
     hitl_triggered: bool = False        # whether HITL gate was triggered
     hitl_reason: str = ""               # model-provided reason for low confidence
 
@@ -419,6 +420,7 @@ class SeeActEvaluator:
         latency: float = 0.0,
         llm_confidence: float = 0.0,
         composite_confidence: float = 0.0,
+        policy_risk_flag: bool = False,
         hitl_triggered: bool = False,
         hitl_reason: str = "",
     ) -> StepEvalResult:
@@ -478,6 +480,7 @@ class SeeActEvaluator:
             step_success=step_ok,
             llm_confidence=llm_confidence,
             composite_confidence=composite_confidence,
+            policy_risk_flag=policy_risk_flag,
             hitl_triggered=hitl_triggered,
             hitl_reason=hitl_reason,
             latency=latency,

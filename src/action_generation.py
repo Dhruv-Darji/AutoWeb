@@ -199,6 +199,7 @@ class SeeActActionGenerator:
         parsed = self._parse_structured_output(output_text)
         parsed_action = parsed.get("action", "")
         confidence = parsed.get("confidence", 50)
+        policy_risk = parsed.get("policy_risk", False)
         hitl_reason = parsed.get("hitl_reason", "")
 
         # If structured parse yielded a valid action, prefer it as output_text
@@ -211,6 +212,7 @@ class SeeActActionGenerator:
             "output_text": output_text,
             "latency": latency,
             "confidence": confidence,
+            "policy_risk": policy_risk,
             "hitl_reason": hitl_reason,
         }
         if isinstance(generated_action_plan, dict):

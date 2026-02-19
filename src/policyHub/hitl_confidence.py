@@ -1,24 +1,30 @@
 """
-HITL Confidence Gate — Composite Confidence Scoring + Human-in-the-Loop Triggering
+HITL Confidence Gate — Risk-Based Human-in-the-Loop Triggering
 
-Computes a weighted composite confidence score from three signals:
-    1. LLM self-reported confidence  (weight: 0.5)
-    2. Grounding score gap           (weight: 0.3)
-    3. Policy risk score             (weight: 0.2)
+Decides whether a predicted action needs human review based on three
+independent risk signals (any one is sufficient to trigger HITL):
 
-When the composite score falls below a configurable threshold the gate
-flags the step for Human-in-the-Loop (HITL) review.
+    1. **LLM policy_risk flag** — the model explicitly flagged the action
+       as involving a destructive, financial, credential, CAPTCHA, or
+       account-change operation.
+    2. **Keyword scan** — the action text contains one or more risk keywords
+       from the PolicyHub policy file (delete, payment, password, …).
+    3. **Very low confidence** — the model's self-reported confidence is
+       below a configurable floor (default 30), meaning it is essentially
+       guessing.
+
+Normal navigation with moderate confidence (e.g., 60 on a dense Wikipedia
+page) does **not** trigger HITL — ambiguity ≠ risk.
 
 Usage:
-    gate = HITLConfidenceGate(threshold=75)
-    composite = gate.compute_composite_confidence(
-        llm_confidence=85,
-        grounding_top1_score=0.82,
-        grounding_top2_score=0.45,
-        action_text="[button] Delete -> CLICK",
+    gate = HITLConfidenceGate()
+    result = gate.evaluate(
+        llm_confidence=72,
+        policy_risk_flag=False,
+        action_text="[link] Wikibooks -> CLICK",
         policy_risk_keywords=["delete", "remove", "payment"],
     )
-    if composite["hitl_triggered"]:
+    if result["hitl_triggered"]:
         logger.warning("HITL required!")
 """
 
@@ -30,39 +36,107 @@ from AutoWeb.src.logger import logger
 
 class HITLConfidenceGate:
     """
-    Composite confidence scorer and HITL trigger.
+    Risk-based HITL trigger.
 
-    Formula:
-        final = W_LLM * llm_conf + W_POLICY * policy_risk_score
+    Triggers when:
+        - LLM flagged ``policy_risk = True``   OR
+        - Action text contains policy risk keywords   OR
+        - LLM confidence < ``low_confidence_floor``
 
-    Default weights: 0.7 / 0.3 (tunable).
-    Runs *before* Action Grounding so grounding cost is saved on low-confidence steps.
+    Does NOT trigger merely because a page is complex or confidence is
+    moderate on a safe action.
     """
-
-    # Class-level defaults (can be overridden per instance)
-    W_LLM: float = 0.7
-    W_POLICY: float = 0.3
 
     def __init__(
         self,
-        threshold: int = 75,
-        w_llm: float = None,
-        w_policy: float = None,
+        low_confidence_floor: int = 30,
+        threshold: int = 75,          # kept for backward compat / config, but unused by default
     ):
         """
         Args:
-            threshold:   Composite score below this value triggers HITL (0–100).
-            w_llm:       Weight for LLM self-confidence component.
-            w_policy:    Weight for policy risk component.
+            low_confidence_floor: Confidence below this value triggers HITL
+                                  regardless of risk signals (model is guessing).
+            threshold:            Legacy composite threshold (retained for config compatibility).
         """
-        self.threshold = max(0, min(100, threshold))
-        if w_llm is not None:
-            self.W_LLM = w_llm
-        if w_policy is not None:
-            self.W_POLICY = w_policy
+        self.low_confidence_floor = max(0, min(100, low_confidence_floor))
+        self.threshold = threshold  # stored but not used in risk-based logic
 
     # ------------------------------------------------------------------
-    # Core scoring
+    # Core evaluation
+    # ------------------------------------------------------------------
+
+    def evaluate(
+        self,
+        llm_confidence: float,
+        policy_risk_flag: bool,
+        action_text: str,
+        policy_risk_keywords: List[str],
+        hitl_reason: str = "",
+    ) -> Dict:
+        """
+        Decide whether the step needs HITL review.
+
+        Args:
+            llm_confidence:        Model self-reported confidence (0–100).
+            policy_risk_flag:      Model-reported boolean — True if the action
+                                   may involve policy-sensitive operations.
+            action_text:           Generated action plan text (keyword scan).
+            policy_risk_keywords:  Risk keywords from PolicyHub.
+            hitl_reason:           Model-provided reason string (also scanned for keywords).
+
+        Returns:
+            Dict with:
+                hitl_triggered      (bool)
+                trigger_reasons     (List[str])  — why HITL was triggered (empty if not)
+                llm_confidence      (float 0–100)
+                policy_risk_flag    (bool)
+                matched_keywords    (List[str])
+        """
+        llm_conf = max(0.0, min(100.0, float(llm_confidence)))
+
+        # --- 1. Keyword scan (action text + hitl_reason) ---
+        combined_text = f"{action_text} {hitl_reason}".strip()
+        matched_kw = self._scan_keywords(combined_text, policy_risk_keywords)
+
+        # --- 2. Collect trigger reasons ---
+        trigger_reasons: List[str] = []
+
+        if policy_risk_flag:
+            trigger_reasons.append("llm_flagged_policy_risk")
+
+        if matched_kw:
+            trigger_reasons.append(f"risk_keywords_matched: {matched_kw}")
+
+        if llm_conf < self.low_confidence_floor:
+            trigger_reasons.append(f"very_low_confidence ({llm_conf:.0f} < {self.low_confidence_floor})")
+
+        triggered = len(trigger_reasons) > 0
+
+        result = {
+            "hitl_triggered": triggered,
+            "trigger_reasons": trigger_reasons,
+            "llm_confidence": llm_conf,
+            "policy_risk_flag": policy_risk_flag,
+            "matched_keywords": matched_kw,
+            "low_confidence_floor": self.low_confidence_floor,
+        }
+
+        if triggered:
+            logger.debug(
+                f"[HITL] Triggered — reasons={trigger_reasons}  "
+                f"(llm_conf={llm_conf:.0f}, risk_flag={policy_risk_flag}, "
+                f"keywords={matched_kw})"
+            )
+        else:
+            logger.debug(
+                f"[HITL] Not triggered — llm_conf={llm_conf:.0f}, "
+                f"risk_flag={policy_risk_flag}, keywords={matched_kw}"
+            )
+
+        return result
+
+    # ------------------------------------------------------------------
+    # Backward-compatible alias
     # ------------------------------------------------------------------
 
     def compute_composite_confidence(
@@ -70,98 +144,45 @@ class HITLConfidenceGate:
         llm_confidence: float,
         action_text: str,
         policy_risk_keywords: List[str],
+        policy_risk_flag: bool = False,
+        hitl_reason: str = "",
     ) -> Dict:
+        """Backward-compatible wrapper around :meth:`evaluate`.
+
+        Maps the old interface to the new risk-based logic.  The returned
+        dict includes ``final_confidence`` and ``threshold`` keys so that
+        callers that still read those fields keep working, but the actual
+        HITL decision is risk-based.
         """
-        Compute the composite HITL confidence score.
-
-        This runs *before* Action Grounding, so only LLM confidence and
-        policy-risk signals are used (no grounding scores available yet).
-
-        Args:
-            llm_confidence:        Model self-reported confidence (0–100).
-            action_text:           Generated action plan text (used for keyword matching).
-            policy_risk_keywords:  Risk keywords from PolicyHub.
-
-        Returns:
-            Dict with:
-                final_confidence   (float 0–100)
-                llm_confidence     (float 0–100)
-                policy_risk_score  (float 0–100)
-                hitl_triggered     (bool)
-                threshold          (int)
-                matched_keywords   (List[str])
-        """
-        # --- 1. Clamp LLM confidence ---
-        llm_conf = max(0.0, min(100.0, float(llm_confidence)))
-
-        # --- 2. Policy risk score ---
-        policy_risk_score, matched_kw = self._compute_policy_risk(
-            action_text, policy_risk_keywords
+        result = self.evaluate(
+            llm_confidence=llm_confidence,
+            policy_risk_flag=policy_risk_flag,
+            action_text=action_text,
+            policy_risk_keywords=policy_risk_keywords,
+            hitl_reason=hitl_reason,
         )
-
-        # --- 3. Weighted composite ---
-        final = (
-            self.W_LLM * llm_conf
-            + self.W_POLICY * policy_risk_score
-        )
-        final = round(final, 2)
-
-        triggered = final < self.threshold
-
-        result = {
-            "final_confidence": final,
-            "llm_confidence": llm_conf,
-            "policy_risk_score": policy_risk_score,
-            "hitl_triggered": triggered,
-            "threshold": self.threshold,
-            "matched_keywords": matched_kw,
-        }
-
-        if triggered:
-            logger.debug(
-                f"[HITL] Triggered — final={final:.1f} < threshold={self.threshold} "
-                f"(llm={llm_conf:.0f}, risk={policy_risk_score:.0f}, "
-                f"keywords={matched_kw})"
-            )
-
+        # Add legacy keys for callers that still reference them
+        result["final_confidence"] = result["llm_confidence"]
+        result["policy_risk_score"] = 20.0 if result["matched_keywords"] else 100.0
+        result["threshold"] = self.threshold
         return result
 
     # ------------------------------------------------------------------
     # Convenience
     # ------------------------------------------------------------------
 
-    def should_trigger_hitl(self, composite: Dict) -> bool:
-        """Check whether HITL is flagged in a composite result dict."""
-        return composite.get("hitl_triggered", False)
+    def should_trigger_hitl(self, result: Dict) -> bool:
+        """Check whether HITL is flagged in a result dict."""
+        return result.get("hitl_triggered", False)
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _compute_policy_risk(
-        action_text: str, keywords: List[str]
-    ) -> tuple:
-        """
-        Score how risky the action text is with respect to policy keywords.
-
-        Returns:
-            (score, matched_keywords)
-
-            score mapping:
-                100  — no policy-risk keywords found (safe)
-                 50  — 1 keyword found (moderate risk)
-                 20  — 2+ keywords found (high risk)
-        """
+    def _scan_keywords(action_text: str, keywords: List[str]) -> List[str]:
+        """Return list of policy risk keywords found in the action text."""
         if not action_text or not keywords:
-            return 100.0, []
-
+            return []
         text_lower = action_text.lower()
-        matched = [kw for kw in keywords if kw.lower() in text_lower]
-
-        if len(matched) == 0:
-            return 100.0, []
-        elif len(matched) == 1:
-            return 50.0, matched
-        else:
-            return 20.0, matched
+        return [kw for kw in keywords if kw.lower() in text_lower]

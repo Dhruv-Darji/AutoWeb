@@ -1,17 +1,4 @@
-"""
-SeeAct Input Preparation Module
-
-Take values:
-- single task action containing instruction, screenshot, cleaned HTML etc.
-- history of previous actions for the task (if needed for input preparation)
-And prepare the input for the Action Generation step. This include:
-- website screenshot
-- instruction (user given high level instruction)
-- fixed prompt template (for now, can be more dynamic in the future)
-- past history of actions
-
-The output of this module will be the input for the Action Generation step, which will be a vision-language (Qwen-2.4-VL-2B-Instruct) model for SeeAct.
-"""
+# Input_Prepration.py
 
 from typing import Dict, List, Tuple, Optional
 
@@ -76,15 +63,16 @@ class SeeActInputPreparator:
                 + self._separator() + "\n"
                 + "POLICY CONSTRAINTS (you MUST follow these strictly):\n"
                 + policy_text + "\n\n"
-                + "CONFIDENCE CALIBRATION (critical -- read carefully):\n"
-                + "- Your DEFAULT confidence MUST be 40-55. Start there and adjust.\n"
-                + "- Only go above 75 if ALL of: (a) target element is unambiguous, "
-                + "(b) action type is obvious, (c) zero policy risk, (d) action directly advances the goal.\n"
-                + "- Interacting with CAPTCHAs, security checks, cookie banners, popups, "
-                + "or anything NOT directly part of the user's task: confidence <= 50.\n"
-                + "- If ANY risk keyword from the policies above appears in the action or element: confidence <= 45.\n"
-                + "- If you are unsure which element to click, or multiple elements could match: confidence <= 55.\n"
-                + "- ALWAYS fill hitl_reason when confidence < 75. Explain what made you uncertain.\n"
+                + "RISK ASSESSMENT RULES:\n"
+                + "- Set \"policy_risk\" to true ONLY when the action involves: "
+                + "destructive operations (delete, remove, cancel), financial transactions "
+                + "(purchase, payment, checkout, transfer), credentials (password, login), "
+                + "CAPTCHA / security mechanisms, or account changes (unsubscribe, terminate, approve).\n"
+                + "- Set \"policy_risk\" to false for normal navigation, reading, searching, "
+                + "clicking links, typing search queries, or any non-destructive browsing.\n"
+                + "- When \"policy_risk\" is true, explain why in \"hitl_reason\".\n"
+                + "- Report REALISTIC confidence based on how certain you are about element selection. "
+                + "Do NOT artificially reduce confidence for safe actions just because the page is complex.\n"
                 + self._separator()
             )
 
@@ -131,7 +119,6 @@ RESPONSE RULES (IMPORTANT):
 * Do NOT make up UI element text -- use what is visible.
 * Do NOT hallucinate or invent actions unrelated to the visible screenshot.
 * If the task is already complete or no further UI action is needed, output exactly `FINISH` (without quotes).
-* CONFIDENCE: Be skeptical of your own certainty. Default to 40-55. Only exceed 75 when the action is obviously correct with zero ambiguity.
 {output_format_block}
 {sep}
 COMPLETE TASK EXAMPLES (Given for understanding):
@@ -180,7 +167,7 @@ Now based on the instruction, the screenshot, and history, generate the **next s
         return """
 OUTPUT FORMAT (respond with ONLY this JSON object, nothing else):
 
-{"action": "[element_type] ELEMENT_TEXT -> CLICK", "confidence": 50, "hitl_reason": "Moderate certainty -- element is plausible but page is complex."}
+{"action": "[element_type] ELEMENT_TEXT -> CLICK", "confidence": 75, "policy_risk": false, "hitl_reason": ""}
 
 Field rules:
 - "action": One of the dataset-style action formats below:
@@ -188,22 +175,25 @@ Field rules:
     - `[input/textarea] ELEMENT_TEXT -> TYPE: <typed value>`
     - `[select/option] ELEMENT_TEXT -> SELECT`
     - `FINISH`
-- "confidence": Integer 0-100 indicating your certainty. BE CONSERVATIVE.
-    Your baseline should be 40-55. Most real-world actions fall in this range.
-    - 80-100: RARE. Only for trivially obvious, zero-risk, single-candidate actions
-              (e.g., clicking a clearly labeled "Search" button when the task says "search").
-    - 60-79:  Confident. Element is clearly correct, action type is clear, low risk.
-    - 40-59:  Moderate. Reasonable guess but some ambiguity, layout complexity, or indirect relevance.
-    - 0-39:   Low. Guessing, multiple candidates, policy risk, or action seems tangential.
-- "hitl_reason": If confidence < 75, you MUST explain why (e.g., ambiguous target,
-  policy risk, CAPTCHA interaction, not directly advancing goal). Empty string only if confidence >= 75.
+- "confidence": Integer 0-100. Your realistic certainty about element selection.
+    Report honestly — do NOT reduce confidence just because a page has many elements.
+    - 80-100: Clearly correct element vector, obvious action
+    - 60-79:  Likely correct, minor ambiguity but reasonable choice
+    - 40-59:  Uncertain, multiple plausible candidates
+    - 0-39:   Guessing or cannot determine proper target
+- "policy_risk": Boolean. true ONLY if the action involves:
+    destructive ops, financial transactions, credentials, CAPTCHA/security, or account changes.
+    false for normal navigation, reading, searching, link clicks, typing queries.
+- "hitl_reason": When policy_risk is true, explain what risk you detected.
+    Otherwise empty string "".
 
 Examples:
-{"action": "[button] Search -> CLICK", "confidence": 92, "hitl_reason": ""}
-{"action": "[input] Enter city -> TYPE: Brooklyn Central", "confidence": 86, "hitl_reason": ""}
-{"action": "[checkbox] I am not a robot -> CLICK", "confidence": 35, "hitl_reason": "CAPTCHA interaction, not part of user task. Uncertain if needed."}
-{"action": "[button] Delete item -> CLICK", "confidence": 20, "hitl_reason": "Destructive action, violates policy risk keywords."}
-{"action": "FINISH", "confidence": 79, "hitl_reason": "Task appears complete based on visible page state."}
+{"action": "[link] Wikibooks -> CLICK", "confidence": 72, "policy_risk": false, "hitl_reason": ""}
+{"action": "[button] Search -> CLICK", "confidence": 90, "policy_risk": false, "hitl_reason": ""}
+{"action": "[input] Enter city -> TYPE: Brooklyn Central", "confidence": 80, "policy_risk": false, "hitl_reason": ""}
+{"action": "[checkbox] I am not a robot -> CLICK", "confidence": 60, "policy_risk": true, "hitl_reason": "CAPTCHA security mechanism."}
+{"action": "[button] Delete item -> CLICK", "confidence": 55, "policy_risk": true, "hitl_reason": "Destructive action — delete keyword."}
+{"action": "FINISH", "confidence": 85, "policy_risk": false, "hitl_reason": ""}
 
 IMPORTANT: Respond with ONLY the raw JSON object. No markdown, no code blocks, no explanations.
 """

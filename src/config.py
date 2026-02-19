@@ -157,13 +157,27 @@ def get_policy_hub_path(default: Optional[str] = None) -> Optional[str]:
 
 
 def get_hitl_threshold(default: int = 75) -> int:
-    """Composite confidence threshold for HITL triggering (0–100).
+    """Legacy composite confidence threshold (0-100).
 
-    Steps with composite confidence below this value are flagged for
-    Human-in-the-Loop review.  Set via ``HITL_THRESHOLD`` in .env.
+    Retained for backward compatibility. The HITL gate now uses risk-based
+    triggering, so this value is stored but not used for gating decisions.
+    Set via ``HITL_THRESHOLD`` in .env.
     """
     try:
         return int(os.getenv("HITL_THRESHOLD", str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def get_low_confidence_floor(default: int = 30) -> int:
+    """Confidence floor below which HITL triggers regardless of risk (0-100).
+
+    If the model's self-reported confidence is below this value, HITL
+    triggers because the model is essentially guessing.
+    Set via ``LOW_CONFIDENCE_FLOOR`` in .env.
+    """
+    try:
+        return int(os.getenv("LOW_CONFIDENCE_FLOOR", str(default)))
     except (TypeError, ValueError):
         return default
 

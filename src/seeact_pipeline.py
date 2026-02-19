@@ -18,7 +18,7 @@ src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
-from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model, get_policy_hub_path, get_hitl_threshold
+from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model, get_policy_hub_path, get_hitl_threshold, get_low_confidence_floor
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
 from AutoWeb.src.logger import logger
@@ -105,11 +105,14 @@ class SeeActPipeline:
         self.evaluator = SeeActEvaluator(output_dir="eval_results")
         logger.info("  ✓ Evaluator ready")
 
-        # 7. PolicyHub + HITL Confidence Gate
+        # 7. PolicyHub + HITL Confidence Gate (risk-based)
         self.policy_hub = PolicyHub(json_path=get_policy_hub_path())
-        self.hitl_gate = HITLConfidenceGate(threshold=get_hitl_threshold())
+        self.hitl_gate = HITLConfidenceGate(
+            low_confidence_floor=get_low_confidence_floor(),
+            threshold=get_hitl_threshold(),
+        )
         logger.info(f"  ✓ PolicyHub loaded ({self.policy_hub.get_stats()})")
-        logger.info(f"  ✓ HITL gate ready (threshold={get_hitl_threshold()})")
+        logger.info(f"  ✓ HITL gate ready (risk-based, low_confidence_floor={get_low_confidence_floor()})")
         
         logger.info("[SeeActPipeline] ✓ Pipeline ready!")
     
@@ -176,11 +179,12 @@ class SeeActPipeline:
 
             output_plan = action_generation_plan.get("output_text", "")
             llm_confidence = action_generation_plan.get("confidence", 0.0)
+            policy_risk_flag = action_generation_plan.get("policy_risk", False)
             hitl_reason_from_llm = action_generation_plan.get("hitl_reason", "")
             err = action_generation_plan.get("error")
 
             logger.info(f"Generated Action Plan: {output_plan}")
-            logger.info(f"  LLM confidence: {llm_confidence}, hitl_reason: {hitl_reason_from_llm}")
+            logger.info(f"  LLM confidence: {llm_confidence}, policy_risk: {policy_risk_flag}, hitl_reason: {hitl_reason_from_llm}")
 
             if err:
                 logger.error(f"✗ Action generation failed with error: {err}")
@@ -197,15 +201,18 @@ class SeeActPipeline:
                 llm_confidence=llm_confidence,
                 action_text=output_plan,
                 policy_risk_keywords=policy_risk_keywords,
+                policy_risk_flag=policy_risk_flag,
+                hitl_reason=hitl_reason_from_llm,
             )
             composite_confidence = hitl_result["final_confidence"]
             hitl_triggered = hitl_result["hitl_triggered"]
-            hitl_reason = hitl_reason_from_llm or "; ".join(hitl_result.get("matched_keywords", []))
+            hitl_reason = hitl_reason_from_llm or "; ".join(hitl_result.get("trigger_reasons", []))
 
             if hitl_triggered:
                 logger.warning(
-                    f"  ⚡ HITL TRIGGERED — skipping grounding  composite={composite_confidence:.1f}  "
-                    f"threshold={hitl_result['threshold']}  reason='{hitl_reason}'  "
+                    f"  \u26a1 HITL TRIGGERED \u2014 skipping grounding  "
+                    f"reasons={hitl_result.get('trigger_reasons', [])}  "
+                    f"llm_conf={llm_confidence}  risk_flag={policy_risk_flag}  "
                     f"keywords={hitl_result.get('matched_keywords', [])}"
                 )
                 # Skip expensive grounding call; record a stub result
@@ -216,7 +223,7 @@ class SeeActPipeline:
                 logger.warning("    ⚠ Empty action plan — skipping grounding, recording as failed step.")
                 grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
             else:
-                logger.info(f"  ✓ Confidence OK  composite={composite_confidence:.1f}")
+                logger.info(f"  \u2713 No risk detected  llm_conf={llm_confidence}, risk_flag={policy_risk_flag}")
                 # Step 4: Grounding method selection and processing
                 logger.info("="*20 + " [4/6] Running Action Grounding ... " + "="*20)
                 grounding_result = self.action_grounding.process(
@@ -251,6 +258,7 @@ class SeeActPipeline:
                 latency=action_latency,
                 llm_confidence=llm_confidence,
                 composite_confidence=composite_confidence,
+                policy_risk_flag=policy_risk_flag,
                 hitl_triggered=hitl_triggered,
                 hitl_reason=hitl_reason,
             )
@@ -366,11 +374,12 @@ class SeeActPipeline:
 
         output_plan = action_generation_plan.get("output_text", "")
         llm_confidence = action_generation_plan.get("confidence", 0.0)
+        policy_risk_flag = action_generation_plan.get("policy_risk", False)
         hitl_reason_from_llm = action_generation_plan.get("hitl_reason", "")
         err = action_generation_plan.get("error")
 
         logger.info(f"Generated Action Plan: {output_plan}")
-        logger.info(f"  LLM confidence: {llm_confidence}, hitl_reason: {hitl_reason_from_llm}")
+        logger.info(f"  LLM confidence: {llm_confidence}, policy_risk: {policy_risk_flag}, hitl_reason: {hitl_reason_from_llm}")
 
         if err:
             logger.error(f"✗ Action generation failed: {err}")
@@ -390,15 +399,19 @@ class SeeActPipeline:
             llm_confidence=llm_confidence,
             action_text=output_plan,
             policy_risk_keywords=policy_risk_keywords,
+            policy_risk_flag=policy_risk_flag,
+            hitl_reason=hitl_reason_from_llm,
         )
         composite_confidence = hitl_result["final_confidence"]
         hitl_triggered = hitl_result["hitl_triggered"]
-        hitl_reason = hitl_reason_from_llm or "; ".join(hitl_result.get("matched_keywords", []))
+        hitl_reason = hitl_reason_from_llm or "; ".join(hitl_result.get("trigger_reasons", []))
+        
 
         if hitl_triggered:
             logger.warning(
-                f"  ⚡ HITL TRIGGERED — skipping grounding  composite={composite_confidence:.1f}  "
-                f"threshold={hitl_result['threshold']}  reason='{hitl_reason}'  "
+                f"  ⚡ HITL TRIGGERED — skipping grounding  "
+                f"reasons={hitl_result.get('trigger_reasons', [])}  "
+                f"llm_conf={llm_confidence}  risk_flag={policy_risk_flag}  "
                 f"keywords={hitl_result.get('matched_keywords', [])}"
             )
             grounding_result = {"success": False, "error": "hitl_triggered", "selected_element": None}
@@ -408,7 +421,7 @@ class SeeActPipeline:
             grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
 
         else:
-            logger.info(f"  ✓ Confidence OK  composite={composite_confidence:.1f}")
+            logger.info(f"  \u2713 No risk detected  llm_conf={llm_confidence}, risk_flag={policy_risk_flag}")
             # Step 3: Action Grounding
             logger.info("=" * 20 + " [3/4] Running Action Grounding... " + "=" * 20)
             grounding_result = self.action_grounding.process(
@@ -441,6 +454,7 @@ class SeeActPipeline:
             "success": True,
             "output_plan": output_plan,
             "llm_confidence": llm_confidence,
+            "policy_risk_flag": policy_risk_flag,
             "composite_confidence": composite_confidence,
             "hitl_triggered": hitl_triggered,
             "hitl_reason": hitl_reason,
