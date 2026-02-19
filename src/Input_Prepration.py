@@ -21,13 +21,17 @@ class SeeActInputPreparator:
 
     def prepare_input(self,
                       action: Dict,
-                      history: List[Dict]) -> Dict:
+                      history: List[Dict],
+                      policy_text: Optional[str] = None) -> Dict:
         """
         Prepare input for a single action generation step.
         
         Args:
             action: Dict containing details of the current action (including instruction, website screenshot, cleaned HTML, etc.)
             history: List of previous Action Generation planes/steps in the task (if needed for input preparation)
+            policy_text: Optional policy constraints text from PolicyHub. When provided,
+                         injected into the prompt and the output format switches to
+                         structured JSON with confidence scoring.
         Returns:
             Dict containing prepared inputs for action generation, including:
             - "screenshot": website screenshot to be given in Action Generation
@@ -37,43 +41,6 @@ class SeeActInputPreparator:
         instruction = action.get("instruction", "")
 
         website_screenshot = action.get("screenshot", None)
-
-        # # If the screenshot is a PIL image and is larger than typical model input,
-        # # downscale it to a max size to avoid excessive patch/token counts.
-        # try:
-        #     from PIL import Image
-        #     if isinstance(website_screenshot, Image.Image):
-        #         orig_size = website_screenshot.size
-        #         max_w, max_h = (1280, 720)
-        #         if orig_size[0] > max_w or orig_size[1] > max_h:
-        #             # compute high-quality resize that preserves more detail than aggressive thumbnailing
-        #             # increase cap to double quality (larger but still constrained)                    
-        #             HIGH_QUALITY_MAX_W, HIGH_QUALITY_MAX_H = 3200, 1800  # doubled from 3200x1800
-        #             scale_w = HIGH_QUALITY_MAX_W / orig_size[0]
-        #             scale_h = HIGH_QUALITY_MAX_H / orig_size[1]
-        #             scale = min(scale_w, scale_h, 1.0)
-        #             new_size = (max(1, int(orig_size[0] * scale)), max(1, int(orig_size[1] * scale)))
-
-        #             # perform high-quality resize with LANCZOS (anti-aliased)
-        #             website_screenshot = website_screenshot.resize(new_size, Image.Resampling.LANCZOS)
-        #             print(f"[SeeActInputPreparator] resized screenshot {orig_size} -> {website_screenshot.size} (HQ x2)")
-        #             # warn: larger images increase token/patch count and may slow inference or increase memory use
-        #             if website_screenshot.size[0] * website_screenshot.size[1] > 1920 * 1080:
-        #                 print("[SeeActInputPreparator] ⚠ using higher-quality image; this will increase tokenization size and GPU memory usage")
-        #             # Store image in action_id named temp file for further debugging in processed_image folder
-        #             import os
-        #             temp_dir = "processed_images"
-        #             os.makedirs(temp_dir, exist_ok=True)
-        #             temp_path = os.path.join(temp_dir, f"{action.get('action_uid', 'unknown')}_input.jpg")
-        #             try:
-        #                 website_screenshot.save(temp_path, quality=92, optimize=True)
-        #                 print(f"    saved processed screenshot to {temp_path} (quality=92)")
-        #             except Exception:
-        #                 website_screenshot.save(temp_path)
-        #                 print(f"    saved processed screenshot to {temp_path}")
-        # except Exception:
-        #     # non-fatal — continue with original image
-        #     pass
 
         # Format history into a numbered list for clearer context (handles list or string inputs)
         history_text = ""
@@ -101,12 +68,33 @@ class SeeActInputPreparator:
         except Exception:
             history_text = str(history)
 
+        # Build optional policy constraints block
+        policy_block = ""
+        if policy_text and policy_text.strip():
+            policy_block = (
+                "\n"
+                + self._separator() + "\n"
+                + "POLICY CONSTRAINTS (you MUST follow these strictly):\n"
+                + policy_text + "\n\n"
+                + "- If an action may violate any policy above, you MUST reduce your confidence score.\n"
+                + "- If uncertain whether an action is safe, set confidence below 70 and explain in hitl_reason.\n"
+                + self._separator()
+            )
+
+        # Decide output format based on whether PolicyHub is active
+        if policy_text and policy_text.strip():
+            output_format_block = self._build_json_output_format()
+        else:
+            output_format_block = self._build_legacy_output_format()
+
+        sep = self._separator()
+
         prompt_text = f"""
-You are an expert web automation assistant. Your job is to generate **exactly one atomic UI action** at a time that will help complete the user’s task on the current webpage. You should think like a human interacting with the page: observing, reasoning, and planning one small step at a time.
+You are an expert web automation assistant. Your job is to generate **exactly one atomic UI action** at a time that will help complete the user's task on the current webpage. You should think like a human interacting with the page: observing, reasoning, and planning one small step at a time.
 
-Do NOT produce multi-step plans, lists, code, or explanations — only one action.
+Do NOT produce multi-step plans, lists, code, or explanations -- only one action.
 
-────────────────────────────────────────────────────────────────────────────
+{sep}
 INPUTS (do not repeat in output):
 
 Instruction (goal): {instruction}
@@ -115,29 +103,104 @@ Current website screenshot:
 
 History of actions already taken:
 {history_text}
-
-────────────────────────────────────────────────────────────────────────────
+{policy_block}
+{sep}
 THE ACTION SPACE (allowed actions):
 
-1) click — Click a target element
-2) type — Enter text into an input field
-3) select — Choose an option from a dropdown or similar control
-4) FINISH — No more actions needed
+1) click -- Click a target element
+2) type -- Enter text into an input field
+3) select -- Choose an option from a dropdown or similar control
+4) FINISH -- No more actions needed
 
 Only use the three UI-action types above (click, type, select). Do NOT output `scroll` or any other action.
 
 All actions must follow the exact, concise output format described below.
 
-────────────────────────────────────────────────────────────────────────────
+{sep}
 RESPONSE RULES (IMPORTANT):
 
-• Generate **exactly ONE next action** that moves toward the goal.  
-• Do NOT repeat an action already in history.  
-• Do NOT make up UI element text — use what is visible.  
-• Do NOT hallucinate or invent actions unrelated to the visible screenshot.  
-• If the task is already complete or no further UI action is needed, output exactly `FINISH` (without quotes).  
+* Generate **exactly ONE next action** that moves toward the goal.
+* Do NOT repeat an action already in history.
+* Do NOT make up UI element text -- use what is visible.
+* Do NOT hallucinate or invent actions unrelated to the visible screenshot.
+* If the task is already complete or no further UI action is needed, output exactly `FINISH` (without quotes).
+{output_format_block}
+{sep}
+COMPLETE TASK EXAMPLES (Given for understanding):
 
-────────────────────────────────────────────────────────────────────────────
+Task Goal: "rent a car in Brooklyn - Central, NY on from April 9 to April 15."
+Given Textual plan for all steps (which is expected output of the Action Generation for single step at point):
+1. [heading]  CAR -> CLICK
+2. [combobox]  Enter pick up city, airport name, or airport code. -> TYPE: Brooklyn Central
+3. [div]  Brooklyn - Central (New York), US -> CLICK
+4. [textbox]  Pickup -> CLICK
+5. [button]  Sunday, April 9, 2023 -> CLICK
+6. [button]  Saturday, April 15, 2023 -> CLICK
+7. [button]  Find cars button. -> CLICK
+FINISH
+
+INVALID OUTPUTS (don't generate these):
+* [] (empty value)
+* click: #input-button
+* input: search:nth-child(2)
+* multi-step lists (e.g., "1. click..., 2. input...")
+* explanations or thoughts in output
+* commands not executable as UI action
+* HTML, CSS selectors, code, or element ids
+
+{sep}
+Now based on the instruction, the screenshot, and history, generate the **next single action** and nothing else.
+
+"""
+        return {
+            "screenshot": website_screenshot,
+            "prompt": prompt_text
+        }
+
+    # ------------------------------------------------------------------
+    # Private helpers for prompt building
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _separator() -> str:
+        """Return the horizontal rule separator used in prompts."""
+        return "-" * 76
+
+    @staticmethod
+    def _build_json_output_format() -> str:
+        """Build the structured JSON output format block (used when PolicyHub is active)."""
+        return """
+OUTPUT FORMAT (respond with ONLY this JSON object, nothing else):
+
+{"action": "[element_type] ELEMENT_TEXT -> CLICK", "confidence": 85, "hitl_reason": ""}
+
+Field rules:
+- "action": One of the dataset-style action formats below:
+    - `[div/button/url/a/link/img/label] ELEMENT_TEXT -> CLICK`
+    - `[input/textarea] ELEMENT_TEXT -> TYPE: <typed value>`
+    - `[select/option] ELEMENT_TEXT -> SELECT`
+    - `FINISH`
+- "confidence": Integer 0-100 indicating your certainty:
+    - 90-100: Very confident, clear next step, no policy concerns
+    - 70-89:  Fairly confident, minor ambiguity
+    - 50-69:  Uncertain -- ambiguous elements, possible policy risk
+    - 0-49:   Very uncertain -- likely policy violation or cannot determine action
+- "hitl_reason": Empty string "" if confidence >= 80. Otherwise explain briefly
+  why confidence is low (e.g., policy violation risk, ambiguous target, uncertain action).
+
+Examples:
+{"action": "[heading] CAR -> CLICK", "confidence": 95, "hitl_reason": ""}
+{"action": "[input] Enter city -> TYPE: Brooklyn Central", "confidence": 88, "hitl_reason": ""}
+{"action": "[button] Delete item -> CLICK", "confidence": 35, "hitl_reason": "Action is destructive and may violate policy."}
+{"action": "FINISH", "confidence": 98, "hitl_reason": ""}
+
+IMPORTANT: Respond with ONLY the raw JSON object. No markdown, no code blocks, no explanations.
+"""
+
+    @staticmethod
+    def _build_legacy_output_format() -> str:
+        """Build the legacy one-line output format block (backward compatible, no PolicyHub)."""
+        return """
 OUTPUT FORMAT (one line only):
 Follow one of these concise dataset-style formats (one line only):
 
@@ -154,37 +217,6 @@ Examples (match Multimodal-Mind2Web style exactly):
 [div/button/url/a/link/img/label]  Saturday, April 15, 2023 -> CLICK
 [div/button/url/a/link/img/label]  Community -> CLICK
 
-• ACTION_TYPE must be exactly one of: `click`, `type`, `select`, `FINISH`.
-• ACTION_DETAIL must be concise (<= 40 characters when possible) and use visible UI text. Do NOT add extra commentary or multi-step lists.
-
-────────────────────────────────────────────────────────────────────────────
-COMPLETE TASK EXAMPLES (Given for understanding):
-
-Task Goal: "rent a car in Brooklyn - Central, NY on from April 9 to April 15."
-Given Textual plan for all steps (which is expected output of the Action Generation for single step at point):
-1. [heading]  CAR -> CLICK
-2. [combobox]  Enter pick up city, airport name, or airport code. -> TYPE: Brooklyn Central
-3. [div]  Brooklyn - Central (New York), US -> CLICK
-4. [textbox]  Pickup -> CLICK
-5. [button]  Sunday, April 9, 2023 -> CLICK
-6. [button]  Saturday, April 15, 2023 -> CLICK
-7. [button]  Find cars button. -> CLICK
-FINISH
-
-INVALID OUTPUTS (don’t generate these):
-• [] (empty value)
-• click: #input-button
-• input: search:nth-child(2)
-• multi-step lists (e.g., “1. click…, 2. input…”)  
-• explanations or thoughts in output  
-• commands not executable as UI action  
-• HTML, CSS selectors, code, or element ids
-
-────────────────────────────────────────────────────────────────────────────
-Now based on the instruction, the screenshot, and history, generate the **next single action** and nothing else.
-
+* ACTION_TYPE must be exactly one of: `click`, `type`, `select`, `FINISH`.
+* ACTION_DETAIL must be concise (<= 40 characters when possible) and use visible UI text. Do NOT add extra commentary or multi-step lists.
 """
-        return {
-            "screenshot": website_screenshot,
-            "prompt": prompt_text
-        }

@@ -143,6 +143,31 @@ def get_supabase_bucket(default: str = "ai-preprocessed-steps") -> str:
     return os.getenv("SUPABASE_BUCKET", default)
 
 
+def get_policy_hub_path(default: Optional[str] = None) -> Optional[str]:
+    """Path to the PolicyHub JSON file.
+
+    Set via ``POLICY_HUB_PATH`` in .env.  Defaults to
+    ``src/policyHub/policies.json`` relative to the project root.
+    """
+    val = os.getenv("POLICY_HUB_PATH", default)
+    if val:
+        return val
+    # Fallback: policies.json next to the policyHub package
+    return str(Path(__file__).parent / "policyHub" / "policies.json")
+
+
+def get_hitl_threshold(default: int = 75) -> int:
+    """Composite confidence threshold for HITL triggering (0–100).
+
+    Steps with composite confidence below this value are flagged for
+    Human-in-the-Loop review.  Set via ``HITL_THRESHOLD`` in .env.
+    """
+    try:
+        return int(os.getenv("HITL_THRESHOLD", str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
 def get_seeact_image_detail(default: str = "low") -> str:
     """Image detail level for action-generation GPT calls.
 
@@ -174,4 +199,6 @@ def print_config():
     logger.info(f"DEVICE:        {get_device()}")
     logger.info(f"MODEL_DTYPE:   {get_model_dtype()}")
     logger.info(f"USE_8BIT:      {get_use_8bit()}")
+    logger.info(f"POLICY_HUB:    {get_policy_hub_path() or '(default)'}")
+    logger.info(f"HITL_THRESHOLD:{get_hitl_threshold()}")
     logger.info("=" * 80 + "\n")

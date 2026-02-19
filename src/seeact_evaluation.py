@@ -75,6 +75,12 @@ class StepEvalResult:
     value_match: bool = False           # defaults True for non-TYPE ops
     step_success: bool = False          # all three match
 
+    # HITL / Confidence (PolicyHub integration)
+    llm_confidence: float = 0.0         # model self-reported confidence (0-100)
+    composite_confidence: float = 0.0   # weighted composite score (0-100)
+    hitl_triggered: bool = False        # whether HITL gate was triggered
+    hitl_reason: str = ""               # model-provided reason for low confidence
+
     # Timing
     latency: float = 0.0
 
@@ -101,6 +107,10 @@ class TaskEvalResult:
     step_success_rate: float = 0.0
     offline0: bool = False              # strict: all steps correct
     offline1: bool = False              # tolerance: at most 1 step wrong
+
+    # HITL / Confidence (PolicyHub integration)
+    hitl_trigger_rate: float = 0.0      # fraction of steps where HITL triggered
+    avg_confidence: float = 0.0         # average composite confidence across steps
 
     def to_dict(self) -> Dict:
         d = asdict(self)
@@ -131,6 +141,11 @@ class AggregateMetrics:
     successful_steps: int = 0
     offline0_tasks: int = 0
     offline1_tasks: int = 0
+
+    # HITL / Confidence (PolicyHub integration)
+    avg_confidence: float = 0.0         # average composite confidence across all steps
+    hitl_trigger_rate: float = 0.0      # fraction of steps where HITL was triggered
+    total_hitl_triggers: int = 0        # total number of HITL triggers
 
     def to_dict(self) -> Dict:
         return asdict(self)
@@ -402,6 +417,10 @@ class SeeActEvaluator:
         grounding_result: Optional[Dict],
         step_index: int = -1,
         latency: float = 0.0,
+        llm_confidence: float = 0.0,
+        composite_confidence: float = 0.0,
+        hitl_triggered: bool = False,
+        hitl_reason: str = "",
     ) -> StepEvalResult:
         """Record a single predicted step and evaluate it against ground truth.
 
@@ -457,6 +476,10 @@ class SeeActEvaluator:
             element_match=el_match,
             value_match=val_match,
             step_success=step_ok,
+            llm_confidence=llm_confidence,
+            composite_confidence=composite_confidence,
+            hitl_triggered=hitl_triggered,
+            hitl_reason=hitl_reason,
             latency=latency,
         )
 
@@ -500,6 +523,8 @@ class SeeActEvaluator:
             n_val = sum(1 for s in steps if s.value_match)
             n_sr = sum(1 for s in steps if s.step_success)
             n_fail = n - n_sr
+            n_hitl = sum(1 for s in steps if s.hitl_triggered)
+            avg_conf = sum(s.composite_confidence for s in steps) / n if n else 0.0
 
             task = TaskEvalResult(
                 annotation_id=ann_id,
@@ -514,6 +539,8 @@ class SeeActEvaluator:
                 step_success_rate=n_sr / n if n else 0.0,
                 offline0=(n_fail == 0),
                 offline1=(n_fail <= 1),
+                hitl_trigger_rate=n_hitl / n if n else 0.0,
+                avg_confidence=avg_conf,
             )
             self.task_results[ann_id] = task
             all_steps.extend(steps)
@@ -530,6 +557,10 @@ class SeeActEvaluator:
         off0 = sum(1 for t in self.task_results.values() if t.offline0)
         off1 = sum(1 for t in self.task_results.values() if t.offline1)
 
+        # HITL / Confidence aggregation
+        total_hitl = sum(1 for s in all_steps if s.hitl_triggered)
+        avg_conf = sum(s.composite_confidence for s in all_steps) / total_steps if total_steps else 0.0
+
         self.aggregate = AggregateMetrics(
             total_tasks=total_tasks,
             total_steps=total_steps,
@@ -545,6 +576,9 @@ class SeeActEvaluator:
             successful_steps=correct_sr,
             offline0_tasks=off0,
             offline1_tasks=off1,
+            avg_confidence=avg_conf,
+            hitl_trigger_rate=total_hitl / total_steps if total_steps else 0.0,
+            total_hitl_triggers=total_hitl,
         )
 
         return self.aggregate
@@ -611,6 +645,10 @@ class SeeActEvaluator:
                         "element_match": s.element_match,
                         "value_match": s.value_match,
                         "step_success": s.step_success,
+                        "llm_confidence": round(s.llm_confidence, 1),
+                        "composite_confidence": round(s.composite_confidence, 1),
+                        "hitl_triggered": s.hitl_triggered,
+                        "hitl_reason": s.hitl_reason,
                     }
                     for s in t.steps
                 ],
@@ -656,6 +694,11 @@ class SeeActEvaluator:
         logger.info(f"\n  ── Task-Level Metrics ────────────────────────────")
         logger.info(f"  Offline0 (strict)   : {a.offline0_rate:>7.2%}  ({a.offline0_tasks}/{a.total_tasks})")
         logger.info(f"  Offline1 (tolerance): {a.offline1_rate:>7.2%}  ({a.offline1_tasks}/{a.total_tasks})")
+
+        logger.info(f"\n  ── HITL / Confidence Metrics ─────────────────────")
+        logger.info(f"  Avg Confidence    : {a.avg_confidence:>7.1f}")
+        logger.info(f"  HITL Trigger Rate : {a.hitl_trigger_rate:>7.2%}  ({a.total_hitl_triggers}/{a.total_steps})")
+        logger.info(f"  Total HITL Triggers: {a.total_hitl_triggers}")
 
         # Per-task breakdown
         if self.task_results:

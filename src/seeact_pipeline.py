@@ -18,11 +18,12 @@ src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
-from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model
+from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model, get_policy_hub_path, get_hitl_threshold
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
 from AutoWeb.src.logger import logger
 from AutoWeb.src.utils.processed_store import ProcessedStore
+from AutoWeb.src.policyHub import PolicyHub, HITLConfidenceGate
 
 
 # New imports:
@@ -103,6 +104,12 @@ class SeeActPipeline:
         # 6. Evaluator (SeeAct offline metrics)
         self.evaluator = SeeActEvaluator(output_dir="eval_results")
         logger.info("  ✓ Evaluator ready")
+
+        # 7. PolicyHub + HITL Confidence Gate
+        self.policy_hub = PolicyHub(json_path=get_policy_hub_path())
+        self.hitl_gate = HITLConfidenceGate(threshold=get_hitl_threshold())
+        logger.info(f"  ✓ PolicyHub loaded ({self.policy_hub.get_stats()})")
+        logger.info(f"  ✓ HITL gate ready (threshold={get_hitl_threshold()})")
         
         logger.info("[SeeActPipeline] ✓ Pipeline ready!")
     
@@ -130,6 +137,12 @@ class SeeActPipeline:
         )
         
         logger.info(f"Instruction: {single_task[0]['instruction']}")
+
+        # PolicyHub: resolve active policy for this task's website
+        task_website = single_task[0].get("website", None)
+        policy_text = self.policy_hub.get_active_policy(domain=task_website)
+        policy_risk_keywords = self.policy_hub.get_policy_risk_keywords()
+        logger.info(f"  PolicyHub: domain='{task_website}', policy length={len(policy_text)} chars, risk_keywords={len(policy_risk_keywords)}")
         
         logger.info("="*20 + f" For each action in Task {annotation_id}... " + "="*20)
 
@@ -151,7 +164,8 @@ class SeeActPipeline:
             
             action_generation_input = self.input_preparator.prepare_input(
                 action=action,
-                history=action_history
+                history=action_history,
+                policy_text=policy_text,
             )
         
             # Step 3: Action Generation (take input from previous block, result a planning for task)
@@ -161,9 +175,12 @@ class SeeActPipeline:
             )
 
             output_plan = action_generation_plan.get("output_text", "")
+            llm_confidence = action_generation_plan.get("confidence", 0.0)
+            hitl_reason_from_llm = action_generation_plan.get("hitl_reason", "")
             err = action_generation_plan.get("error")
 
             logger.info(f"Generated Action Plan: {output_plan}")
+            logger.info(f"  LLM confidence: {llm_confidence}, hitl_reason: {hitl_reason_from_llm}")
 
             if err:
                 logger.error(f"✗ Action generation failed with error: {err}")
@@ -175,11 +192,31 @@ class SeeActPipeline:
                 "action_plan": output_plan
             })
 
+            # Step 3.5: HITL Confidence Gate (runs BEFORE grounding to save cost)
+            hitl_result = self.hitl_gate.compute_composite_confidence(
+                llm_confidence=llm_confidence,
+                action_text=output_plan,
+                policy_risk_keywords=policy_risk_keywords,
+            )
+            composite_confidence = hitl_result["final_confidence"]
+            hitl_triggered = hitl_result["hitl_triggered"]
+            hitl_reason = hitl_reason_from_llm or "; ".join(hitl_result.get("matched_keywords", []))
+
+            if hitl_triggered:
+                logger.warning(
+                    f"  ⚡ HITL TRIGGERED — skipping grounding  composite={composite_confidence:.1f}  "
+                    f"threshold={hitl_result['threshold']}  reason='{hitl_reason}'  "
+                    f"keywords={hitl_result.get('matched_keywords', [])}"
+                )
+                # Skip expensive grounding call; record a stub result
+                grounding_result = {"success": False, "error": "hitl_triggered", "selected_element": None}
+
             # Skip grounding if plan is empty — record as failed step directly
-            if not output_plan.strip():
+            elif not output_plan.strip():
                 logger.warning("    ⚠ Empty action plan — skipping grounding, recording as failed step.")
                 grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
             else:
+                logger.info(f"  ✓ Confidence OK  composite={composite_confidence:.1f}")
                 # Step 4: Grounding method selection and processing
                 logger.info("="*20 + " [4/6] Running Action Grounding ... " + "="*20)
                 grounding_result = self.action_grounding.process(
@@ -212,6 +249,10 @@ class SeeActPipeline:
                 predicted_plan=output_plan,
                 grounding_result=grounding_result,
                 latency=action_latency,
+                llm_confidence=llm_confidence,
+                composite_confidence=composite_confidence,
+                hitl_triggered=hitl_triggered,
+                hitl_reason=hitl_reason,
             )
 
             # Print per-step GPT cost

@@ -10,6 +10,7 @@ Input:
 
 import time
 import re
+import json
 from typing import Dict, Union
 
 from AutoWeb.src.model_interface import VLModel
@@ -40,6 +41,68 @@ class SeeActActionGenerator:
         if re.search(r"\[.+\]\s+.+->\s*(CLICK|TYPE\s*:|SELECT)", s, re.IGNORECASE):
             return True
         return False
+
+    def _parse_structured_output(self, raw_text: str) -> Dict:
+        """Parse structured JSON output from model (PolicyHub mode).
+
+        Fallback chain:
+        1. ``json.loads()`` on full text
+        2. Regex-extract a JSON block from surrounding prose
+        3. Regex-extract individual ``action``, ``confidence``, ``hitl_reason`` fields
+        4. Treat entire output as plain action text with ``confidence=50``
+
+        Returns:
+            ``{"action": str, "confidence": int, "hitl_reason": str}``
+        """
+        if not raw_text or not isinstance(raw_text, str):
+            return {"action": "", "confidence": 50, "hitl_reason": "empty model output"}
+
+        text = raw_text.strip()
+
+        # --- 1. Direct JSON parse ---
+        try:
+            obj = json.loads(text)
+            if isinstance(obj, dict) and "action" in obj:
+                return {
+                    "action": str(obj.get("action", "")).strip(),
+                    "confidence": int(obj.get("confidence", 50)),
+                    "hitl_reason": str(obj.get("hitl_reason", "")).strip(),
+                }
+        except (json.JSONDecodeError, ValueError, TypeError):
+            pass
+
+        # --- 2. Extract JSON block from surrounding text ---
+        json_match = re.search(r'(\{[^{}]*"action"[^{}]*\})', text, re.DOTALL)
+        if json_match:
+            try:
+                obj = json.loads(json_match.group(1))
+                if isinstance(obj, dict) and "action" in obj:
+                    return {
+                        "action": str(obj.get("action", "")).strip(),
+                        "confidence": int(obj.get("confidence", 50)),
+                        "hitl_reason": str(obj.get("hitl_reason", "")).strip(),
+                    }
+            except (json.JSONDecodeError, ValueError, TypeError):
+                pass
+
+        # --- 3. Regex field extraction ---
+        action_m = re.search(r'"action"\s*:\s*"([^"]+)"', text)
+        conf_m = re.search(r'"confidence"\s*:\s*(\d+)', text)
+        reason_m = re.search(r'"hitl_reason"\s*:\s*"([^"]*)"', text)
+        if action_m:
+            return {
+                "action": action_m.group(1).strip(),
+                "confidence": int(conf_m.group(1)) if conf_m else 50,
+                "hitl_reason": reason_m.group(1).strip() if reason_m else "",
+            }
+
+        # --- 4. Fallback: treat entire text as action ---
+        logger.debug("    [_parse_structured_output] Could not parse JSON — falling back to plain text")
+        return {
+            "action": text,
+            "confidence": 50,
+            "hitl_reason": "model did not produce structured JSON output",
+        }
 
     def generate_plans(self, input_data: Dict) -> str:
         """
@@ -128,10 +191,31 @@ class SeeActActionGenerator:
         t1 = time.time()
         latency = t1 - t0
 
-        result = {"raw_text": raw_text, "output_text": output_text, "latency": latency}
+        # --- Parse structured JSON output (PolicyHub mode) ---
+        # Try to extract {action, confidence, hitl_reason} from model output.
+        # If parsing succeeds, use the extracted action as output_text and
+        # carry confidence/hitl_reason forward.  If it fails (e.g. legacy
+        # prompt without PolicyHub), confidence defaults to 50.
+        parsed = self._parse_structured_output(output_text)
+        parsed_action = parsed.get("action", "")
+        confidence = parsed.get("confidence", 50)
+        hitl_reason = parsed.get("hitl_reason", "")
+
+        # If structured parse yielded a valid action, prefer it as output_text
+        if parsed_action and self._is_valid_dataset_action(parsed_action):
+            output_text = parsed_action
+        # Otherwise keep the raw output_text (legacy mode or parse failure)
+
+        result = {
+            "raw_text": raw_text,
+            "output_text": output_text,
+            "latency": latency,
+            "confidence": confidence,
+            "hitl_reason": hitl_reason,
+        }
         if isinstance(generated_action_plan, dict):
             merged = {**generated_action_plan, **result}
             # keep the model's own output_text if present, otherwise use raw_text
-            merged["output_text"] = generated_action_plan.get("output_text") or output_text
+            merged["output_text"] = output_text or generated_action_plan.get("output_text", "")
             return merged
         return result
