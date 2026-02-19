@@ -102,6 +102,7 @@ def run_live_mode():
     result_store = LiveResultStore(base_dir="liveSiteResults")
 
     all_results: List[Dict] = []
+    current_site_results: List[Dict] = []  # results for the site being processed
 
     try:
         for idx, site in enumerate(sites, start=1):
@@ -109,6 +110,7 @@ def run_live_mode():
             domain = site.get("domain", "")
             name = site.get("name", url)
             default_ins = site.get("default_instruction")
+            current_site_results = []  # reset for each site
 
             print(f"\n{'='*70}")
             print(f"  [{idx}/{len(sites)}]  {name}  —  {url}")
@@ -139,6 +141,9 @@ def run_live_mode():
 
                 if instruction.lower() == "quit":
                     print("\n  Exiting live runner.")
+                    # Save this site before quitting
+                    if current_site_results:
+                        result_store.save_site_summary(name, current_site_results)
                     driver.close()
                     _print_live_summary(all_results)
                     result_store.save_run_summary(all_results)
@@ -175,6 +180,7 @@ def run_live_mode():
                 result["instruction"] = instruction
                 result["step_num"] = step_num
                 all_results.append(result)
+                current_site_results.append(result)
 
                 # Persist screenshot + result JSON
                 result_store.save_step(
@@ -193,6 +199,9 @@ def run_live_mode():
                 cont = input("  > ").strip().lower()
                 if cont == "quit":
                     print("\n  Exiting live runner.")
+                    # Save this site before quitting
+                    if current_site_results:
+                        result_store.save_site_summary(name, current_site_results)
                     driver.close()
                     _print_live_summary(all_results)
                     result_store.save_run_summary(all_results)
@@ -201,8 +210,17 @@ def run_live_mode():
                     break
                 # else: continue loop for another instruction
 
+            # ── Site finished — persist results immediately ─────
+            if current_site_results:
+                result_store.save_site_summary(name, current_site_results)
+                result_store.save_run_summary(all_results)
+                print(f"  ✓ Results for '{name}' saved ({len(current_site_results)} steps).")
+
     except KeyboardInterrupt:
         print("\n\n  Interrupted by user.")
+        # Save whatever we have so far
+        if current_site_results:
+            result_store.save_site_summary(name, current_site_results)
     finally:
         driver.close()
 

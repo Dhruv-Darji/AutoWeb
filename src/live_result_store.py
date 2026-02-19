@@ -102,6 +102,73 @@ class LiveResultStore:
         return step_dir
 
     # ------------------------------------------------------------------
+    # Per-site summary (saved after each site completes)
+    # ------------------------------------------------------------------
+
+    def save_site_summary(
+        self,
+        site_name: str,
+        site_results: List[Dict],
+    ) -> Path:
+        """
+        Write a ``site_summary.json`` inside the site folder after all steps
+        for that site are finished.  Called incrementally so results survive
+        a crash on a later site.
+
+        Args:
+            site_name:    Human-readable site name.
+            site_results: List of result dicts for *this* site only.
+
+        Returns:
+            Path to the site summary JSON.
+        """
+        safe_name = re.sub(r'[<>:"/\\|?*]', "_", site_name).strip()
+        site_dir = self.run_dir / safe_name
+        site_dir.mkdir(parents=True, exist_ok=True)
+
+        total = len(site_results)
+        successful = sum(1 for r in site_results if r.get("success"))
+        hitl_count = sum(1 for r in site_results if r.get("hitl_triggered"))
+        avg_conf = (
+            sum(r.get("composite_confidence", 0) for r in site_results) / total
+            if total else 0
+        )
+
+        summary = {
+            "site_name": site_name,
+            "url": site_results[0].get("url", "") if site_results else "",
+            "timestamp": datetime.now().isoformat(),
+            "total_steps": total,
+            "successful": successful,
+            "hitl_triggers": hitl_count,
+            "hitl_trigger_rate": round(hitl_count / total, 4) if total else 0,
+            "avg_confidence": round(avg_conf, 2),
+            "steps": [
+                {
+                    "step_num": r.get("step_num", 0),
+                    "instruction": r.get("instruction", ""),
+                    "output_plan": r.get("output_plan", ""),
+                    "llm_confidence": r.get("llm_confidence", 0),
+                    "composite_confidence": r.get("composite_confidence", 0),
+                    "hitl_triggered": r.get("hitl_triggered", False),
+                    "hitl_reason": r.get("hitl_reason", ""),
+                    "latency": round(r.get("latency", 0), 3),
+                }
+                for r in site_results
+            ],
+        }
+
+        summary_path = site_dir / "site_summary.json"
+        with open(summary_path, "w", encoding="utf-8") as f:
+            json.dump(summary, f, indent=2, ensure_ascii=False)
+
+        logger.info(
+            f"[LiveResultStore] Site summary saved → {summary_path}  "
+            f"({total} steps, {hitl_count} HITL)"
+        )
+        return summary_path
+
+    # ------------------------------------------------------------------
     # Run-level summary
     # ------------------------------------------------------------------
 
