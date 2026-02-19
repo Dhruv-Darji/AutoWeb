@@ -1,400 +1,313 @@
-# PolicyHub + HITL Confidence Gate — Implementation Plan
+# PolicyHub + Risk-Based HITL Gate — Implementation Plan & Final State
 
-> **Feature:** Policy-Aware Web Agent with Confidence-Triggered Human-in-the-Loop  
+> **Feature:** Policy-Aware Web Agent with Risk-Based Human-in-the-Loop  
 > **Branch:** `research/seeact-framework-cleanup`  
-> **Date:** 2026-02-19  
-> **Model support:** Both GPT (OpenAI API) and local Qwen2-VL-2B
+> **Date:** June 2025  
+> **Model support:** Both GPT-4o (OpenAI API) and local Qwen2-VL-2B  
+> **Status:** ✅ Fully implemented and tested on live websites
 
 ---
 
 ## Overview
 
-Add a **PolicyHub** layer that injects global + site-specific policy constraints into Action Generation prompts, force **structured JSON output** from the model (action + confidence 0–100 + HITL reason), compute **composite confidence** using LLM self-score + grounding score gap + policy risk keywords, and **log HITL triggers** when confidence falls below threshold.
+We extend the **SeeAct** web automation pipeline with a **PolicyHub** layer and a **risk-based HITL gate**. PolicyHub injects global + site-specific policy constraints into the Action Generation prompt. The model responds with **structured JSON output** (action + confidence 0-100 + `policy_risk` boolean + HITL reason). The HITL gate evaluates three independent risk signals and **blocks dangerous actions before grounding**, saving compute and ensuring safety.
 
-### Updated Architecture
+### Architecture
 
 ```
 User Task
     ↓
 Screenshot + DOM
     ↓
-PolicyHub (global + site-specific)
+PolicyHub (global + site-specific rules, 24 risk keywords)
     ↓
-Action Generation (LLM)
-    → Action Plan
-    → Confidence Score (0–100)
-    → HITL Reason
+Input Preparation
+    → Inject POLICY CONSTRAINTS block into prompt
+    → Set JSON output format with policy_risk field
     ↓
-Action Grounding (DeBERTa + VL model)
+Action Generation (GPT-4o / Qwen2-VL-2B)
+    → Returns: { action, confidence, policy_risk, hitl_reason }
+    → 4-level fallback parse
+    ↓
+Risk-Based HITL Gate  ◄── BEFORE grounding (saves cost)
+    ├── policy_risk_flag == true?     → ⚠️ HITL
+    ├── risk keyword in action/reason? → ⚠️ HITL
+    ├── confidence < 30?              → ⚠️ HITL
+    └── none?                         → ✅ Safe
+    ↓
+Action Grounding (DeBERTa + CrossEncoder)  ← only if ✅
     → Selected Element
-    → top1_score, top2_score
     ↓
-Composite Confidence Gate
-    final = 0.5 * LLM_conf + 0.3 * grounding_gap + 0.2 * policy_risk
-    ├── High confidence → Continue execution
-    └── Low confidence → Log HITL trigger (reason + score)
-    ↓
-Evaluation (extended with HITL metrics)
+Evaluation + Result Storage
+    → Per-step JSON + screenshots in liveSiteResults/
 ```
 
 ---
 
 ## Design Decisions
 
-| Decision               | Choice                          | Rationale                                                                                      |
-| ---------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Model backend          | Both GPT + Qwen                 | Qwen gets conservative fallback (confidence=50) when JSON parse fails                          |
-| Confidence method      | Composite from start            | `0.5 * LLM + 0.3 * grounding_gap + 0.2 * policy_risk` — robust against hallucinated confidence |
-| HITL mode              | Log-only                        | No interactive pause — suitable for offline research evaluation                                |
-| Policy storage         | Python config class + JSON file | `PolicyHub` class with hardcoded defaults, loadable/savable from `policies.json`               |
-| Policy injection point | Action Generation prompt only   | Keeps grounding prompt tight and focused on element selection                                  |
-| Grounding scores       | Expose existing DeBERTa scores  | Already computed internally, just not returned — avoids extra compute                          |
+| Decision             | Choice                                        | Rationale                                                                       |
+| -------------------- | --------------------------------------------- | ------------------------------------------------------------------------------- |
+| HITL trigger logic   | Risk-based (3 independent triggers, OR-logic) | Separates uncertainty from risk — safe low-confidence navigation is not blocked |
+| Model backend        | Both GPT-4o + Qwen2-VL-2B                     | Qwen gets conservative fallback (`confidence=50`) when JSON parse fails         |
+| Confidence scoring   | LLM self-reported (0-100), realistic scale    | No artificial pessimism — model reports honest certainty                        |
+| HITL gate position   | Before grounding                              | Saves DeBERTa + CrossEncoder cost on risky actions                              |
+| HITL mode            | Log-only (no interactive pause)               | Suitable for offline research evaluation                                        |
+| Policy storage       | JSON file (`policies.json`) + Python loader   | Easily extensible with site-specific overrides                                  |
+| Policy injection     | Action Generation prompt only                 | Keeps grounding prompt tight and focused on element selection                   |
+| Keyword scan scope   | Action text + hitl_reason                     | Catches model contradictions (says safe, describes danger)                      |
+| Risk keywords        | 24 curated keywords                           | Covers payments, credentials, CAPTCHA, destructive actions, security            |
+| Low confidence floor | 30 (configurable via `.env`)                  | Below this = model is guessing → always flag                                    |
 
 ---
 
-## Phase 1 — PolicyHub Module
+## Implementation Phases (Completed)
 
-### 1.1 Create `src/policyHub/__init__.py`
+### Phase 1: PolicyHub Module
 
-Empty init to make it a Python package.
+**Goal:** Create the policy-awareness engine that loads and merges policy rules.
 
-### 1.2 Create `src/policyHub/policy_hub.py`
+**Files created:**
 
-`PolicyHub` class:
+- `src/policyHub/__init__.py` — Package init, exports `PolicyHub` and `HITLConfidenceGate`
+- `src/policyHub/policy_hub.py` — Loads `policies.json`, merges default + site-specific rules per domain
+- `src/policyHub/policies.json` — 15 default policy rules, empty site-specific dict, 24 risk keywords
 
-- **Constructor** loads from JSON file path (default: `src/policyHub/policies.json`), with hardcoded `DEFAULT_POLICIES` fallback list:
-  - "Do not submit payment forms automatically."
-  - "Do not click destructive actions like delete or remove without confirmation."
-  - "Do not change account passwords."
-  - "Do not share sensitive personal information."
-  - "Do not approve financial transactions without explicit user confirmation."
-- `site_specific` dict loaded from JSON, empty by default.
-- **`get_active_policy(domain: Optional[str] = None) -> str`** — merges `default_policy` + `site_specific[domain]` (if domain key exists), returns formatted bullet-point string.
-- **`add_site_policy(domain: str, rules: List[str])`** / **`update_default_policy(rules: List[str])`** — runtime mutators + persist to JSON.
-- **`get_policy_risk_keywords() -> List[str]`** — returns known risky action keywords extracted from all active policies (e.g., "delete", "remove", "purchase", "payment", "password", "approve", "submit", "transfer").
-
-### 1.3 Create `src/policyHub/policies.json`
-
-```json
-{
-  "default_policy": [
-    "Do not submit payment forms automatically.",
-    "Do not click destructive actions like delete or remove without confirmation.",
-    "Do not change account passwords.",
-    "Do not share sensitive personal information.",
-    "Do not approve financial transactions without explicit user confirmation."
-  ],
-  "site_specific": {
-    "amazon.com": ["Do not purchase items.", "Do not modify cart quantity."],
-    "banking_portal": [
-      "Do not approve or initiate financial transactions.",
-      "Do not transfer funds between accounts."
-    ]
-  }
-}
-```
-
-At runtime: `active_policy = default_policy + site_specific.get(current_domain, [])`
-
-### 1.4 Add `get_policy_hub_path()` to `src/config.py`
-
-Reads `POLICY_HUB_PATH` env var, defaults to `src/policyHub/policies.json` relative to project root.
-
----
-
-## Phase 2 — HITL Confidence Module
-
-### 2.1 Create `src/policyHub/hitl_confidence.py`
-
-`HITLConfidenceGate` class:
-
-- **Constructor** takes `threshold: int` from `HITL_THRESHOLD` env var (default: `75`).
-- **`compute_composite_confidence(...) -> dict`**:
-
-  ```python
-  def compute_composite_confidence(
-      self,
-      llm_confidence: float,         # 0–100 from model JSON output
-      grounding_top1_score: float,    # DeBERTa cross-encoder score (0–1)
-      grounding_top2_score: float,    # second-best score (0–1)
-      action_text: str,               # the generated action plan text
-      policy_risk_keywords: List[str] # from PolicyHub
-  ) -> dict:
-  ```
-
-  Formula:
-
-  ```
-  grounding_gap = (top1 - top2) * 100   # normalized to 0–100
-  policy_risk = 100 if no keywords match action_text
-               = 50  if 1 keyword matches
-               = 20  if 2+ keywords match
-
-  final = 0.5 * llm_confidence
-        + 0.3 * grounding_gap
-        + 0.2 * policy_risk
-  ```
-
-  Returns:
-
-  ```json
-  {
-    "final_confidence": 72.5,
-    "llm_confidence": 85,
-    "grounding_gap": 45.0,
-    "policy_risk_score": 50,
-    "hitl_triggered": true,
-    "threshold": 75
-  }
-  ```
-
-- **`should_trigger_hitl(composite: dict) -> bool`** — `composite["final_confidence"] < self.threshold`
-
-### 2.2 Add `get_hitl_threshold()` to `src/config.py`
-
-Reads `HITL_THRESHOLD` env var, defaults to `75`.
-
----
-
-## Phase 3 — Prompt Modification (Input Preparation)
-
-### 3.1 Modify `src/Input_Prepration.py`
-
-**`SeeActInputPreparator.prepare_input()`** changes:
-
-- Add parameter: `policy_text: Optional[str] = None`
-- Inject new `POLICY CONSTRAINTS` section into prompt (between INPUTS and ACTION SPACE):
-
-```
-────────────────────────────────────────────────────────────────────────────
-POLICY CONSTRAINTS (you MUST follow these strictly):
-{policy_text}
-
-- If an action may violate any policy above, you MUST reduce your confidence score.
-- If uncertain whether an action is safe, set confidence below 70 and explain in hitl_reason.
-────────────────────────────────────────────────────────────────────────────
-```
-
-- Modify OUTPUT FORMAT section to require structured JSON:
-
-```
-OUTPUT FORMAT (respond with ONLY this JSON, nothing else):
-{
-  "action": "[element_type] ELEMENT_TEXT -> CLICK",
-  "confidence": <integer 0-100>,
-  "hitl_reason": "<empty string if confident, otherwise explain why confidence is low>"
-}
-
-Rules for confidence scoring:
-- 90-100: Very confident, clear next step, no policy concerns
-- 70-89:  Fairly confident, minor ambiguity
-- 50-69:  Uncertain — ambiguous elements, possible policy risk
-- 0-49:   Very uncertain — likely policy violation or cannot determine action
-
-Rules for hitl_reason:
-- Empty string "" if confidence >= 80
-- Otherwise explain: policy violation risk, ambiguous target, uncertain action, etc.
-```
-
-- If `policy_text` is `None` or empty, omit the POLICY CONSTRAINTS section entirely (backward compatible).
-
----
-
-## Phase 4 — Action Generation Output Parsing
-
-### 4.1 Modify `src/action_generation.py`
-
-Add method to `SeeActActionGenerator`:
+**Key methods:**
 
 ```python
-def _parse_structured_output(self, raw_text: str) -> dict:
-    """
-    Parse structured JSON output from model.
+class PolicyHub:
+    def get_active_policy(self, domain: str) -> str
+        # Returns formatted bullet-point string of merged rules
 
-    Fallback chain:
-    1. json.loads() on full text
-    2. Regex extract JSON block from surrounding text
-    3. Regex extract individual fields
-    4. Treat entire output as action text with confidence=50
-
-    Returns: {"action": str, "confidence": int, "hitl_reason": str}
-    """
-```
-
-Modify `generate_plans()`:
-
-- Call `_parse_structured_output()` on model output
-- Return dict now includes: `confidence: int`, `hitl_reason: str` alongside existing `output_text`, `raw_text`, `latency`
-- For **Qwen local model**: if JSON parsing fails after retry, fall back to `confidence=50, hitl_reason="local model did not produce structured output"`
-- Update `_is_valid_dataset_action()` to also accept the `action` field extracted from JSON
-
----
-
-## Phase 5 — Pipeline Integration
-
-### 5.1 Modify `src/seeact_pipeline.py`
-
-**`SeeActPipeline.__init__()`:**
-
-- Import and instantiate `PolicyHub` and `HITLConfidenceGate`
-- Log: `"✓ PolicyHub ready (N default + M site-specific rules)"`
-- Log: `"✓ HITL confidence gate ready (threshold: T)"`
-
-**`predict_single_task()`:**
-
-Before action loop:
-
-- Extract domain from task metadata if available (e.g., from `action.get("website")` or URL parsing), fall back to `None`
-- Call `policy_hub.get_active_policy(domain)` → `policy_text`
-- Get `policy_risk_keywords = policy_hub.get_policy_risk_keywords()`
-
-Step modifications:
-
-```
-[2/6] Input Preparation → pass policy_text to prepare_input()
-[3/6] Action Generation → extract llm_confidence, hitl_reason from result
-[4/6] Action Grounding  → extract top1_score, top2_score from result
-[4.5] NEW: Composite Confidence Gate
-       → hitl_gate.compute_composite_confidence(
-             llm_confidence, top1_score, top2_score,
-             output_plan, policy_risk_keywords)
-       → Log composite score
-       → If triggered: logger.warning("⚠ HITL TRIGGERED — confidence: {}, reason: {}")
-[6/6] Evaluation → pass confidence + HITL data to evaluator.record_step()
+    def get_policy_risk_keywords(self) -> list[str]
+        # Returns 24 risk keywords for the HITL gate
 ```
 
 ---
 
-## Phase 6 — Grounding Score Exposure
+### Phase 2: Risk-Based HITL Gate
 
-### 6.1 Modify `src/action_grounding.py`
+**Goal:** Replace composite confidence formula with risk-based triggering.
 
-Ensure `SeeActActionGrounding.process()` return dict includes DeBERTa scores:
+**File created:**
 
-```python
-return {
-    "success": True,
-    "selected_element": best_element,
-    "top1_score": float(sorted_scores[0]),   # NEW
-    "top2_score": float(sorted_scores[1]) if len(sorted_scores) > 1 else 0.0,  # NEW
-    "latency": latency,
-}
-```
+- `src/policyHub/hitl_confidence.py`
 
-These are already computed internally during DeBERTa cross-encoder ranking — just need to expose them in the return value.
+**Evolution:**
 
----
+1. ~~Composite formula: `0.5*LLM + 0.3*grounding_gap + 0.2*policy_risk`~~ — Discarded (mixed uncertainty with risk)
+2. ~~Paranoid calibration: "DEFAULT confidence MUST be 40-55"~~ — Discarded (artificially pessimistic)
+3. ✅ **Risk-based gate with 3 independent triggers** — Current
 
-## Phase 7 — Evaluation Extension
-
-### 7.1 Modify `src/seeact_evaluation.py`
-
-**`StepEvalResult`** — add fields:
+**Final implementation:**
 
 ```python
-llm_confidence: float = 0.0
-composite_confidence: float = 0.0
-hitl_triggered: bool = False
-hitl_reason: str = ""
-```
+class HITLConfidenceGate:
+    def __init__(self, low_confidence_floor=30, threshold=75):
+        # threshold stored for backward compat but NOT used for gating
 
-**`TaskEvalResult`** — add fields:
+    def evaluate(self, llm_confidence, policy_risk_flag, action_text,
+                 policy_risk_keywords, hitl_reason=""):
+        combined_text = f"{action_text} {hitl_reason}"
 
-```python
-hitl_trigger_rate: float = 0.0    # fraction of steps where HITL triggered
-avg_confidence: float = 0.0       # average composite confidence across steps
-```
+        # Rule 1: LLM self-flagged the action as policy-risky
+        if policy_risk_flag:
+            return (True, "llm_flagged_policy_risk", ...)
 
-**`AggregateMetrics`** — add fields:
+        # Rule 2: Risk keywords found in action text OR hitl_reason
+        matched = self._scan_keywords(combined_text, policy_risk_keywords)
+        if matched:
+            return (True, f"risk_keywords_matched: {matched}", ...)
 
-```python
-avg_confidence: float = 0.0
-hitl_trigger_rate: float = 0.0
-total_hitl_triggers: int = 0
-```
+        # Rule 3: Extremely low confidence (model is guessing)
+        if llm_confidence < self.low_confidence_floor:
+            return (True, f"very_low_confidence ({llm_confidence})", ...)
 
-**`record_step()`** — accept and store new fields:
+        return (False, "no_risk_detected", ...)
 
-```python
-def record_step(self, ..., llm_confidence=0.0, composite_confidence=0.0,
-                hitl_triggered=False, hitl_reason=""):
-```
-
-**`compute_metrics()`** — aggregate confidence and HITL stats across tasks.
-
-**`print_summary()`** — add HITL section:
-
-```
-HITL Statistics:
-  Avg Composite Confidence: 74.3
-  HITL Trigger Rate:        23.1% (6/26 steps)
-  Total HITL Triggers:      6
+    def compute_composite_confidence(self, llm_confidence, policy_risk_flag,
+                                      action_text, policy_risk_keywords,
+                                      hitl_reason=""):
+        # Backward-compatible wrapper that adds legacy keys:
+        # final_confidence, threshold, policy_risk_score
+        # Internally calls evaluate()
 ```
 
 ---
 
-## Phase 8 — Config & Documentation
+### Phase 3: Prompt Engineering (Input Preparation)
 
-### 8.1 Update `.env.example`
+**Goal:** Inject policy constraints into LLM prompt and switch to JSON output.
 
-Add:
+**File modified:** `src/Input_Prepration.py`
 
-```env
-# PolicyHub
-POLICY_HUB_PATH=src/policyHub/policies.json
+**What was added:**
 
-# HITL Confidence Gate
-HITL_THRESHOLD=75
+1. `POLICY CONSTRAINTS` block — injected between INPUTS and ACTION SPACE sections
+2. `RISK ASSESSMENT RULES` — instructs model on when to set `policy_risk: true`
+3. JSON output format — `{action, confidence, policy_risk, hitl_reason}`
+4. Realistic confidence instructions — no artificial reduction for safe actions
+
+**Key design choices:**
+
+- `policy_risk` is a **boolean**, not a score — simpler for the model, no ambiguous values
+- If PolicyHub is not active, falls back to original SeeAct one-line format
+- Risk assessment rules explicitly enumerate what counts as risky: destructive ops, financial transactions, credentials, CAPTCHA, account changes
+
+---
+
+### Phase 4: Action Generation Parsing
+
+**Goal:** Parse the new `policy_risk` boolean from model output.
+
+**File modified:** `src/action_generation.py`
+
+**4-level fallback parse chain:**
+
+| Level | Method                                 | `policy_risk` source                   |
+| ----- | -------------------------------------- | -------------------------------------- | --------- |
+| 1     | Direct `json.loads()` on full response | `parsed["policy_risk"]`                |
+| 2     | Regex extraction of JSON block         | `parsed["policy_risk"]`                |
+| 3     | Individual field regex                 | `re.search(r'"policy_risk"\s*:\s*(true | false)')` |
+| 4     | Plain text fallback                    | Defaults to `False`                    |
+
+---
+
+### Phase 5: Pipeline Integration
+
+**Goal:** Wire PolicyHub + HITL gate into the SeeAct prediction pipeline.
+
+**File modified:** `src/seeact_pipeline.py`
+
+**Changes in both `predict_single_task()` and `predict_live_step()`:**
+
+```python
+# 1. Extract from action generation output
+policy_risk_flag = output.get("policy_risk", False)
+hitl_reason_from_llm = output.get("hitl_reason", "")
+
+# 2. Get risk keywords from PolicyHub
+risk_keywords = self.policy_hub.get_policy_risk_keywords()
+
+# 3. Run HITL gate BEFORE grounding
+hitl_result = self.hitl_gate.compute_composite_confidence(
+    llm_confidence=confidence,
+    policy_risk_flag=policy_risk_flag,
+    action_text=action_text,
+    policy_risk_keywords=risk_keywords,
+    hitl_reason=hitl_reason_from_llm
+)
+
+# 4. Check result
+if hitl_result["hitl_triggered"]:
+    logger.warning(f"🛑 HITL triggered: {hitl_result['hitl_reason']}")
+    # SKIP grounding — go straight to result recording
+else:
+    logger.info("✅ No risk detected — proceeding to grounding")
+    # Continue to DeBERTa + CrossEncoder grounding
+```
+
+---
+
+### Phase 6: Evaluation Extension
+
+**Goal:** Record policy risk data in per-step evaluation results.
+
+**File modified:** `src/seeact_evaluation.py`
+
+**New field in `StepEvalResult`:**
+
+```python
+@dataclass
+class StepEvalResult:
+    # ... existing fields ...
+    policy_risk_flag: bool = False  # NEW
+```
+
+**`record_step()` now accepts `policy_risk_flag` parameter.**
+
+---
+
+### Phase 7: Configuration
+
+**File modified:** `src/config.py`
+
+**New config getter:**
+
+```python
+def get_low_confidence_floor(default: int = 30) -> int:
+    """Read LOW_CONFIDENCE_FLOOR from .env. Default 30."""
+    return int(os.getenv("LOW_CONFIDENCE_FLOOR", str(default)))
+```
+
+**`.env.example` updated:**
+
+```dotenv
+LOW_CONFIDENCE_FLOOR=30
+HITL_THRESHOLD=75    # Legacy, stored but not used for gating
+```
+
+---
+
+### Phase 8: Browser Driver Stability
+
+**Goal:** Fix "Event loop is closed" warning on browser teardown.
+
+**File modified:** `src/browser_driver.py`
+
+**Fix:** Made `BrowserDriver.close()` idempotent with a `_closed` flag. Each resource cleanup (page, context, browser, playwright) wrapped individually in try/except so one failure doesn't prevent others from closing.
+
+```python
+async def close(self):
+    if self._closed:
+        return
+    self._closed = True
+    # close page, context, browser, playwright — each in try/except
 ```
 
 ---
 
 ## File Change Summary
 
-| File                               | Action     | Description                                                     |
-| ---------------------------------- | ---------- | --------------------------------------------------------------- |
-| `src/policyHub/__init__.py`        | **CREATE** | Package init                                                    |
-| `src/policyHub/policy_hub.py`      | **CREATE** | PolicyHub class                                                 |
-| `src/policyHub/policies.json`      | **CREATE** | Default policy data                                             |
-| `src/policyHub/hitl_confidence.py` | **CREATE** | HITL confidence gate                                            |
-| `src/config.py`                    | **MODIFY** | Add `get_policy_hub_path()`, `get_hitl_threshold()`             |
-| `src/Input_Prepration.py`          | **MODIFY** | Add policy injection + JSON output format to prompt             |
-| `src/action_generation.py`         | **MODIFY** | Add `_parse_structured_output()`, return confidence/hitl_reason |
-| `src/action_grounding.py`          | **MODIFY** | Expose `top1_score`, `top2_score` in return dict                |
-| `src/seeact_pipeline.py`           | **MODIFY** | Integrate PolicyHub + HITL gate into pipeline loop              |
-| `src/seeact_evaluation.py`         | **MODIFY** | Add confidence/HITL fields to all dataclasses + aggregation     |
-| `.env.example`                     | **MODIFY** | Add new env vars                                                |
+| File                               | Type         | What Changed                                                          |
+| ---------------------------------- | ------------ | --------------------------------------------------------------------- |
+| `src/policyHub/__init__.py`        | **New**      | Package init, exports PolicyHub + HITLConfidenceGate                  |
+| `src/policyHub/policy_hub.py`      | **New**      | Policy loader — merges default + site-specific rules                  |
+| `src/policyHub/policies.json`      | **New**      | 15 policy rules + 24 risk keywords                                    |
+| `src/policyHub/hitl_confidence.py` | **New**      | Risk-based HITL gate — 3 trigger rules, keyword scan on action+reason |
+| `src/Input_Prepration.py`          | **Modified** | Policy block injection, JSON output format, risk assessment rules     |
+| `src/action_generation.py`         | **Modified** | 4-level parse of `policy_risk` boolean                                |
+| `src/seeact_pipeline.py`           | **Modified** | HITL gate wired before grounding, passes `hitl_reason`                |
+| `src/seeact_evaluation.py`         | **Modified** | `StepEvalResult.policy_risk_flag` field + `record_step()` param       |
+| `src/config.py`                    | **Modified** | `get_low_confidence_floor()` getter                                   |
+| `src/browser_driver.py`            | **Modified** | Idempotent `close()` with `_closed` flag                              |
+| `.env.example`                     | **Modified** | `LOW_CONFIDENCE_FLOOR=30` documented                                  |
 
 ---
 
 ## Verification Checklist
 
-- [ ] Run pipeline with GPT on a single annotation_id → verify JSON output with `action`, `confidence`, `hitl_reason` parses correctly
-- [ ] Add test site policy for the annotation's domain → verify HITL triggers on risky actions and confidence drops
-- [ ] Run with local Qwen → verify graceful fallback when JSON parsing fails (confidence defaults to 50)
-- [ ] Compare evaluation output JSON before/after — new fields appear (`llm_confidence`, `composite_confidence`, `hitl_triggered`, `hitl_reason`, `hitl_trigger_rate`)
-- [ ] Run batch mode → verify aggregate `hitl_trigger_rate` and `avg_confidence` compute correctly
-- [ ] Verify backward compatibility — pipeline works without POLICY_HUB_PATH or HITL_THRESHOLD env vars (defaults apply)
+- [x] PolicyHub loads and merges policies per domain
+- [x] Risk keywords extracted (24 keywords including "robot", "captcha", "security")
+- [x] Policy constraints injected into action generation prompt
+- [x] Model returns structured JSON: `{action, confidence, policy_risk, hitl_reason}`
+- [x] `policy_risk` parsed from all 4 fallback levels (JSON, regex JSON, regex fields, plain text)
+- [x] HITL gate evaluates 3 independent risk triggers (OR-logic)
+- [x] Keyword scan covers both `action_text` AND `hitl_reason`
+- [x] HITL gate runs BEFORE grounding (saves compute on risky actions)
+- [x] Pipeline passes `hitl_reason` from LLM to HITL gate
+- [x] `StepEvalResult` records `policy_risk_flag`
+- [x] `LOW_CONFIDENCE_FLOOR` configurable via `.env`
+- [x] Browser close is idempotent (no "Event loop is closed" warning)
+- [x] Backward compatible — legacy dataset mode works without PolicyHub
 
 ---
 
-## Research Evaluation Protocol
+## Known Limitations
 
-Compare three configurations:
-
-| Config           | PolicyHub | HITL Gate | Purpose                                        |
-| ---------------- | --------- | --------- | ---------------------------------------------- |
-| **Baseline**     | OFF       | OFF       | Original SeeAct performance                    |
-| **+Policy**      | ON        | OFF       | Impact of policy constraints on action quality |
-| **+Policy+HITL** | ON        | ON        | Full system with confidence gating             |
-
-Metrics to compare:
-
-- Task success rate (Offline0, Offline1)
-- Element accuracy, Operation F1, Value accuracy
-- Average confidence score
-- HITL trigger rate (% of steps flagged)
-- Cost per task (token usage)
-- Error reduction in policy-sensitive actions
-
-This produces a clear ablation study suitable for the MTech thesis.
+1. **HITL is log-only** — does not actually pause for user input. Designed for research evaluation, not production deployment.
+2. **No runtime keyword expansion** — the 24 risk keywords are static. A future version could use LLM-based risk classification.
+3. **Model self-contradiction** — GPT-4o sometimes sets `policy_risk: false` while describing a risky action in `hitl_reason`. The keyword scan mitigates this but doesn't solve the root cause (model inconsistency).
+4. **Site-specific policies** — the `site_specific` dict is empty. Needs curation per target domain for production use.
+5. **No RL/fine-tuning** — Policy awareness comes from prompt injection only. A fine-tuned model could internalize safety constraints rather than relying on in-context instructions.
