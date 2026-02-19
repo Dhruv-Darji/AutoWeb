@@ -16,7 +16,7 @@ Input:
 
 import time
 import torch
-from AutoWeb.src.config import get_deberta_model_path
+from AutoWeb.src.config import get_deberta_model_path, get_seeact_image_detail
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
 from typing import Dict, List, Union
@@ -165,12 +165,17 @@ Answer:
             return downscale_image_if_needed(img)
 
         def call_model(p, max_tokens=6):
-            r = self.model.infer(
+            infer_kwargs = dict(
                 image_or_tensor=_prepare_image(website_screenshot),
                 prompt_text=p,
                 max_new_tokens=max_tokens,
                 do_sample=False,
                 temperature=0.0
+            )
+            if isinstance(self.model, GPTVisionModel):
+                infer_kwargs["image_detail"] = get_seeact_image_detail()
+            r = self.model.infer(
+                **infer_kwargs
             )
             if isinstance(r, dict):
                 # IMPORTANT: do not stringify full dict on empty output.

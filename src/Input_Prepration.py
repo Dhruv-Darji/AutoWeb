@@ -76,8 +76,15 @@ class SeeActInputPreparator:
                 + self._separator() + "\n"
                 + "POLICY CONSTRAINTS (you MUST follow these strictly):\n"
                 + policy_text + "\n\n"
-                + "- If an action may violate any policy above, you MUST reduce your confidence score.\n"
-                + "- If uncertain whether an action is safe, set confidence below 70 and explain in hitl_reason.\n"
+                + "CONFIDENCE CALIBRATION (critical -- read carefully):\n"
+                + "- Your DEFAULT confidence MUST be 40-55. Start there and adjust.\n"
+                + "- Only go above 75 if ALL of: (a) target element is unambiguous, "
+                + "(b) action type is obvious, (c) zero policy risk, (d) action directly advances the goal.\n"
+                + "- Interacting with CAPTCHAs, security checks, cookie banners, popups, "
+                + "or anything NOT directly part of the user's task: confidence <= 50.\n"
+                + "- If ANY risk keyword from the policies above appears in the action or element: confidence <= 45.\n"
+                + "- If you are unsure which element to click, or multiple elements could match: confidence <= 55.\n"
+                + "- ALWAYS fill hitl_reason when confidence < 75. Explain what made you uncertain.\n"
                 + self._separator()
             )
 
@@ -124,6 +131,7 @@ RESPONSE RULES (IMPORTANT):
 * Do NOT make up UI element text -- use what is visible.
 * Do NOT hallucinate or invent actions unrelated to the visible screenshot.
 * If the task is already complete or no further UI action is needed, output exactly `FINISH` (without quotes).
+* CONFIDENCE: Be skeptical of your own certainty. Default to 40-55. Only exceed 75 when the action is obviously correct with zero ambiguity.
 {output_format_block}
 {sep}
 COMPLETE TASK EXAMPLES (Given for understanding):
@@ -172,7 +180,7 @@ Now based on the instruction, the screenshot, and history, generate the **next s
         return """
 OUTPUT FORMAT (respond with ONLY this JSON object, nothing else):
 
-{"action": "[element_type] ELEMENT_TEXT -> CLICK", "confidence": 85, "hitl_reason": ""}
+{"action": "[element_type] ELEMENT_TEXT -> CLICK", "confidence": 50, "hitl_reason": "Moderate certainty -- element is plausible but page is complex."}
 
 Field rules:
 - "action": One of the dataset-style action formats below:
@@ -180,19 +188,22 @@ Field rules:
     - `[input/textarea] ELEMENT_TEXT -> TYPE: <typed value>`
     - `[select/option] ELEMENT_TEXT -> SELECT`
     - `FINISH`
-- "confidence": Integer 0-100 indicating your certainty:
-    - 90-100: Very confident, clear next step, no policy concerns
-    - 70-89:  Fairly confident, minor ambiguity
-    - 50-69:  Uncertain -- ambiguous elements, possible policy risk
-    - 0-49:   Very uncertain -- likely policy violation or cannot determine action
-- "hitl_reason": Empty string "" if confidence >= 80. Otherwise explain briefly
-  why confidence is low (e.g., policy violation risk, ambiguous target, uncertain action).
+- "confidence": Integer 0-100 indicating your certainty. BE CONSERVATIVE.
+    Your baseline should be 40-55. Most real-world actions fall in this range.
+    - 80-100: RARE. Only for trivially obvious, zero-risk, single-candidate actions
+              (e.g., clicking a clearly labeled "Search" button when the task says "search").
+    - 60-79:  Confident. Element is clearly correct, action type is clear, low risk.
+    - 40-59:  Moderate. Reasonable guess but some ambiguity, layout complexity, or indirect relevance.
+    - 0-39:   Low. Guessing, multiple candidates, policy risk, or action seems tangential.
+- "hitl_reason": If confidence < 75, you MUST explain why (e.g., ambiguous target,
+  policy risk, CAPTCHA interaction, not directly advancing goal). Empty string only if confidence >= 75.
 
 Examples:
-{"action": "[heading] CAR -> CLICK", "confidence": 95, "hitl_reason": ""}
-{"action": "[input] Enter city -> TYPE: Brooklyn Central", "confidence": 88, "hitl_reason": ""}
-{"action": "[button] Delete item -> CLICK", "confidence": 35, "hitl_reason": "Action is destructive and may violate policy."}
-{"action": "FINISH", "confidence": 98, "hitl_reason": ""}
+{"action": "[button] Search -> CLICK", "confidence": 92, "hitl_reason": ""}
+{"action": "[input] Enter city -> TYPE: Brooklyn Central", "confidence": 86, "hitl_reason": ""}
+{"action": "[checkbox] I am not a robot -> CLICK", "confidence": 35, "hitl_reason": "CAPTCHA interaction, not part of user task. Uncertain if needed."}
+{"action": "[button] Delete item -> CLICK", "confidence": 20, "hitl_reason": "Destructive action, violates policy risk keywords."}
+{"action": "FINISH", "confidence": 79, "hitl_reason": "Task appears complete based on visible page state."}
 
 IMPORTANT: Respond with ONLY the raw JSON object. No markdown, no code blocks, no explanations.
 """

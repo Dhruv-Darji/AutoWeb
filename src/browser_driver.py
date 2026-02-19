@@ -92,8 +92,8 @@ class BrowserDriver:
                 ``url``           — current page URL (str)
                 ``title``         — page title (str)
         """
-        # 1. Screenshot → PIL Image
-        png_bytes = self._page.screenshot(type="png")
+        # 1. Full-page screenshot → PIL Image (matches Mind2Web end-to-end style)
+        png_bytes = self._page.screenshot(type="png", full_page=True)
         screenshot = Image.open(io.BytesIO(png_bytes)).convert("RGB")
 
         # 2. Extract full body HTML (used by action_grounding to find elements)
