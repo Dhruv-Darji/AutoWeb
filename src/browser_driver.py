@@ -124,11 +124,20 @@ class BrowserDriver:
     # ------------------------------------------------------------------
 
     def close(self) -> None:
-        """Close browser and Playwright resources."""
+        """Close browser and Playwright resources (idempotent)."""
+        if getattr(self, "_closed", False):
+            return
+        self._closed = True
         try:
             self._context.close()
+        except Exception:
+            pass
+        try:
             self._browser.close()
+        except Exception:
+            pass
+        try:
             self._pw.stop()
-            logger.info("[BrowserDriver] Browser closed.")
-        except Exception as e:
-            logger.warning(f"[BrowserDriver] Error during close: {e}")
+        except Exception:
+            pass
+        logger.info("[BrowserDriver] Browser closed.")
