@@ -1,0 +1,22 @@
+{
+  "site_name": "Hacker News",
+  "url": "https://news.ycombinator.com/",
+  "timestamp": "2026-02-19T21:19:11.363925",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 95.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Click the top news article.",
+      "output_plan": "[link] America vs. Singapore: You Can’t Save Your Way Out of Economic Shocks -> CLICK",
+      "llm_confidence": 95,
+      "composite_confidence": 95.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 38.563
+    }
+  ]
+}

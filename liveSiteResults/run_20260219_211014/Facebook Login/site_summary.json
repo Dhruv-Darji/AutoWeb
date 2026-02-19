@@ -1,0 +1,22 @@
+{
+  "site_name": "Facebook Login",
+  "url": "https://www.facebook.com/",
+  "timestamp": "2026-02-19T21:24:28.364264",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 85.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Enter email and click Log In.",
+      "output_plan": "[input] Email address or phone number -> TYPE: [your email]",
+      "llm_confidence": 85,
+      "composite_confidence": 85.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 17.647
+    }
+  ]
+}

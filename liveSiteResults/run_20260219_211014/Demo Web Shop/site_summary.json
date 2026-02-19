@@ -1,0 +1,22 @@
+{
+  "site_name": "Demo Web Shop",
+  "url": "http://demowebshop.tricentis.com/",
+  "timestamp": "2026-02-19T21:29:51.500567",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 90.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Add a product to cart and proceed to checkout.",
+      "output_plan": "[button] Add to cart -> CLICK",
+      "llm_confidence": 90,
+      "composite_confidence": 90.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 26.861
+    }
+  ]
+}

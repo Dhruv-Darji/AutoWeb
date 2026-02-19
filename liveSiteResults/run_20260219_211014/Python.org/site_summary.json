@@ -1,0 +1,22 @@
+{
+  "site_name": "Python.org",
+  "url": "https://www.python.org/",
+  "timestamp": "2026-02-19T21:23:31.316104",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 95.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Click the Downloads menu.",
+      "output_plan": "[link] Downloads -> CLICK",
+      "llm_confidence": 95,
+      "composite_confidence": 95.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 32.458
+    }
+  ]
+}

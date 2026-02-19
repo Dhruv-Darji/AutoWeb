@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "[input] Email address or phone number -> TYPE: [your email]",
+  "llm_confidence": 85,
+  "policy_risk_flag": false,
+  "composite_confidence": 85.0,
+  "hitl_triggered": false,
+  "hitl_reason": "",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 85.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 85.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 17.64704418182373,
+  "cost": {
+    "prompt_tokens": 2561,
+    "completion_tokens": 38,
+    "total_tokens": 2599,
+    "cost_usd": 0.006783,
+    "calls": 1
+  },
+  "site": "Facebook Login",
+  "url": "https://www.facebook.com/",
+  "instruction": "Enter email and click Log In.",
+  "step_num": 1
+}

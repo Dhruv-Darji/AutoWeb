@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "[link] America vs. Singapore: You Can’t Save Your Way Out of Economic Shocks -> CLICK",
+  "llm_confidence": 95,
+  "policy_risk_flag": false,
+  "composite_confidence": 95.0,
+  "hitl_triggered": false,
+  "hitl_reason": "",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 95.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 95.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 38.563379526138306,
+  "cost": {
+    "prompt_tokens": 2220,
+    "completion_tokens": 45,
+    "total_tokens": 2265,
+    "cost_usd": 0.006,
+    "calls": 1
+  },
+  "site": "Hacker News",
+  "url": "https://news.ycombinator.com/",
+  "instruction": "Click the top news article.",
+  "step_num": 1
+}

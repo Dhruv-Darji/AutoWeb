@@ -1,0 +1,22 @@
+{
+  "site_name": "Wikipedia",
+  "url": "https://www.wikipedia.org/",
+  "timestamp": "2026-02-19T21:13:10.047544",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 90.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Search for Artificial Intelligence and open first result.",
+      "output_plan": "[input] Search Wikipedia -> TYPE: Artificial Intelligence",
+      "llm_confidence": 90,
+      "composite_confidence": 90.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 92.997
+    }
+  ]
+}

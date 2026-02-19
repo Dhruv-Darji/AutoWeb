@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "[input] Search DuckDuckGo -> TYPE: Multimodal AI models",
+  "llm_confidence": 85,
+  "policy_risk_flag": false,
+  "composite_confidence": 85.0,
+  "hitl_triggered": false,
+  "hitl_reason": "",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 85.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 85.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 23.15574622154236,
+  "cost": {
+    "prompt_tokens": 2225,
+    "completion_tokens": 39,
+    "total_tokens": 2264,
+    "cost_usd": 0.005953,
+    "calls": 1
+  },
+  "site": "DuckDuckGo",
+  "url": "https://duckduckgo.com/",
+  "instruction": "Search for Multimodal AI models and scroll once.",
+  "step_num": 1
+}

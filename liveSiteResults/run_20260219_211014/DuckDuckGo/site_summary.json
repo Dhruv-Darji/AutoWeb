@@ -1,0 +1,22 @@
+{
+  "site_name": "DuckDuckGo",
+  "url": "https://duckduckgo.com/",
+  "timestamp": "2026-02-19T21:16:07.038872",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 85.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Search for Multimodal AI models and scroll once.",
+      "output_plan": "[input] Search DuckDuckGo -> TYPE: Multimodal AI models",
+      "llm_confidence": 85,
+      "composite_confidence": 85.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 23.156
+    }
+  ]
+}

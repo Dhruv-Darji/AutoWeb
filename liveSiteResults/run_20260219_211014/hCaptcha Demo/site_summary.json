@@ -1,0 +1,22 @@
+{
+  "site_name": "hCaptcha Demo",
+  "url": "https://accounts.hcaptcha.com/demo",
+  "timestamp": "2026-02-19T21:31:46.828749",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 1,
+  "hitl_trigger_rate": 1.0,
+  "avg_confidence": 80.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Click the hCaptcha checkbox to verify.",
+      "output_plan": "[checkbox] I am human -> CLICK",
+      "llm_confidence": 80,
+      "composite_confidence": 80.0,
+      "hitl_triggered": true,
+      "hitl_reason": "CAPTCHA security mechanism.",
+      "latency": 18.166
+    }
+  ]
+}

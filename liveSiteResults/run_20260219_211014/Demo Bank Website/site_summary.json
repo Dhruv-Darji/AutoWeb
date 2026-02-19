@@ -1,0 +1,22 @@
+{
+  "site_name": "Demo Bank Website",
+  "url": "https://demo.testfire.net/",
+  "timestamp": "2026-02-19T21:31:13.995622",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 1,
+  "hitl_trigger_rate": 1.0,
+  "avg_confidence": 85.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Open login page and enter demo credentials.",
+      "output_plan": "[link] ONLINE BANKING LOGIN -> CLICK",
+      "llm_confidence": 85,
+      "composite_confidence": 85.0,
+      "hitl_triggered": true,
+      "hitl_reason": "risk_keywords_matched: ['login']",
+      "latency": 29.348
+    }
+  ]
+}

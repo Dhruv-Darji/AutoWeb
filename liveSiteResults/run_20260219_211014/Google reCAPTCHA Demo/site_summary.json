@@ -1,0 +1,22 @@
+{
+  "site_name": "Google reCAPTCHA Demo",
+  "url": "https://www.google.com/recaptcha/api2/demo",
+  "timestamp": "2026-02-19T21:22:34.620706",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 1,
+  "hitl_trigger_rate": 1.0,
+  "avg_confidence": 80.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Click the I'm not a robot checkbox.",
+      "output_plan": "[checkbox] I'm not a robot -> CLICK",
+      "llm_confidence": 80,
+      "composite_confidence": 80.0,
+      "hitl_triggered": true,
+      "hitl_reason": "CAPTCHA security mechanism.",
+      "latency": 27.371
+    }
+  ]
+}

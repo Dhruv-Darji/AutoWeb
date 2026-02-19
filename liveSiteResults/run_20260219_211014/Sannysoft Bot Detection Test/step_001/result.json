@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "FINISH",
+  "llm_confidence": 50,
+  "policy_risk_flag": false,
+  "composite_confidence": 50.0,
+  "hitl_triggered": false,
+  "hitl_reason": "model did not produce structured JSON output",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 50.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 50.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 56.86521553993225,
+  "cost": {
+    "prompt_tokens": 4552,
+    "completion_tokens": 29,
+    "total_tokens": 4581,
+    "cost_usd": 0.01167,
+    "calls": 2
+  },
+  "site": "Sannysoft Bot Detection Test",
+  "url": "https://bot.sannysoft.com/",
+  "instruction": "Check if the bot detection is triggered.",
+  "step_num": 1
+}

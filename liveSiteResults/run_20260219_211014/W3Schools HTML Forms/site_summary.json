@@ -1,0 +1,22 @@
+{
+  "site_name": "W3Schools HTML Forms",
+  "url": "https://www.w3schools.com/html/html_forms.asp",
+  "timestamp": "2026-02-19T21:27:13.636460",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 85.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Open Text field example",
+      "output_plan": "[button] Try it Yourself -> CLICK",
+      "llm_confidence": 85,
+      "composite_confidence": 85.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 28.758
+    }
+  ]
+}

@@ -217,6 +217,7 @@ def print_config():
     logger.info(f"HITL_THRESHOLD:{get_hitl_threshold()}")
     logger.info(f"RUNNER_MODE:   {get_runner_mode()}")
     logger.info(f"USE_GPT:       {get_use_gpt()}")
+    logger.info(f"SKIP_GROUNDING:{get_skip_grounding()}")
     logger.info(f"LIVE_SITES:    {get_live_sites_path()}")
     logger.info(f"BROWSER_HEADLESS: {get_browser_headless()}")
     logger.info(f"ANNOTATION_ID: {get_annotation_id() or '(not set)'}")
@@ -262,6 +263,15 @@ def get_dataset_file(default: Optional[str] = None) -> Optional[str]:
     """Parquet file name for dataset mode.  Set via ``DATASET_FILE``."""
     val = os.getenv("DATASET_FILE", default)
     return val if val else None
+
+
+def get_skip_grounding(default: bool = False) -> bool:
+    """Skip Action Grounding entirely when ``true``.
+
+    Useful for testing HITL + PolicyHub in isolation without loading
+    DeBERTa / CrossEncoder models.  Set via ``SKIP_GROUNDING`` in .env.
+    """
+    return os.getenv("SKIP_GROUNDING", str(default)).strip().lower() in ("true", "1", "yes")
 
 
 def get_force_reprocess(default: bool = False) -> bool:

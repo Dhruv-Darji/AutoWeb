@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "[button] Try it Yourself -> CLICK",
+  "llm_confidence": 85,
+  "policy_risk_flag": false,
+  "composite_confidence": 85.0,
+  "hitl_triggered": false,
+  "hitl_reason": "",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 85.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 85.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 28.75793480873108,
+  "cost": {
+    "prompt_tokens": 2219,
+    "completion_tokens": 35,
+    "total_tokens": 2254,
+    "cost_usd": 0.005897,
+    "calls": 1
+  },
+  "site": "W3Schools HTML Forms",
+  "url": "https://www.w3schools.com/html/html_forms.asp",
+  "instruction": "Open Text field example",
+  "step_num": 1
+}

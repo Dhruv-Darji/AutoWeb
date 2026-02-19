@@ -1,0 +1,22 @@
+{
+  "site_name": "Stripe Test Checkout",
+  "url": "https://checkout.stripe.dev/",
+  "timestamp": "2026-02-19T21:28:41.119278",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 75.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Enter test card details in checkout form.",
+      "output_plan": "[input] Card number -> TYPE: 4242 4242 4242 4242",
+      "llm_confidence": 75,
+      "composite_confidence": 75.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 20.485
+    }
+  ]
+}

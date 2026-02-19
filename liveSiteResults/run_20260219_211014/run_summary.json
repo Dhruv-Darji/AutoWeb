@@ -1,0 +1,365 @@
+{
+  "run_dir": "liveSiteResults\\run_20260219_211014",
+  "timestamp": "2026-02-19T21:31:47.111819",
+  "aggregate": {
+    "total_steps": 13,
+    "successful": 13,
+    "hitl_triggers": 3,
+    "hitl_trigger_rate": 0.2308,
+    "avg_confidence": 83.08,
+    "total_latency_s": 475.65
+  },
+  "per_site": {
+    "Wikipedia": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 90.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Search for Artificial Intelligence and open first result.",
+          "url": "https://www.wikipedia.org/",
+          "output_plan": "[input] Search Wikipedia -> TYPE: Artificial Intelligence",
+          "llm_confidence": 90,
+          "composite_confidence": 90.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 92.997,
+          "cost": {
+            "prompt_tokens": 2223,
+            "completion_tokens": 37,
+            "total_tokens": 2260,
+            "cost_usd": 0.005927,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Sannysoft Bot Detection Test": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 50.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Check if the bot detection is triggered.",
+          "url": "https://bot.sannysoft.com/",
+          "output_plan": "FINISH",
+          "llm_confidence": 50,
+          "composite_confidence": 50.0,
+          "hitl_triggered": false,
+          "hitl_reason": "model did not produce structured JSON output",
+          "grounding_success": false,
+          "latency": 56.865,
+          "cost": {
+            "prompt_tokens": 4552,
+            "completion_tokens": 29,
+            "total_tokens": 4581,
+            "cost_usd": 0.01167,
+            "calls": 2
+          }
+        }
+      ]
+    },
+    "DuckDuckGo": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 85.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Search for Multimodal AI models and scroll once.",
+          "url": "https://duckduckgo.com/",
+          "output_plan": "[input] Search DuckDuckGo -> TYPE: Multimodal AI models",
+          "llm_confidence": 85,
+          "composite_confidence": 85.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 23.156,
+          "cost": {
+            "prompt_tokens": 2225,
+            "completion_tokens": 39,
+            "total_tokens": 2264,
+            "cost_usd": 0.005953,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "GitHub Login": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 85.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Enter username and click Sign in.",
+          "url": "https://github.com/login",
+          "output_plan": "[input] Username or email address -> TYPE: <your_username>",
+          "llm_confidence": 85,
+          "composite_confidence": 85.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 62.975,
+          "cost": {
+            "prompt_tokens": 2561,
+            "completion_tokens": 37,
+            "total_tokens": 2598,
+            "cost_usd": 0.006772,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Hacker News": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 95.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Click the top news article.",
+          "url": "https://news.ycombinator.com/",
+          "output_plan": "[link] America vs. Singapore: You Can’t Save Your Way Out of Economic Shocks -> CLICK",
+          "llm_confidence": 95,
+          "composite_confidence": 95.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 38.563,
+          "cost": {
+            "prompt_tokens": 2220,
+            "completion_tokens": 45,
+            "total_tokens": 2265,
+            "cost_usd": 0.006,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Google reCAPTCHA Demo": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 1,
+      "avg_confidence": 80.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Click the I'm not a robot checkbox.",
+          "url": "https://www.google.com/recaptcha/api2/demo",
+          "output_plan": "[checkbox] I'm not a robot -> CLICK",
+          "llm_confidence": 80,
+          "composite_confidence": 80.0,
+          "hitl_triggered": true,
+          "hitl_reason": "CAPTCHA security mechanism.",
+          "grounding_success": false,
+          "latency": 27.371,
+          "cost": {
+            "prompt_tokens": 2562,
+            "completion_tokens": 38,
+            "total_tokens": 2600,
+            "cost_usd": 0.006785,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Python.org": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 95.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Click the Downloads menu.",
+          "url": "https://www.python.org/",
+          "output_plan": "[link] Downloads -> CLICK",
+          "llm_confidence": 95,
+          "composite_confidence": 95.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 32.458,
+          "cost": {
+            "prompt_tokens": 2899,
+            "completion_tokens": 33,
+            "total_tokens": 2932,
+            "cost_usd": 0.007578,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Facebook Login": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 85.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Enter email and click Log In.",
+          "url": "https://www.facebook.com/",
+          "output_plan": "[input] Email address or phone number -> TYPE: [your email]",
+          "llm_confidence": 85,
+          "composite_confidence": 85.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 17.647,
+          "cost": {
+            "prompt_tokens": 2561,
+            "completion_tokens": 38,
+            "total_tokens": 2599,
+            "cost_usd": 0.006783,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "W3Schools HTML Forms": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 85.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Open Text field example",
+          "url": "https://www.w3schools.com/html/html_forms.asp",
+          "output_plan": "[button] Try it Yourself -> CLICK",
+          "llm_confidence": 85,
+          "composite_confidence": 85.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 28.758,
+          "cost": {
+            "prompt_tokens": 2219,
+            "completion_tokens": 35,
+            "total_tokens": 2254,
+            "cost_usd": 0.005897,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Stripe Test Checkout": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 75.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Enter test card details in checkout form.",
+          "url": "https://checkout.stripe.dev/",
+          "output_plan": "[input] Card number -> TYPE: 4242 4242 4242 4242",
+          "llm_confidence": 75,
+          "composite_confidence": 75.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 20.485,
+          "cost": {
+            "prompt_tokens": 2562,
+            "completion_tokens": 44,
+            "total_tokens": 2606,
+            "cost_usd": 0.006845,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Demo Web Shop": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 0,
+      "avg_confidence": 90.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Add a product to cart and proceed to checkout.",
+          "url": "http://demowebshop.tricentis.com/",
+          "output_plan": "[button] Add to cart -> CLICK",
+          "llm_confidence": 90,
+          "composite_confidence": 90.0,
+          "hitl_triggered": false,
+          "hitl_reason": "",
+          "grounding_success": false,
+          "latency": 26.861,
+          "cost": {
+            "prompt_tokens": 2224,
+            "completion_tokens": 32,
+            "total_tokens": 2256,
+            "cost_usd": 0.00588,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "Demo Bank Website": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 1,
+      "avg_confidence": 85.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Open login page and enter demo credentials.",
+          "url": "https://demo.testfire.net/",
+          "output_plan": "[link] ONLINE BANKING LOGIN -> CLICK",
+          "llm_confidence": 85,
+          "composite_confidence": 85.0,
+          "hitl_triggered": true,
+          "hitl_reason": "risk_keywords_matched: ['login']",
+          "grounding_success": false,
+          "latency": 29.348,
+          "cost": {
+            "prompt_tokens": 2562,
+            "completion_tokens": 33,
+            "total_tokens": 2595,
+            "cost_usd": 0.006735,
+            "calls": 1
+          }
+        }
+      ]
+    },
+    "hCaptcha Demo": {
+      "total_steps": 1,
+      "successful": 1,
+      "hitl_triggers": 1,
+      "avg_confidence": 80.0,
+      "steps": [
+        {
+          "step_num": 1,
+          "instruction": "Click the hCaptcha checkbox to verify.",
+          "url": "https://accounts.hcaptcha.com/demo",
+          "output_plan": "[checkbox] I am human -> CLICK",
+          "llm_confidence": 80,
+          "composite_confidence": 80.0,
+          "hitl_triggered": true,
+          "hitl_reason": "CAPTCHA security mechanism.",
+          "grounding_success": false,
+          "latency": 18.166,
+          "cost": {
+            "prompt_tokens": 2562,
+            "completion_tokens": 37,
+            "total_tokens": 2599,
+            "cost_usd": 0.006775,
+            "calls": 1
+          }
+        }
+      ]
+    }
+  }
+}

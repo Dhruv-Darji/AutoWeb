@@ -18,7 +18,7 @@ src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
-from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model, get_policy_hub_path, get_hitl_threshold, get_low_confidence_floor
+from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model, get_policy_hub_path, get_hitl_threshold, get_low_confidence_floor, get_skip_grounding
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
 from AutoWeb.src.logger import logger
@@ -99,7 +99,12 @@ class SeeActPipeline:
         logger.info("  ✓ Action generator ready")
 
         # 5. Action Grounding (SeeAct Action Grounding Module)
-        self.action_grounding = SeeActActionGrounding(model=self.model)
+        self.skip_grounding = get_skip_grounding()
+        if self.skip_grounding:
+            self.action_grounding = None
+            logger.info("  ⏩ Action grounding SKIPPED (SKIP_GROUNDING=true)")
+        else:
+            self.action_grounding = SeeActActionGrounding(model=self.model)
         
         # 6. Evaluator (SeeAct offline metrics)
         self.evaluator = SeeActEvaluator(output_dir="eval_results")
@@ -221,7 +226,11 @@ class SeeActPipeline:
             # Skip grounding if plan is empty — record as failed step directly
             elif not output_plan.strip():
                 logger.warning("    ⚠ Empty action plan — skipping grounding, recording as failed step.")
-                grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
+                grounding_result = {"success": False, "error": "empty plan", "selected_element": None}            
+            elif self.skip_grounding:
+                logger.info(f"  ✓ No risk detected  llm_conf={llm_confidence}, risk_flag={policy_risk_flag}")
+                logger.info("  ⏩ Grounding SKIPPED (SKIP_GROUNDING=true)")
+                grounding_result = {"success": False, "error": "grounding_skipped", "selected_element": None}            
             else:
                 logger.info(f"  \u2713 No risk detected  llm_conf={llm_confidence}, risk_flag={policy_risk_flag}")
                 # Step 4: Grounding method selection and processing
@@ -419,7 +428,10 @@ class SeeActPipeline:
         elif not output_plan.strip():
             logger.warning("    ⚠ Empty action plan — skipping grounding.")
             grounding_result = {"success": False, "error": "empty plan", "selected_element": None}
-
+        elif self.skip_grounding:
+            logger.info(f"  ✓ No risk detected  llm_conf={llm_confidence}, risk_flag={policy_risk_flag}")
+            logger.info("  ⏩ Grounding SKIPPED (SKIP_GROUNDING=true)")
+            grounding_result = {"success": False, "error": "grounding_skipped", "selected_element": None}
         else:
             logger.info(f"  \u2713 No risk detected  llm_conf={llm_confidence}, risk_flag={policy_risk_flag}")
             # Step 3: Action Grounding

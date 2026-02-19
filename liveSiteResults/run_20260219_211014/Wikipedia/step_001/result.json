@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "[input] Search Wikipedia -> TYPE: Artificial Intelligence",
+  "llm_confidence": 90,
+  "policy_risk_flag": false,
+  "composite_confidence": 90.0,
+  "hitl_triggered": false,
+  "hitl_reason": "",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 90.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 90.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 92.99665260314941,
+  "cost": {
+    "prompt_tokens": 2223,
+    "completion_tokens": 37,
+    "total_tokens": 2260,
+    "cost_usd": 0.005927,
+    "calls": 1
+  },
+  "site": "Wikipedia",
+  "url": "https://www.wikipedia.org/",
+  "instruction": "Search for Artificial Intelligence and open first result.",
+  "step_num": 1
+}

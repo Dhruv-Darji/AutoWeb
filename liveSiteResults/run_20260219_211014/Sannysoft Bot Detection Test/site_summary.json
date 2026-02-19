@@ -1,0 +1,22 @@
+{
+  "site_name": "Sannysoft Bot Detection Test",
+  "url": "https://bot.sannysoft.com/",
+  "timestamp": "2026-02-19T21:14:41.796965",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 50.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Check if the bot detection is triggered.",
+      "output_plan": "FINISH",
+      "llm_confidence": 50,
+      "composite_confidence": 50.0,
+      "hitl_triggered": false,
+      "hitl_reason": "model did not produce structured JSON output",
+      "latency": 56.865
+    }
+  ]
+}

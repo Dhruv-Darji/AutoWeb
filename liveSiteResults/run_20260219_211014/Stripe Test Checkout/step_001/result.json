@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "[input] Card number -> TYPE: 4242 4242 4242 4242",
+  "llm_confidence": 75,
+  "policy_risk_flag": false,
+  "composite_confidence": 75.0,
+  "hitl_triggered": false,
+  "hitl_reason": "",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 75.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 75.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 20.48453712463379,
+  "cost": {
+    "prompt_tokens": 2562,
+    "completion_tokens": 44,
+    "total_tokens": 2606,
+    "cost_usd": 0.006845,
+    "calls": 1
+  },
+  "site": "Stripe Test Checkout",
+  "url": "https://checkout.stripe.dev/",
+  "instruction": "Enter test card details in checkout form.",
+  "step_num": 1
+}

@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "output_plan": "[link] Downloads -> CLICK",
+  "llm_confidence": 95,
+  "policy_risk_flag": false,
+  "composite_confidence": 95.0,
+  "hitl_triggered": false,
+  "hitl_reason": "",
+  "hitl_details": {
+    "hitl_triggered": false,
+    "trigger_reasons": [],
+    "llm_confidence": 95.0,
+    "policy_risk_flag": false,
+    "matched_keywords": [],
+    "low_confidence_floor": 30,
+    "final_confidence": 95.0,
+    "policy_risk_score": 100.0,
+    "threshold": 72
+  },
+  "grounding_result": {
+    "success": false,
+    "error": "grounding_skipped",
+    "selected_element": null
+  },
+  "latency": 32.45797896385193,
+  "cost": {
+    "prompt_tokens": 2899,
+    "completion_tokens": 33,
+    "total_tokens": 2932,
+    "cost_usd": 0.007578,
+    "calls": 1
+  },
+  "site": "Python.org",
+  "url": "https://www.python.org/",
+  "instruction": "Click the Downloads menu.",
+  "step_num": 1
+}

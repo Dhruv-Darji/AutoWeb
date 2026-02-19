@@ -1,0 +1,22 @@
+{
+  "site_name": "GitHub Login",
+  "url": "https://github.com/login",
+  "timestamp": "2026-02-19T21:17:44.356562",
+  "total_steps": 1,
+  "successful": 1,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "avg_confidence": 85.0,
+  "steps": [
+    {
+      "step_num": 1,
+      "instruction": "Enter username and click Sign in.",
+      "output_plan": "[input] Username or email address -> TYPE: <your_username>",
+      "llm_confidence": 85,
+      "composite_confidence": 85.0,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "latency": 62.975
+    }
+  ]
+}
