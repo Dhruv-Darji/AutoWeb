@@ -201,4 +201,55 @@ def print_config():
     logger.info(f"USE_8BIT:      {get_use_8bit()}")
     logger.info(f"POLICY_HUB:    {get_policy_hub_path() or '(default)'}")
     logger.info(f"HITL_THRESHOLD:{get_hitl_threshold()}")
+    logger.info(f"RUNNER_MODE:   {get_runner_mode()}")
+    logger.info(f"USE_GPT:       {get_use_gpt()}")
+    logger.info(f"LIVE_SITES:    {get_live_sites_path()}")
+    logger.info(f"BROWSER_HEADLESS: {get_browser_headless()}")
+    logger.info(f"ANNOTATION_ID: {get_annotation_id() or '(not set)'}")
+    logger.info(f"DATASET_FILE:  {get_dataset_file() or '(not set)'}")
     logger.info("=" * 80 + "\n")
+
+
+# ── Runner / live-mode settings ───────────────────────────────────
+
+def get_runner_mode(default: str = "live") -> str:
+    """Pipeline run mode: ``live`` or ``dataset``.  Set via ``RUNNER_MODE``."""
+    val = os.getenv("RUNNER_MODE", default).strip().lower()
+    if val not in ("live", "dataset"):
+        return default
+    return val
+
+
+def get_use_gpt(default: bool = False) -> bool:
+    """Whether to use GPT-4o (OpenAI API) instead of local Qwen.  Set via ``USE_GPT``."""
+    return os.getenv("USE_GPT", str(default)).strip().lower() in ("true", "1", "yes")
+
+
+def get_live_sites_path(default: Optional[str] = None) -> str:
+    """Path to the live_sites.json config.  Set via ``LIVE_SITES_PATH``."""
+    val = os.getenv("LIVE_SITES_PATH", default)
+    if val:
+        return val
+    return str(Path(__file__).parent / "live_sites.json")
+
+
+def get_browser_headless(default: bool = False) -> bool:
+    """Run browser headless in live mode.  Set via ``BROWSER_HEADLESS``."""
+    return os.getenv("BROWSER_HEADLESS", str(default)).strip().lower() in ("true", "1", "yes")
+
+
+def get_annotation_id(default: Optional[str] = None) -> Optional[str]:
+    """Specific annotation ID for dataset mode.  Set via ``ANNOTATION_ID``."""
+    val = os.getenv("ANNOTATION_ID", default)
+    return val if val else None
+
+
+def get_dataset_file(default: Optional[str] = None) -> Optional[str]:
+    """Parquet file name for dataset mode.  Set via ``DATASET_FILE``."""
+    val = os.getenv("DATASET_FILE", default)
+    return val if val else None
+
+
+def get_force_reprocess(default: bool = False) -> bool:
+    """Re-process already-checkpointed tasks.  Set via ``FORCE_REPROCESS``."""
+    return os.getenv("FORCE_REPROCESS", str(default)).strip().lower() in ("true", "1", "yes")

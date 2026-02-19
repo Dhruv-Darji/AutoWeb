@@ -2,9 +2,15 @@
   "description": "Target websites for live SeeAct pipeline testing with PolicyHub + HITL",
   "sites": [
     {
-      "url": "https://www.amazon.com",
-      "domain": "amazon.com",
-      "name": "Amazon",
+      "url": "https://www.wikipedia.org/",
+      "domain": "wikipedia.org",
+      "name": "Wikipedia",
+      "default_instruction": null
+    },
+    {
+      "url": "https://www.google.com/recaptcha/api2/demo",
+      "domain": "google.com",
+      "name": "Google reCAPTCHA Demo",
       "default_instruction": null
     }
   ]

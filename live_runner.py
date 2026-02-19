@@ -1,25 +1,22 @@
 """
-Live Runner — Run SeeAct pipeline on live websites with PolicyHub + HITL.
+Live Runner — Run SeeAct pipeline on live websites or Mind2Web dataset.
 
-Supports two modes:
-    1. **Live mode**  — Opens a real browser, iterates over target websites,
-       asks the user for an instruction in the terminal, and runs the
-       SeeAct pipeline (Action Gen → HITL Gate → Grounding).
-    2. **Dataset mode** — Delegates to the existing Mind2Web-based
-       ``run_single_prediction_example()`` for offline evaluation.
+All configuration is read from ``.env`` (via ``config.py``) — no CLI flags needed.
+
+Key .env variables::
+
+    RUNNER_MODE=live              # "live" or "dataset"
+    USE_GPT=true                  # true = GPT-4o API, false = local Qwen
+    LIVE_SITES_PATH=src/live_sites.json
+    BROWSER_HEADLESS=false
+
+    # Dataset mode only
+    ANNOTATION_ID=                # leave empty for batch mode
+    DATASET_FILE=train-00002-of-00027-....parquet
+    FORCE_REPROCESS=false
 
 Usage:
-    # Live mode  (default — opens browser)
-    python live_runner.py --mode live
-
-    # Live mode with custom sites file
-    python live_runner.py --mode live --sites src/live_sites.json
-
-    # Dataset mode (existing Mind2Web workflow)
-    python live_runner.py --mode dataset --annotation_id "abc123" --dataset_file "test_task_0.parquet"
-
-    # Dataset mode — batch (all annotation_ids in a parquet)
-    python live_runner.py --mode dataset --dataset_file "test_task_0.parquet"
+    python live_runner.py
 
 Requirements (live mode only):
     pip install playwright
@@ -28,7 +25,6 @@ Requirements (live mode only):
 
 import sys
 import json
-import argparse
 from pathlib import Path
 from typing import List, Dict, Optional
 
@@ -37,7 +33,12 @@ ROOT_DIR = Path(__file__).parent
 SRC_DIR = ROOT_DIR / "src"
 sys.path.insert(0, str(SRC_DIR))
 
-from AutoWeb.src.config import get_model_path, get_device, get_openai_model
+from AutoWeb.src.config import (
+    get_model_path, get_openai_model,
+    get_runner_mode, get_use_gpt, get_live_sites_path,
+    get_browser_headless, get_annotation_id, get_dataset_file,
+    get_force_reprocess, print_config,
+)
 from AutoWeb.src.logger import logger
 
 
@@ -57,13 +58,9 @@ def _load_sites(sites_path: str) -> List[Dict]:
     return sites
 
 
-def run_live_mode(
-    sites_path: str,
-    use_gpt: bool = False,
-    headless: bool = False,
-):
+def run_live_mode():
     """
-    Interactive live-website loop.
+    Interactive live-website loop.  All settings read from .env.
 
     For each site:
         1. Navigate browser to the URL.
@@ -76,14 +73,18 @@ def run_live_mode(
     from AutoWeb.src.seeact_pipeline import SeeActPipeline
     from AutoWeb.src.live_result_store import LiveResultStore
 
+    use_gpt = get_use_gpt()
+    headless = get_browser_headless()
+    sites_path = get_live_sites_path()
+
     sites = _load_sites(sites_path)
 
     # ── Initialise pipeline (model loads once) ────────────────────
     model_folder = get_model_path()
-    logger.info("=" * 80)
     backend_label = (
         f"{get_openai_model()} (OpenAI API)" if use_gpt else "Qwen2-VL-2B (local)"
     )
+    logger.info("=" * 80)
     logger.info("SeeAct Live Runner")
     logger.info(f"  Model backend : {backend_label}")
     logger.info(f"  Sites loaded  : {len(sites)}")
@@ -296,16 +297,21 @@ def _print_live_summary(results: List[Dict]):
 # Dataset-mode (existing workflow)
 # ======================================================================
 
-def run_dataset_mode(
-    annotation_id: Optional[str],
-    dataset_file: Optional[str],
-    use_gpt: bool = False,
-    force_reprocess: bool = False,
-):
-    """Delegate to the existing Mind2Web-based pipeline."""
+def run_dataset_mode():
+    """Delegate to the existing Mind2Web-based pipeline.  All settings from .env."""
     from AutoWeb.src.seeact_pipeline import run_single_prediction_example
 
     model_folder = get_model_path()
+    annotation_id = get_annotation_id()
+    dataset_file = get_dataset_file()
+    use_gpt = get_use_gpt()
+    force_reprocess = get_force_reprocess()
+
+    if not dataset_file and not annotation_id:
+        raise ValueError(
+            "Dataset mode requires DATASET_FILE and/or ANNOTATION_ID in .env"
+        )
+
     return run_single_prediction_example(
         model_folder=model_folder,
         annotation_id=annotation_id,
@@ -320,53 +326,15 @@ def run_dataset_mode(
 # ======================================================================
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="SeeAct Pipeline Runner — Live websites or Mind2Web dataset"
-    )
-    parser.add_argument(
-        "--mode",
-        choices=["live", "dataset"],
-        default="live",
-        help="Run mode: 'live' (browser + interactive) or 'dataset' (Mind2Web offline).",
-    )
+    """Entry point — reads RUNNER_MODE from .env and dispatches."""
+    print_config()
+    mode = get_runner_mode()
+    logger.info(f"Runner mode: {mode}")
 
-    # Live-mode options
-    parser.add_argument(
-        "--sites",
-        default=str(SRC_DIR / "live_sites.json"),
-        help="Path to live_sites.json config file.",
-    )
-    parser.add_argument(
-        "--headless",
-        action="store_true",
-        help="Run browser in headless mode (no visible window).",
-    )
-
-    # Dataset-mode options
-    parser.add_argument("--annotation_id", default=None, help="Specific annotation ID (dataset mode).")
-    parser.add_argument("--dataset_file", default=None, help="Parquet file name (dataset mode).")
-    parser.add_argument("--force_reprocess", action="store_true", help="Re-process already-checkpointed tasks.")
-
-    # Shared options
-    parser.add_argument("--gpt", action="store_true", help="Use GPT-4o (OpenAI API) instead of local Qwen model.")
-
-    args = parser.parse_args()
-
-    if args.mode == "live":
-        run_live_mode(
-            sites_path=args.sites,
-            use_gpt=args.gpt,
-            headless=args.headless,
-        )
+    if mode == "live":
+        run_live_mode()
     else:
-        if not args.dataset_file and not args.annotation_id:
-            parser.error("Dataset mode requires --dataset_file and/or --annotation_id.")
-        run_dataset_mode(
-            annotation_id=args.annotation_id,
-            dataset_file=args.dataset_file,
-            use_gpt=args.gpt,
-            force_reprocess=args.force_reprocess,
-        )
+        run_dataset_mode()
 
 
 if __name__ == "__main__":
