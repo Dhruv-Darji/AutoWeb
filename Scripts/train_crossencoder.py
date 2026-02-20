@@ -13,6 +13,7 @@ import os
 import random
 import sys
 from pathlib import Path
+import time
 import matplotlib.pyplot as plt
 import torch
 import pandas as pd
@@ -43,12 +44,12 @@ except Exception as e:
 from mind2Web_Loader import Mind2WebDataset
 
 # ------------------ USER CONFIGURATION ------------------
-PARQUET_PATH = r"D:\Environments\Datasets\multimodal-mind2web\data\train-00000-of-00027-4d11798d7219186d.parquet"
-MODEL_OUTPUT_DIR = r"D:\Environments\Models\cross-encoder-seeact"
-PLOTS_DIR = r"D:\Mtech\Sem 3\Codes\AutoWeb\Scripts\training_plots"
+PARQUET_PATH = r"D:\\Environments\\Datasets\\multimodal-mind2web\\data\\train-00000-of-00027-4d11798d7219186d.parquet"
+MODEL_OUTPUT_DIR = r"D:\\Environments\\Models\\cross-encoder-seeact"
+PLOTS_DIR = r"D:\\Mtech\\Sem 3\\Codes\\AutoWeb\\Scripts\\training_plots"
 TRAIN_FRACTION = 0.8            # train/dev split
 BATCH_SIZE = 16
-EPOCHS = 3
+EPOCHS = 30
 LR = 2e-5
 SEED = 42
 # --------------------------------------------------------
@@ -132,28 +133,84 @@ def main():
     def callback(score, epoch, steps):
         eval_scores.append(score)
 
-    model.fit(
-        train_dataloader,
-        evaluator=dev_evaluator,  # None disables evaluation during training
-        epochs=EPOCHS,
-        evaluation_steps=0,  # no periodic eval
-        optimizer_params={"lr": LR},
-        output_path=MODEL_OUTPUT_DIR,
-        save_best_model=True,
-        callback=callback,
-        show_progress_bar=True,
-    )
+    # instead of running all epochs at once, iterate so we can evaluate after
+    # each epoch and record accuracy/error for train and dev sets.
+    history = {
+        "epoch": [],
+        "train_acc": [],
+        "train_err": [],
+        "dev_acc": [],
+        "dev_err": [],
+    }
 
-    # if no evaluation hooks ran the directory may be empty; save final model explicitly
+    def compute_accuracy(model, examples):
+        correct = 0
+        for ex in examples:
+            score = model.predict([ex.texts])[0]
+            pred = 1.0 if score >= 0.5 else 0.0
+            if pred == ex.label:
+                correct += 1
+        return correct / len(examples) if examples else 0.0
+
+    for epoch in range(EPOCHS):
+        start_time = time.time()
+        print(f"\n=== Starting epoch {epoch+1}/{EPOCHS} ===")
+        model.fit(
+            train_dataloader,
+            evaluator=dev_evaluator,
+            epochs=1,
+            evaluation_steps=0,
+            optimizer_params={"lr": LR},
+            output_path=MODEL_OUTPUT_DIR,
+            save_best_model=True,
+            callback=callback,
+            show_progress_bar=True,
+        )
+
+        # evaluate accuracy on both sets
+        train_acc = compute_accuracy(model, train_ex)
+        dev_acc = compute_accuracy(model, dev_ex)
+        history["epoch"].append(epoch + 1)
+        history["train_acc"].append(train_acc)
+        history["train_err"].append(1 - train_acc)
+        history["dev_acc"].append(dev_acc)
+        history["dev_err"].append(1 - dev_acc)
+        print(f"Epoch {epoch+1}: train_acc={train_acc:.4f}, dev_acc={dev_acc:.4f}")
+        print(f"Epoch {epoch+1} completed in {time.time() - start_time:.2f} seconds")
+
+    # ensure final model saved
     print("Saving final model to", MODEL_OUTPUT_DIR)
     model.save(MODEL_OUTPUT_DIR)
 
-    # plot evaluator scores (if any were collected)
-    if eval_scores:
-        plot_scores(eval_scores, os.path.join(PLOTS_DIR, "eval_scores.png"))
+    # plot accuracy/error graphs
+    def plot_history(hist: dict, out_prefix: str):
+        epochs = hist["epoch"]
+        plt.figure()
+        plt.plot(epochs, hist["train_acc"], label="train acc", marker="o")
+        plt.plot(epochs, hist["dev_acc"], label="dev acc", marker="o")
+        plt.title("Accuracy per epoch")
+        plt.xlabel("epoch")
+        plt.ylabel("accuracy")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(out_prefix + "_acc.png")
+        plt.close()
 
-    # reload trained model (same path) and run confusion on dev
-    trained = model  # we can just use the in-memory model
+        plt.figure()
+        plt.plot(epochs, hist["train_err"], label="train err", marker="o")
+        plt.plot(epochs, hist["dev_err"], label="dev err", marker="o")
+        plt.title("Error per epoch")
+        plt.xlabel("epoch")
+        plt.ylabel("error")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(out_prefix + "_err.png")
+        plt.close()
+
+    plot_history(history, os.path.join(PLOTS_DIR, "epoch_history"))
+
+    # confusion matrix using the final model
+    trained = model
     trained.eval()
     gt_labels = []
     pred_labels = []
