@@ -18,7 +18,7 @@ src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
 
 from AutoWeb.src.Input_Prepration import SeeActInputPreparator
-from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model, get_policy_hub_path, get_hitl_threshold, get_low_confidence_floor, get_skip_grounding
+from config import get_model_path, get_device, get_model_dtype, get_use_8bit, get_openai_model, get_policy_hub_path, get_hitl_threshold, get_low_confidence_floor, get_skip_grounding, get_runner_mode
 from AutoWeb.src.model_interface import VLModel
 from AutoWeb.src.gpt_model import GPTVisionModel
 from AutoWeb.src.logger import logger
@@ -51,6 +51,7 @@ class SeeActPipeline:
                  use_gpt: bool = False):
         logger.info("[SeeActPipeline] Initializing components...")
         self.use_gpt = use_gpt
+        self.MAX_BATCH = 15
         
         # 1. Mind2Web Dataset Loader (for retrieving task data based on annotation ID)
         self.mind2web_loader = Mind2WebDataset(root_dir="D:\\Environments\\Datasets\\multimodal-mind2web")
@@ -127,6 +128,14 @@ class SeeActPipeline:
             dataset_file_name: str,
             seeAct_method: str = "2" #1. Element Attributes 2. Textual Choice 3. Image Annotation
         ) -> Dict:
+        # Ensure evaluator writes into a subdirectory named for the dataset file.
+        if dataset_file_name:
+            base = "eval_results"
+            sub = os.path.basename(dataset_file_name)
+            out_dir = os.path.join(base, sub)
+            os.makedirs(out_dir, exist_ok=True)
+            self.evaluator.output_dir = out_dir
+            logger.info(f"Evaluator output redirected to {out_dir}")
         """
         Run the full SeeAct-style prediction for a single task (multiple steps).
         Available methods for action grounding:
@@ -197,9 +206,15 @@ class SeeActPipeline:
                 continue
 
             # store the input and action plan in history for potential use in future steps
-            action_history.append({                
-                "action_plan": output_plan
-            })
+            # in dataset mode, we append the **ground truth** plan from the
+            # annotated data instead of the model's prediction.  this prevents
+            # a single mistaken generation from polluting all subsequent steps
+            # and ensures we test the downstream grounding/architecture.
+            if get_runner_mode() == "dataset":
+                gt_plan = action.get("target_action_reprs") or output_plan
+                action_history.append({"action_plan": gt_plan})
+            else:
+                action_history.append({"action_plan": output_plan})
 
             # Step 3.5: HITL Confidence Gate (runs BEFORE grounding to save cost)
             hitl_result = self.hitl_gate.compute_composite_confidence(
@@ -508,6 +523,13 @@ def run_single_prediction_example(
         model_folder=model_folder,
         use_gpt=use_gpt,
     )
+    # if we know the dataset file name up front, make the evaluator write
+    # into a dedicated directory inside eval_results
+    if dataset_file_name:
+        outdir = os.path.join("eval_results", os.path.basename(dataset_file_name))
+        os.makedirs(outdir, exist_ok=True)
+        pipeline.evaluator.output_dir = outdir
+        logger.info(f"Evaluator output redirected to {outdir}")
 
     processed_results = []
 
@@ -571,6 +593,9 @@ def run_single_prediction_example(
         logger.info(f"Batch mode: found {len(unique_ids)} unique annotation_id(s) in '{dataset_file_name}'")
 
         # Iterate and run pipeline for each annotation id using in-memory df (avoid re-read)
+        if pipeline.MAX_BATCH:
+            unique_ids = unique_ids[:pipeline.MAX_BATCH]
+            logger.info(f"Batch mode: processing first {pipeline.MAX_BATCH} annotation_id(s) for testing/demo purposes")
         for ann in unique_ids:
             _run_one(ann, use_file=False)
 
