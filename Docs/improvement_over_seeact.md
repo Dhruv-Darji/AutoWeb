@@ -498,6 +498,77 @@ Immediate recommendations
 
 Next steps (short)
 
+---
+
+## 6. Training a Custom Cross-Encoder for Grounding
+
+To further improve grounding accuracy on our Mind2Web dataset, we can
+fine-tune a small DeBERTa-based cross-encoder using the same input/output
+format used by the pipeline. A helper script lives in
+`AutoWeb/Scripts/train_crossencoder.py` and performs the following:
+
+1. Read a Parquet shard of the Multimodal-Mind2Web dataset.
+2. Construct positive pairs `(plan, element_repr)` and random negatives.
+3. Fine-tune a sentence-transformers `CrossEncoder` starting from the
+   off-the-shelf model `cross-encoder/ms-marco-MiniLM-L-6-v2`.
+4. Save the trained model directory (with `config.json`, tokenizer files,
+   and weights) under a user-specified path.
+5. Generate simple evaluation plots and a confusion matrix on the dev
+   split for quick sanity checks.
+
+Example configuration (edit the constants at the top of the script):
+
+```python
+PARQUET_PATH = r"D:\Environments\Datasets\multimodal-mind2web\data\..."
+MODEL_OUTPUT_DIR = r"D:\Environments\Models\cross-encoder-seeact"
+EPOCHS = 3
+BATCH_SIZE = 16
+LR = 2e-5
+```
+
+Run the script with your Python environment:
+
+```bash
+# activate ml-env then:
+python AutoWeb/Scripts/train_crossencoder.py
+```
+
+After training completes the model directory will contain the saved
+checkpoint. You can then point the pipeline at this folder by setting the
+`CROSSENCODER_MODEL_PATH` environment variable (e.g. in `.env` or at
+runtime). The `DeBERTaLoader` utility automatically reads this value and
+loads the model onto GPU when available:
+
+```python
+import os
+os.environ["CROSSENCODER_MODEL_PATH"] = r"D:\Environments\Models\cross-encoder-seeact"
+from AutoWeb.src.utils.load_DeBERTa import DeBERTaLoader
+loader = DeBERTaLoader()
+loader.load_model()
+```
+
+You can verify the model is used during grounding by observing the log
+message:
+
+```
+2026-02-20 14:14:50,304 INFO:   ⏳ Loading pre-trained cross-encoder from 'D:\Environments\Models\cross-encoder-seeact' → cuda...
+2026-02-20 14:14:50,505 INFO:   ✅ Cross-encoder loaded on cuda (~80 MB VRAM).
+```
+
+The sample score API works as usual:
+
+```python
+score = loader.compute_cross_score("some plan", "some element repr")
+```
+
+Training your own cross-encoder allows the grounding stage to adapt to
+in-domain language (e.g. UI text patterns) and can yield better element
+rankings than the generic MS-Marco model.
+
+---
+
+Next steps (short)
+
 - Wire human-review decisions into metrics (approved / modified / aborted).
 - Re-run with grounding enabled and compare grounding_success / element-match rates.
 - Expand risk-keyword set and add automated tests for non-JSON responses.
