@@ -68,3 +68,21 @@ def extract_interactive_elements(html_string: str):
 
     return structured_elements
     
+
+# sample_html = """
+# <div>
+#     <button id="btn1" onclick="alert('Clicked!')">Click Me</button>
+#     <a href="https://example.com" role="link">Visit Example</a>
+#     <input type="text" placeholder="Enter name" />
+#     <div role="button" tabindex="0">Custom Button</div>
+#     <div>
+#         <span role="checkbox" aria-checked="false">Option 1</span>
+#         <span role="checkbox" aria-checked="true">Option 2</span>
+#     </div>
+#     <span backend_node_id="123">Annotated Element</span>
+# </div>
+# """
+
+# elements =extract_interactive_elements(sample_html)
+
+# print("Extracted Interactive Elements:", elements)
