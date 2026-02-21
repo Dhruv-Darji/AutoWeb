@@ -171,3 +171,88 @@ class DeBERTaLoader:
         emb1 = self.get_embeddings(text1).mean(dim=1)
         emb2 = self.get_embeddings(text2).mean(dim=1)
         return F.cosine_similarity(emb1, emb2).item()
+    
+
+# ex_elements = [
+#    {
+#       "index":0,
+#       "tag":"button",
+#       "text":"Click Me",
+#       "attributes":{
+#          "id":"btn1",
+#          "onclick":"alert('Clicked!')"
+#       },
+#       "representation":"<button> text=\\'Click Me\\' attrs={\\'id\\': \\'btn1\\', \\'onclick\\': \"alert(\\'Clicked!\\')\"}"
+#    },
+#    {
+#       "index":1,
+#       "tag":"a",
+#       "text":"Visit Example",
+#       "attributes":{
+#          "href":"https://example.com",
+#          "role":"link"
+#       },
+#       "representation":"<a> text='Visit Example' attrs={'href': 'https://example.com', 'role': 'link'}"
+#    },
+#    {
+#       "index":2,
+#       "tag":"input",
+#       "text":"",
+#       "attributes":{
+#          "type":"text",
+#          "placeholder":"Enter name"
+#       },
+#       "representation":"<input> text='' attrs={'type': 'text', 'placeholder': 'Enter name'}"
+#    },
+#    {
+#       "index":3,
+#       "tag":"div",
+#       "text":"Custom Button",
+#       "attributes":{
+#          "role":"button",
+#          "tabindex":"0"
+#       },
+#       "representation":"<div> text='Custom Button' attrs={'role': 'button', 'tabindex': '0'}"
+#    },
+#    {
+#       "index":4,
+#       "tag":"span",
+#       "text":"Option 1",
+#       "attributes":{
+#          "role":"checkbox",
+#          "aria-checked":"false"
+#       },
+#       "representation":"<span> text='Option 1' attrs={'role': 'checkbox', 'aria-checked': 'false'}"
+#    },
+#    {
+#       "index":5,
+#       "tag":"span",
+#       "text":"Option 2",
+#       "attributes":{
+#          "role":"checkbox",
+#          "aria-checked":"true"
+#       },
+#       "representation":"<span> text='Option 2' attrs={'role': 'checkbox', 'aria-checked': 'true'}"
+#    },
+#    {
+#       "index":6,
+#       "tag":"span",
+#       "text":"Annotated Element",
+#       "attributes":{
+#          "backend_node_id":"123"
+#       },
+#       "representation":"<span> text='Annotated Element' attrs={'backend_node_id': '123'}"
+#    }
+# ]
+
+# textual_plan = "[click] visit example -> Click"
+
+# encoder = DeBERTaLoader(model_path="D:\\Environments\\Models\\cross-encoder-seeact",
+#             use_pretrained_crossencoder=True,           # ← pre-trained cross-encoder
+#             crossencoder_name="cross-encoder/ms-marco-MiniLM-L-6-v2",)
+# encoder.load_model()
+
+# scores = encoder.compute_cross_scores_batch(textual_plan, ex_elements)
+
+# print("Scores",scores)
+
