@@ -40,6 +40,18 @@ logs/
 # College Work
 clg_work/
 
+# Backup (old structure before reorganization — delete manually after verifying)
+_backup/
+
+# Old Prun4web (replaced by Prune4Web/)
+Prun4web/
+
+# Claude Code local settings
+.claude/
+
+# Root-level results (duplicates Prune4Web/results/)
+/results/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/

@@ -1,0 +1,106 @@
+{
+  "timestamp": "20260412_111524",
+  "input": {
+    "url": "https://news.ycombinator.com",
+    "task": "Click on the 'new' link in the navigation bar to see newest submissions",
+    "max_steps": 2
+  },
+  "config": {
+    "planner_model": "gpt-4o",
+    "filter_model": "gpt-4o",
+    "grounder_model": "local:Qwen2.5-0.5B-Prune4Web",
+    "grounder_local": true,
+    "top_n_candidates": 20,
+    "dom_delta_enabled": true,
+    "privacy_enabled": true
+  },
+  "output": {
+    "total_steps": 2,
+    "steps_executed": 2,
+    "steps_failed": 0,
+    "success_rate": "100.0%",
+    "total_api_cost_usd": 0.009902
+  },
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the 'new' link in the navigation bar",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "new": 3.0,
+        "navigation": 2.0,
+        "nav": 1.5,
+        "menu": 1.0,
+        "link": 1.0,
+        "latest": 0.5,
+        "recent": 0.5
+      },
+      "dom_nodes": 229,
+      "candidates": 20,
+      "grounded_uid": 2,
+      "grounded_element": "[2] <a> new",
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: Click on the 'new' link in the navigation bar",
+      "executed": true,
+      "executed_selector": "text:new"
+    },
+    {
+      "step": 2,
+      "sub_task": "Scroll to the bottom of the page to load more submissions",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "scroll": 2.5,
+        "bottom": 2.0,
+        "load": 1.5,
+        "more": 1.5,
+        "submissions": 1.0,
+        "page": 0.5,
+        "end": 0.5
+      },
+      "dom_nodes": 256,
+      "candidates": 20,
+      "grounded_uid": 8,
+      "grounded_element": "[8] <a> submit",
+      "confidence": 0.95,
+      "reasoning": "Element 19 matches the sub-task target: Scroll to the bottom of the page to load more submissions",
+      "executed": true,
+      "executed_selector": "text:submit"
+    }
+  ],
+  "llm_usage": [
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1272,
+      "completion_tokens": 61,
+      "cached_tokens": 0,
+      "cost_usd": 0.0037899999999999995
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 230,
+      "completion_tokens": 56,
+      "cached_tokens": 0,
+      "cost_usd": 0.001135
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1297,
+      "completion_tokens": 59,
+      "cached_tokens": 0,
+      "cost_usd": 0.0038325
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 230,
+      "completion_tokens": 57,
+      "cached_tokens": 0,
+      "cost_usd": 0.001145
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "timestamp": "20260412_102320",
+  "input": {
+    "url": "https://www.google.com",
+    "task": "Search for 'machine learning' using the Google search bar",
+    "max_steps": 3
+  },
+  "config": {
+    "planner_model": "gpt-4o",
+    "filter_model": "gpt-4o",
+    "grounder_model": "local:Qwen2.5-0.5B-Prune4Web",
+    "grounder_local": true,
+    "top_n_candidates": 20,
+    "dom_delta_enabled": true,
+    "privacy_enabled": true
+  },
+  "output": {
+    "total_steps": 3,
+    "steps_executed": 3,
+    "steps_failed": 0,
+    "success_rate": "100.0%",
+    "total_api_cost_usd": 0.014605
+  },
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the search bar",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "search": 2.5,
+        "find": 1.5,
+        "query": 1.0,
+        "lookup": 1.0,
+        "bar": 2.0,
+        "input": 1.5,
+        "field": 1.0
+      },
+      "dom_nodes": 56,
+      "candidates": 20,
+      "grounded_uid": 52,
+      "grounded_element": "[52] <div id=\"YUIDDb\"> Dark theme: On",
+      "confidence": 0.95,
+      "reasoning": "Element 17 matches the sub-task target: Click on the search bar",
+      "executed": true,
+      "executed_selector": "js-id:YUIDDb"
+    },
+    {
+      "step": 2,
+      "sub_task": "type into the search bar",
+      "action": "type",
+      "action_value": "machine learning",
+      "keyword_weights": {
+        "search": 2.5,
+        "find": 1.5,
+        "query": 1.5,
+        "lookup": 1.5,
+        "input": 2.0,
+        "bar": 1.0,
+        "field": 1.0,
+        "type": 1.0
+      },
+      "dom_nodes": 56,
+      "candidates": 20,
+      "grounded_uid": 13,
+      "grounded_element": "[13] <textarea id=\"APjFqb\" aria-label=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: type into the search bar",
+      "executed": true,
+      "executed_selector": "js-id:APjFqb"
+    },
+    {
+      "step": 3,
+      "sub_task": "click on the 'Google Search' button",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "google": 2.0,
+        "search": 3.0,
+        "find": 1.5,
+        "query": 1.0,
+        "lookup": 0.5,
+        "button": 1.5
+      },
+      "dom_nodes": 57,
+      "candidates": 20,
+      "grounded_uid": 13,
+      "grounded_element": "[13] <textarea id=\"APjFqb\" aria-label=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: click on the 'Google Search' button",
+      "executed": true,
+      "executed_selector": "js-id:APjFqb"
+    }
+  ],
+  "llm_usage": [
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1267,
+      "completion_tokens": 47,
+      "cached_tokens": 0,
+      "cost_usd": 0.0036374999999999997
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 224,
+      "completion_tokens": 56,
+      "cached_tokens": 0,
+      "cost_usd": 0.00112
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1283,
+      "completion_tokens": 57,
+      "cached_tokens": 0,
+      "cost_usd": 0.0037775000000000005
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 224,
+      "completion_tokens": 64,
+      "cached_tokens": 0,
+      "cost_usd": 0.0012
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1305,
+      "completion_tokens": 56,
+      "cached_tokens": 0,
+      "cost_usd": 0.0038224999999999995
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 227,
+      "completion_tokens": 48,
+      "cached_tokens": 0,
+      "cost_usd": 0.0010475
+    }
+  ]
+}

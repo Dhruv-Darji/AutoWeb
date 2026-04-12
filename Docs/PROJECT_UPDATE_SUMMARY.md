@@ -375,3 +375,58 @@ Your project now has:
 **Version**: 1.1  
 **Updated**: 2026-02-06  
 **Status**: Production-ready for research
+
+---
+
+---
+
+# Update – April 11, 2026 (Day 3 / 20-day plan)
+
+## What Was Built
+
+Two new research contributions implemented on top of the Prune4Web baseline and wired into `Prune4Web/run_prune4web.py`.
+
+### New Files
+
+| File | Lines | Purpose |
+|---|---|---|
+| `src/dom_state.py` | ~175 | Hash-based DOM snapshot capture (`DOMState`, `SnapshotElement`) |
+| `src/dom_diff.py` | ~220 | DOM delta algorithm (`compute_delta`, `DOMDeltaProcessor`) |
+| `src/privacy_filters.py` | ~290 | PII detection, element anonymisation, differential privacy scoring |
+| `src/privacy_aware_llm.py` | ~200 | Privacy-preserving LLM wrapper (`PrivacyAwareLLM`) |
+
+### What Changed in `run_prune4web.py`
+
+- Added `sys.path` bootstrap so `src/` imports work from `Prune4Web/`
+- Three new env flags: `PRUNE4WEB_DOM_DELTA`, `PRUNE4WEB_PRIVACY`, `PRUNE4WEB_DP_EPSILON`
+- `run_prune4web_live()` now: captures DOM state per step → computes delta → filters candidates → applies privacy pipeline → calls privacy-aware LLM
+- Prints delta reduction stats and privacy masking counts per step
+- Prints full privacy call summary after the run
+
+### Design Decisions
+
+- **UID stability:** Element identity is `MD5(tag|id|name|xpath)`, so the same DOM node gets the same uid across re-renders — this makes delta detection meaningful.
+- **Backward compatibility:** All enhancements are opt-out via env flags (`=0`). Running with `DOM_DELTA=0 PRIVACY=0` reproduces the exact original Prune4Web behaviour.
+- **SnapshotElement ↔ ElementNode bridge:** The delta processor returns `SnapshotElement` objects; the pipeline maps them back to `ElementNode` (by `elem_id` / `text` overlap) so the existing `score_elements` and `action_grounder` functions need zero changes.
+- **Differential Privacy is off by default** (`DP_EPSILON=0`) because it re-orders candidates and affects accuracy. Turn on for ablation study only.
+
+### Research Metrics Collected Per Step
+
+```
+dom_delta       : delta_relevant=12/87 (reduction=7.3x)
+[privacy:...]   : pii_matches=2 elements_masked=1 scrubbed=False
+```
+
+Full reference: see `Docs/DOM_DELTA_PRIVACY_IMPLEMENTATION.md`
+
+### Day 4 TODO (April 12)
+
+- [ ] `src/prune4web_delta.py` – offline evaluator against Mind2Web dataset
+- [ ] Terminal CLI: `--mode baseline|delta|privacy|full`
+- [ ] Collect Recall@20, Element Accuracy for all four modes
+
+---
+
+**Version**: 1.2  
+**Updated**: 2026-04-11  
+**Status**: DOM Delta + Privacy implemented; evaluation pipeline next
