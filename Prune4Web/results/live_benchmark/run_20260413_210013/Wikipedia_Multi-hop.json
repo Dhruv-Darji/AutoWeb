@@ -1,0 +1,71 @@
+{
+  "name": "Wikipedia Multi-hop",
+  "url": "https://en.wikipedia.org/wiki/Python_(programming_language)",
+  "task": "Click on the 'Guido van Rossum' link in the article, then click on his birth city link",
+  "category": "hard",
+  "max_steps": 5,
+  "total_steps": 4,
+  "steps_executed": 1,
+  "steps_failed": 3,
+  "success_rate_pct": 25.0,
+  "elapsed_seconds": 29.6,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the 'Guido van Rossum' link in the article.",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 2260,
+      "candidates": 20,
+      "grounded_uid": 250,
+      "grounded_element": "[250] <a> Guido van Rossum",
+      "confidence": 0.95,
+      "reasoning": "The task is to click on the 'Guido van Rossum' link, and the first candidate element [250] exactly matches the required text, making it the most relevant choice.",
+      "executed": true,
+      "selector": "text:Guido van Rossum"
+    },
+    {
+      "step": 2,
+      "sub_task": "Click on the link for 'The Hague' in the 'Born' section",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 535,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements mention 'The Hague' or are related to the 'Born' section, indicating no match for the sub-task.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "Click on the link for 'The Hague' in the 'Born' section",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 535,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements mention 'The Hague' or are related to the 'Born' section, indicating no relevant link is present in the provided list.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 4,
+      "sub_task": "Click on the link for 'The Hague' in the 'Born' section",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 535,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements mention 'The Hague' or are related to the 'Born' section, indicating no relevant link is present.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

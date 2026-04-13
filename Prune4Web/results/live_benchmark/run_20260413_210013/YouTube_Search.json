@@ -1,0 +1,71 @@
+{
+  "name": "YouTube Search",
+  "url": "https://www.youtube.com/",
+  "task": "Search for 'web automation tutorial' and click the first video result",
+  "category": "medium",
+  "max_steps": 4,
+  "total_steps": 4,
+  "steps_executed": 1,
+  "steps_failed": 3,
+  "success_rate_pct": 25.0,
+  "elapsed_seconds": 24.5,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the search bar",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 73,
+      "candidates": 20,
+      "grounded_uid": 3,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.95,
+      "reasoning": "The input element with type 'text' and placeholder 'Search' is the most appropriate for a search bar interaction.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 2,
+      "sub_task": "Type 'web automation tutorial' into the search bar",
+      "action": "type",
+      "value": "web automation tutorial",
+      "dom_nodes": 73,
+      "candidates": 7,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements are input fields or have attributes indicating they are search bars.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "Click the search button to execute the search",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 73,
+      "candidates": 7,
+      "grounded_uid": 7,
+      "grounded_element": "[7] <button id=\"button\" aria-label=\"Search\"> Search",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 7 has an aria-label 'Search', which directly matches the task of clicking the search button.",
+      "executed": true,
+      "selector": "js-id:button"
+    },
+    {
+      "step": 4,
+      "sub_task": "Click on the search bar",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 73,
+      "candidates": 7,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements are a search bar; they are all buttons with various labels.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "ArXiv Paper Search",
+  "url": "https://arxiv.org/",
+  "task": "Search for 'web navigation agent' papers, then click on the first result to view the abstract",
+  "category": "hard",
+  "max_steps": 5,
+  "total_steps": 3,
+  "steps_executed": 0,
+  "steps_failed": 3,
+  "success_rate_pct": 0.0,
+  "elapsed_seconds": 18.5,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Type 'web navigation agent' into the search bar",
+      "action": "type",
+      "value": "web navigation agent",
+      "dom_nodes": 298,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.9,
+      "reasoning": "None of the candidate elements appear to be input fields suitable for typing. They are all links labeled 'search'.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 2,
+      "sub_task": "Type 'web navigation agent' into the search bar",
+      "action": "type",
+      "value": "web navigation agent",
+      "dom_nodes": 298,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search bar or input field where text can be typed.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "Type 'web navigation agent' into the search bar",
+      "action": "type",
+      "value": "web navigation agent",
+      "dom_nodes": 298,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search bar or input field where text can be typed.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "GitHub Explore",
+  "url": "https://github.com/explore",
+  "task": "Click the Trending link in the navigation",
+  "category": "easy",
+  "max_steps": 2,
+  "total_steps": 2,
+  "steps_executed": 2,
+  "steps_failed": 0,
+  "success_rate_pct": 100.0,
+  "elapsed_seconds": 22.1,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click the 'Trending' link in the navigation bar",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 353,
+      "candidates": 20,
+      "grounded_uid": 109,
+      "grounded_element": "[109] <a> Trending",
+      "confidence": 0.95,
+      "reasoning": "The task is to click the 'Trending' link in the navigation bar, and the first candidate element with UID 109 is a direct match for 'Trending'.",
+      "executed": true,
+      "selector": "role:link"
+    },
+    {
+      "step": 2,
+      "sub_task": "Click the 'Repositories' tab under the Trending section",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 1284,
+      "candidates": 20,
+      "grounded_uid": 113,
+      "grounded_element": "[113] <a> Repositories",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 113 is labeled 'Repositories' and is the most relevant candidate for the task of clicking the 'Repositories' tab under the Trending section.",
+      "executed": true,
+      "selector": "text:Repositories"
+    }
+  ]
+}

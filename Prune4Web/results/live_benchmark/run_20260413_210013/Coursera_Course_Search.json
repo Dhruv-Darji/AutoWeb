@@ -1,0 +1,71 @@
+{
+  "name": "Coursera Course Search",
+  "url": "https://www.coursera.org/",
+  "task": "Search for 'machine learning', click on the first course result, and scroll to the syllabus",
+  "category": "hard",
+  "max_steps": 5,
+  "total_steps": 4,
+  "steps_executed": 1,
+  "steps_failed": 3,
+  "success_rate_pct": 25.0,
+  "elapsed_seconds": 28.4,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "type 'machine learning' into the search bar",
+      "action": "type",
+      "value": "machine learning",
+      "dom_nodes": 296,
+      "candidates": 20,
+      "grounded_uid": 12,
+      "grounded_element": "[12] <input id=\"search-autocomplete-input\" type=\"text\" aria-label=\"Search catalog\" placeholder=\"Search or ask anything\">",
+      "confidence": 0.95,
+      "reasoning": "Element 12 is an input field with an aria-label indicating it is a search bar, making it the most appropriate target for typing a search query.",
+      "executed": true,
+      "selector": "js-id:search-autocomplete-input"
+    },
+    {
+      "step": 2,
+      "sub_task": "click on the search button next to the search bar",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 308,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search button next to a search bar.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "click on the search button next to the search bar",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 308,
+      "candidates": 10,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search button next to a search bar; they all seem to be related to machine learning course options or suggestions.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 4,
+      "sub_task": "click on the search button next to the search bar",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 308,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search button next to a search bar. The listed elements are either text inputs, buttons unrelated to search, or links.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

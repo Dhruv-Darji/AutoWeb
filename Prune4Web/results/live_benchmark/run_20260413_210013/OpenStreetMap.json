@@ -1,0 +1,71 @@
+{
+  "name": "OpenStreetMap",
+  "url": "https://www.openstreetmap.org/",
+  "task": "Search for 'New York City' in the search box and click the first result",
+  "category": "medium",
+  "max_steps": 4,
+  "total_steps": 4,
+  "steps_executed": 1,
+  "steps_failed": 3,
+  "success_rate_pct": 25.0,
+  "elapsed_seconds": 66.6,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the search box",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 112,
+      "candidates": 20,
+      "grounded_uid": 3,
+      "grounded_element": "[3] <input id=\"query\" type=\"text\" placeholder=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 3 is an input field with a placeholder 'Search', indicating it is a search box, which matches the sub-task requirement.",
+      "executed": true,
+      "selector": "js-id:query"
+    },
+    {
+      "step": 2,
+      "sub_task": "type 'New York City' into the search box",
+      "action": "type",
+      "value": "New York City",
+      "dom_nodes": 112,
+      "candidates": 6,
+      "grounded_uid": 3,
+      "grounded_element": "[3] <input id=\"query\" type=\"text\" placeholder=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "The task is to type into a search box, and the top-ranked candidate is an input element with a placeholder 'Search', which matches the task requirement.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "Type 'New York City' into the search box",
+      "action": "type",
+      "value": "New York City",
+      "dom_nodes": 112,
+      "candidates": 6,
+      "grounded_uid": 3,
+      "grounded_element": "[3] <input id=\"query\" type=\"text\" placeholder=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "The top-ranked candidate is an input field with a placeholder 'Search', which matches the sub-task of typing a location into a search box.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 4,
+      "sub_task": "type 'New York City' into the search box",
+      "action": "type",
+      "value": "New York City",
+      "dom_nodes": 112,
+      "candidates": 6,
+      "grounded_uid": 3,
+      "grounded_element": "[3] <input id=\"query\" type=\"text\" placeholder=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "The top-ranked element is an input field with a placeholder 'Search', which matches the sub-task of typing a search query.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

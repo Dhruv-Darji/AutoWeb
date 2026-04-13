@@ -1,0 +1,71 @@
+{
+  "name": "Wikipedia Article Nav",
+  "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+  "task": "Scroll down and click the 'History' section link in the table of contents",
+  "category": "medium",
+  "max_steps": 4,
+  "total_steps": 4,
+  "steps_executed": 4,
+  "steps_failed": 0,
+  "success_rate_pct": 100.0,
+  "elapsed_seconds": 34.4,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Scroll to the 'History' section link in the table of contents",
+      "action": "scroll",
+      "value": "",
+      "dom_nodes": 5314,
+      "candidates": 20,
+      "grounded_uid": 401,
+      "grounded_element": "[401] <a> History",
+      "confidence": 0.95,
+      "reasoning": "The task is to scroll to the 'History' section link in the table of contents, and the first candidate element [401] is a direct match for 'History', making it the most relevant choice.",
+      "executed": true,
+      "selector": "text:History"
+    },
+    {
+      "step": 2,
+      "sub_task": "Click the 'History' section link in the table of contents",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 5314,
+      "candidates": 20,
+      "grounded_uid": 401,
+      "grounded_element": "[401] <a> History",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 401 is the top-ranked candidate and matches the exact label 'History', which is likely to be the section link in the table of contents.",
+      "executed": true,
+      "selector": "text:History"
+    },
+    {
+      "step": 3,
+      "sub_task": "Scroll down to view more of the 'History' section content",
+      "action": "scroll",
+      "value": "",
+      "dom_nodes": 5314,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.7,
+      "reasoning": "None of the candidate elements explicitly indicate a scroll action or are associated with a 'History' section that requires scrolling. The task requires scrolling to view more content, which is not directly linked to any of the provided elements.",
+      "executed": true,
+      "selector": "page-scroll"
+    },
+    {
+      "step": 4,
+      "sub_task": "Scroll down to view more of the 'History' section content",
+      "action": "scroll",
+      "value": "",
+      "dom_nodes": 5314,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.2,
+      "reasoning": "None of the candidate elements explicitly indicate a scroll action or a section labeled 'History' that requires scrolling. The candidates mostly represent links or labels unrelated to scrolling.",
+      "executed": true,
+      "selector": "page-scroll"
+    }
+  ]
+}

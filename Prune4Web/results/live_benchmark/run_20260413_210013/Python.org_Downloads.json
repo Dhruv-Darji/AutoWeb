@@ -1,0 +1,43 @@
+{
+  "name": "Python.org Downloads",
+  "url": "https://www.python.org/",
+  "task": "Click on the Downloads menu link",
+  "category": "easy",
+  "max_steps": 2,
+  "total_steps": 2,
+  "steps_executed": 2,
+  "steps_failed": 0,
+  "success_rate_pct": 100.0,
+  "elapsed_seconds": 22.9,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the 'Downloads' menu link",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 297,
+      "candidates": 20,
+      "grounded_uid": 48,
+      "grounded_element": "[48] <a> Downloads",
+      "confidence": 0.95,
+      "reasoning": "The top-ranked candidate element with text 'Downloads' is most likely the correct menu link to click based on the sub-task.",
+      "executed": true,
+      "selector": "text:Downloads"
+    },
+    {
+      "step": 2,
+      "sub_task": "click on the 'Python 3.14.4' button",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 1056,
+      "candidates": 20,
+      "grounded_uid": 65,
+      "grounded_element": "[65] <a> Python 3.14.4",
+      "confidence": 0.95,
+      "reasoning": "The task is to click on the 'Python 3.14.4' button, and the top-ranked candidate element [65] exactly matches this label.",
+      "executed": true,
+      "selector": "js-text:Python 3.14.4"
+    }
+  ]
+}

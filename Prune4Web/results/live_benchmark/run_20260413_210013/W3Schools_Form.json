@@ -1,0 +1,57 @@
+{
+  "name": "W3Schools Form",
+  "url": "https://www.w3schools.com/html/tryit.asp?filename=tryhtml_form_submit",
+  "task": "In the result frame, type 'John' in the First name field and click Submit",
+  "category": "medium",
+  "max_steps": 4,
+  "total_steps": 3,
+  "steps_executed": 0,
+  "steps_failed": 3,
+  "success_rate_pct": 0.0,
+  "elapsed_seconds": 21.3,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click the 'Submit' button in the result frame",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 17,
+      "candidates": 17,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements are labeled as 'Submit' or appear to be a submit button.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 2,
+      "sub_task": "Click the 'Submit' button in the result frame",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 18,
+      "candidates": 18,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.2,
+      "reasoning": "None of the candidate elements are labeled 'Submit' or appear to be a submit button in the result frame.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "Click the 'Submit' button in the result frame",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 18,
+      "candidates": 18,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements are labeled as 'Submit' or appear to function as a submit button in the context of a result frame.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "Reddit Homepage",
+  "url": "https://www.reddit.com/",
+  "task": "Click on the first post title visible on the page",
+  "category": "easy",
+  "max_steps": 2,
+  "total_steps": 2,
+  "steps_executed": 0,
+  "steps_failed": 2,
+  "success_rate_pct": 0.0,
+  "elapsed_seconds": 13.2,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "check the 'I'm not a robot' checkbox",
+      "action": "check",
+      "value": "",
+      "dom_nodes": 6,
+      "candidates": 6,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements are checkboxes or related to the 'I'm not a robot' task.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 2,
+      "sub_task": "check the 'I'm not a robot' checkbox",
+      "action": "check",
+      "value": "",
+      "dom_nodes": 6,
+      "candidates": 6,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements are checkboxes or related to the 'I'm not a robot' task.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

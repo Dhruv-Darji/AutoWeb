@@ -1,0 +1,43 @@
+{
+  "name": "W3Schools HTML",
+  "url": "https://www.w3schools.com/html/default.asp",
+  "task": "Click the 'Next' button to go to the next tutorial page",
+  "category": "easy",
+  "max_steps": 2,
+  "total_steps": 2,
+  "steps_executed": 1,
+  "steps_failed": 1,
+  "success_rate_pct": 50.0,
+  "elapsed_seconds": 15.7,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click the 'Next' button at the bottom of the page",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 990,
+      "candidates": 20,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements are labeled or described as a 'Next' button, nor do they suggest navigation to the next page.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 2,
+      "sub_task": "Click the 'Next' button at the bottom right of the page",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 990,
+      "candidates": 20,
+      "grounded_uid": 871,
+      "grounded_element": "[871] <a> Next ❯",
+      "confidence": 0.9,
+      "reasoning": "Element 871 is ranked higher than 907 and matches the description of a 'Next' button, likely positioned at the bottom right of the page.",
+      "executed": true,
+      "selector": "text:Next ❯"
+    }
+  ]
+}

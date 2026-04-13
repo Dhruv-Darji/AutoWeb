@@ -1,0 +1,71 @@
+{
+  "name": "IMDb Search",
+  "url": "https://www.imdb.com/",
+  "task": "Search for 'Inception' movie and click on the first search result",
+  "category": "medium",
+  "max_steps": 4,
+  "total_steps": 4,
+  "steps_executed": 1,
+  "steps_failed": 3,
+  "success_rate_pct": 25.0,
+  "elapsed_seconds": 31.2,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the search bar",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 190,
+      "candidates": 20,
+      "grounded_uid": 76,
+      "grounded_element": "[76] <input id=\"suggestion-search\" type=\"text\" aria-label=\"Search IMDb\" placeholder=\"Search IMDb\">",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 76 is an input field with a placeholder 'Search IMDb', indicating it is the search bar, which matches the sub-task requirement to click on the search bar.",
+      "executed": true,
+      "selector": "js-id:suggestion-search"
+    },
+    {
+      "step": 2,
+      "sub_task": "Type 'Inception' into the search bar",
+      "action": "type",
+      "value": "Inception",
+      "dom_nodes": 203,
+      "candidates": 4,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search bar or input field where text can be typed.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "Type 'Inception' into the search bar",
+      "action": "type",
+      "value": "Inception",
+      "dom_nodes": 203,
+      "candidates": 7,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search bar or input field suitable for typing text.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 4,
+      "sub_task": "type 'Inception' into the search bar",
+      "action": "type",
+      "value": "Inception",
+      "dom_nodes": 203,
+      "candidates": 7,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements appear to be a search bar or input field suitable for typing a query.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

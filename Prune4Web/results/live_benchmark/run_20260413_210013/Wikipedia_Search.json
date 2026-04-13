@@ -1,0 +1,57 @@
+{
+  "name": "Wikipedia Search",
+  "url": "https://www.wikipedia.org/",
+  "task": "Search for 'Machine Learning' using the search box",
+  "category": "easy",
+  "max_steps": 3,
+  "total_steps": 3,
+  "steps_executed": 2,
+  "steps_failed": 1,
+  "success_rate_pct": 66.7,
+  "elapsed_seconds": 31.0,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Type 'Machine Learning' into the search box",
+      "action": "type",
+      "value": "Machine Learning",
+      "dom_nodes": 459,
+      "candidates": 20,
+      "grounded_uid": 12,
+      "grounded_element": "[12] <input id=\"searchInput\" type=\"search\">",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 12 is an input field of type 'search', which is the appropriate target for typing a search query.",
+      "executed": true,
+      "selector": "js-id:searchInput"
+    },
+    {
+      "step": 2,
+      "sub_task": "click the first suggestion in the dropdown",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 465,
+      "candidates": 6,
+      "grounded_uid": 92,
+      "grounded_element": "[92] <a> Machine learning in bioinformatics Software for understanding biological data",
+      "confidence": 0.95,
+      "reasoning": "The task is to click the first suggestion in the dropdown, and the first candidate element is ranked highest in relevance.",
+      "executed": true,
+      "selector": "role:link"
+    },
+    {
+      "step": 3,
+      "sub_task": "scroll",
+      "action": "scroll",
+      "value": "",
+      "dom_nodes": 1346,
+      "candidates": 20,
+      "grounded_uid": 43,
+      "grounded_element": "[43] <a> 2.3.3 Self-supervised learning (Attention and Transformer Models)",
+      "confidence": 0.9,
+      "reasoning": "The top-ranked element is a section heading, which is a common target for scrolling actions to bring it into view.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

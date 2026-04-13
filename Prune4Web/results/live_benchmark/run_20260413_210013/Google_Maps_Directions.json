@@ -1,0 +1,71 @@
+{
+  "name": "Google Maps Directions",
+  "url": "https://www.google.com/maps",
+  "task": "Search for 'Times Square New York' and click on the directions button",
+  "category": "hard",
+  "max_steps": 5,
+  "total_steps": 4,
+  "steps_executed": 1,
+  "steps_failed": 3,
+  "success_rate_pct": 25.0,
+  "elapsed_seconds": 29.6,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "type 'Times Square New York' into the search box",
+      "action": "type",
+      "value": "Times Square New York",
+      "dom_nodes": 76,
+      "candidates": 20,
+      "grounded_uid": 5,
+      "grounded_element": "[5] <input id=\"ucc-1\">",
+      "confidence": 0.9,
+      "reasoning": "Element 5 is an input field, which is the appropriate type of element for typing a search query.",
+      "executed": true,
+      "selector": "js-id:ucc-1"
+    },
+    {
+      "step": 2,
+      "sub_task": "click on the first suggestion for 'Times Square New York, Manhattan, NY, USA'",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 77,
+      "candidates": 3,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements match the task of clicking on a suggestion for 'Times Square New York, Manhattan, NY, USA'.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "click on the first suggestion for 'Times Square New York, Manhattan, NY, USA'",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 77,
+      "candidates": 2,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements match the task of clicking on the first suggestion for 'Times Square New York, Manhattan, NY, USA'.",
+      "executed": false,
+      "selector": ""
+    },
+    {
+      "step": 4,
+      "sub_task": "click on the first suggestion for 'Times Square New York, Manhattan, NY, USA'",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 77,
+      "candidates": 2,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.0,
+      "reasoning": "None of the candidate elements match the task of clicking on the first suggestion for 'Times Square New York, Manhattan, NY, USA'.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}

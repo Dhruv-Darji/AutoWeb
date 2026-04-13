@@ -1,0 +1,57 @@
+{
+  "name": "Google Search",
+  "url": "https://www.google.com/",
+  "task": "Type 'Prune4Web web agent' in the search box and press search",
+  "category": "medium",
+  "max_steps": 3,
+  "total_steps": 3,
+  "steps_executed": 2,
+  "steps_failed": 1,
+  "success_rate_pct": 66.7,
+  "elapsed_seconds": 19.1,
+  "error": "",
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click on the search box",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 56,
+      "candidates": 20,
+      "grounded_uid": 13,
+      "grounded_element": "[13] <textarea id=\"APjFqb\" aria-label=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 13 is a textarea with an aria-label 'Search', indicating it is the search box intended for user input.",
+      "executed": true,
+      "selector": "js-id:APjFqb"
+    },
+    {
+      "step": 2,
+      "sub_task": "Type in the search box",
+      "action": "type",
+      "value": "Prune4Web web agent",
+      "dom_nodes": 57,
+      "candidates": 8,
+      "grounded_uid": 13,
+      "grounded_element": "[13] <textarea id=\"APjFqb\" aria-label=\"Search\">",
+      "confidence": 0.95,
+      "reasoning": "The element with UID 13 is a textarea with an aria-label 'Search', indicating it is the search box where text input is expected.",
+      "executed": true,
+      "selector": "js-id:APjFqb"
+    },
+    {
+      "step": 3,
+      "sub_task": "Click the search button",
+      "action": "click",
+      "value": "",
+      "dom_nodes": 57,
+      "candidates": 9,
+      "grounded_uid": -1,
+      "grounded_element": "(not found in top candidates)",
+      "confidence": 0.2,
+      "reasoning": "None of the candidate elements appear to be a button or link specifically for executing a search action.",
+      "executed": false,
+      "selector": ""
+    }
+  ]
+}
