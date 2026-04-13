@@ -8,20 +8,20 @@
     "adapter_dir": "D:\\Environments\\Models\\Qwen2.5-0.5B-Prune4Web-Grounder"
   },
   "metrics": {
-    "element_accuracy": 82.5,
-    "op_accuracy": 82.0,
-    "format_validity": 100.0,
+    "element_accuracy": 85.0,
+    "op_accuracy": 84.5,
+    "format_validity": 99.5,
     "paper_element_accuracy": 88.28,
     "gpt_4o_mini_baseline": 72.22
   },
   "by_action": {
     "click": {
       "total": 158,
-      "correct": 129
+      "correct": 133
     },
     "type": {
       "total": 31,
-      "correct": 26
+      "correct": 27
     },
     "select": {
       "total": 11,
@@ -81,13 +81,13 @@
       "action_uid": "cb485fec-cf0a-4e40-a961-e603d3a34697",
       "sub_task": "IGN Plus Game: Klang 2",
       "gt_index": 0,
-      "pred_uid": 16,
+      "pred_uid": 15,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 16, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 16 matches the sub-task target: IGN Plus Game: Klang 2\"}"
+      "raw_output": "{\"element_uid\": 15, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 15 matches the sub-task target: IGN Plus Game: Klang 2\"}"
     },
     {
       "action_uid": "42d1eab9-3548-47e5-a6c1-ecafa8419b92",
@@ -179,11 +179,11 @@
       "gt_index": 0,
       "pred_uid": 17,
       "gt_action": "type",
-      "pred_action": "click",
+      "pred_action": "type",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 17, \"action\": \"click\", \"value\": \"Love Ramen Noodles\", \"confidence\": 0.95, \"reasoning\": \"Element 17 matches the sub-task target: SHORT BIO\"}"
+      "raw_output": "{\"element_uid\": 17, \"action\": \"type\", \"value\": \"Love Ramen Noodles\", \"confidence\": 0.95, \"reasoning\": \"Element 17 matches the sub-task target: SHORT BIO\"}"
     },
     {
       "action_uid": "058371d9-1323-4b98-b281-c80cf5bdcbbe",
@@ -273,13 +273,13 @@
       "action_uid": "71a144f3-f000-4d8b-9ed4-ed6067ec494a",
       "sub_task": "Detroit, MI",
       "gt_index": 4,
-      "pred_uid": 13,
+      "pred_uid": 14,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 13, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 13 matches the sub-task target: Detroit, MI\"}"
+      "raw_output": "{\"element_uid\": 14, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 14 matches the sub-task target: Detroit, MI\"}"
     },
     {
       "action_uid": "f8b544bc-7cad-4832-b263-9c321b2bcd65",
@@ -333,13 +333,13 @@
       "action_uid": "e99f3487-fcf8-4690-8e87-81702ee7ab2b",
       "sub_task": "Book a dine in reserveration in New Delhi for 5 Guests on 22nd March, 7:00 pm, terrace seating arran",
       "gt_index": 17,
-      "pred_uid": 19,
+      "pred_uid": 17,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 19, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 19 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 17, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 17 matches the sub-task target: \"}"
     },
     {
       "action_uid": "39c0bc81-3cf4-40bc-a3b5-711c27fe10eb",
@@ -405,13 +405,13 @@
       "action_uid": "73b3d2f1-4f3d-40bb-9055-3ebecd7ce1e7",
       "sub_task": "Sort",
       "gt_index": 6,
-      "pred_uid": 7,
+      "pred_uid": 17,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 7, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 7 matches the sub-task target: Sort\"}"
+      "raw_output": "{\"element_uid\": 17, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 17 matches the sub-task target: Sort\"}"
     },
     {
       "action_uid": "1232a8fd-eb25-4803-9459-6cc624cf5e9f",
@@ -597,25 +597,25 @@
       "action_uid": "aa3f18a4-edb1-4fcb-837b-aaf2699455b6",
       "sub_task": "All dates",
       "gt_index": 17,
-      "pred_uid": 16,
+      "pred_uid": 17,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 16, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 16 matches the sub-task target: All dates\"}"
+      "raw_output": "{\"element_uid\": 17, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 17 matches the sub-task target: All dates\"}"
     },
     {
       "action_uid": "251a3fe7-dfa2-4590-a33c-68aa99a50ce1",
       "sub_task": "\udbf8\udc3a View Calendar: To navigate the calendar, use the...",
       "gt_index": 4,
-      "pred_uid": 12,
+      "pred_uid": 4,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 12, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 12 matches the sub-task target: \udbf8\udc3a View Calendar: To navigate the calendar, use the\"}"
+      "raw_output": "{\"element_uid\": 4, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 4 matches the sub-task target: \udbf8\udc3a View Calendar: To navigate the calendar, use the...\"}"
     },
     {
       "action_uid": "3a50bc68-a056-444c-9dd3-a37fc10c0d2b",
@@ -645,13 +645,13 @@
       "action_uid": "4d173857-882d-4042-9119-67fab9268753",
       "sub_task": "Book a one-way, fastest, and most flexible direct flight ticket for two from Banglore to Goa on Marc",
       "gt_index": 9,
-      "pred_uid": 16,
+      "pred_uid": 19,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 16, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 16 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 19, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 19 matches the sub-task target: \"}"
     },
     {
       "action_uid": "1711cb75-381d-4680-a6ca-e568b45ff35b",
@@ -681,13 +681,13 @@
       "action_uid": "2c4f32a9-5885-4cb6-bfa3-7ffddb544c00",
       "sub_task": "USA (35) \uf00c",
       "gt_index": 18,
-      "pred_uid": 18,
+      "pred_uid": 0,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": true,
-      "op_correct": true,
+      "el_correct": false,
+      "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 18, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 18 matches the sub-task target: USA (35) \uf00c\"}"
+      "raw_output": "{\"element_uid\": 0, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 0 matches the sub-task target: USA (35) \uf00c\"}"
     },
     {
       "action_uid": "2f5ab599-3de0-4dbd-9a91-09882c52f29c",
@@ -723,7 +723,7 @@
       "el_correct": true,
       "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 13, \"action\": \"type\", \"value\": \"gift card\", \"confidence\": 0.95, \"reasoning\": \"Element 13 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 13, \"action\": \"type\", \"value\": \"abc@test.com\", \"confidence\": 0.95, \"reasoning\": \"Element 13 matches the sub-task target: Add a e-gift card to bag of $100 for recipient John and email a"
     },
     {
       "action_uid": "fcd05aa8-72d0-498b-883b-d220c09037e6",
@@ -837,13 +837,13 @@
       "action_uid": "8113e5e8-5453-45d1-a574-791e4100df79",
       "sub_task": "SET AS HOME STORE THE SUNSET AND ANDREWS CENTER - ...",
       "gt_index": 15,
-      "pred_uid": 10,
+      "pred_uid": 4,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 10, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 10 matches the sub-task target: SET AS HOME STORE THE SUNSET AND ANDREWS CENTER - ...\"}"
+      "raw_output": "{\"element_uid\": 4, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 4 matches the sub-task target: SET AS HOME STORE THE SUNSET AND ANDREWS CENTER - ...\"}"
     },
     {
       "action_uid": "2ca22260-c4ee-4d6b-8d30-5d31c441032f",
@@ -873,13 +873,13 @@
       "action_uid": "1cd718e9-3b9c-4868-9d4f-cbe666bdf6df",
       "sub_task": "Next",
       "gt_index": 1,
-      "pred_uid": 19,
+      "pred_uid": 1,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 19, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 19 matches the sub-task target: Next\"}"
+      "raw_output": "{\"element_uid\": 1, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 1 matches the sub-task target: Next\"}"
     },
     {
       "action_uid": "91dc1768-ab4e-4be6-a14f-66bf4c58ac9e",
@@ -897,13 +897,13 @@
       "action_uid": "e483aa09-8776-4c98-8fa9-fed2b0b61648",
       "sub_task": "Last Name",
       "gt_index": 12,
-      "pred_uid": 8,
+      "pred_uid": 12,
       "gt_action": "type",
       "pred_action": "type",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 8, \"action\": \"type\", \"value\": \"Raheja\", \"confidence\": 0.95, \"reasoning\": \"Element 8 matches the sub-task target: Last Name\"}"
+      "raw_output": "{\"element_uid\": 12, \"action\": \"type\", \"value\": \"Raheja\", \"confidence\": 0.95, \"reasoning\": \"Element 12 matches the sub-task target: Last Name\"}"
     },
     {
       "action_uid": "a1fa3409-7fb9-481a-923e-57692bc32d9a",
@@ -945,13 +945,13 @@
       "action_uid": "25d5ea2e-8ed7-4578-84c1-61c098be6711",
       "sub_task": "Yes , I need assistance at the station (for exampl...",
       "gt_index": 15,
-      "pred_uid": 15,
+      "pred_uid": -1,
       "gt_action": "click",
-      "pred_action": "click",
-      "el_correct": true,
-      "op_correct": true,
-      "format_ok": true,
-      "raw_output": "{\"element_uid\": 15, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 15 matches the sub-task target: Yes , I need assistance at the station (for exampl...\"}"
+      "pred_action": "",
+      "el_correct": false,
+      "op_correct": false,
+      "format_ok": false,
+      "raw_output": "{\"element_uid\": 15, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 15 matches the sub-task target: Yes , I need assistance at the station (for exampl[]}"
     },
     {
       "action_uid": "2303c9c1-ee20-4753-8dfb-1594791699de",
@@ -1137,13 +1137,13 @@
       "action_uid": "3da30649-daf3-4032-bec4-97b8ea748bce",
       "sub_task": "MLS",
       "gt_index": 10,
-      "pred_uid": 16,
+      "pred_uid": 17,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 16, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 16 matches the sub-task target: MLS\"}"
+      "raw_output": "{\"element_uid\": 17, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 17 matches the sub-task target: MLS\"}"
     },
     {
       "action_uid": "88049746-8435-48ad-8429-85f76f9ec411",
@@ -1197,13 +1197,13 @@
       "action_uid": "c21aa18b-a3e6-44f9-a068-9169f5483c81",
       "sub_task": "Browse the venues that are playing the Wicked show from Oct 5 to Oct 24 2023",
       "gt_index": 8,
-      "pred_uid": 10,
+      "pred_uid": 19,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 10, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 10 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 19, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 19 matches the sub-task target: \"}"
     },
     {
       "action_uid": "9662bb55-3066-42be-a613-1edbc3afc4e5",
@@ -1269,13 +1269,13 @@
       "action_uid": "b08e3f3e-c364-4e77-8ac3-1495d772c661",
       "sub_task": "1, Saturday, April 2023. Available. Select as chec...",
       "gt_index": 11,
-      "pred_uid": 10,
+      "pred_uid": 11,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 10, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 10 matches the sub-task target: 1, Saturday, April 2023. Available. Select as chec...\"}"
+      "raw_output": "{\"element_uid\": 11, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 11 matches the sub-task target: 1, Saturday, April 2023. Available. Select as chec...\"}"
     },
     {
       "action_uid": "27130d51-2624-450e-8a7f-74220ba33fbf",
@@ -1329,13 +1329,13 @@
       "action_uid": "b72cb16c-abce-43c9-ae75-2ee191ed5e1e",
       "sub_task": "Sort by",
       "gt_index": 11,
-      "pred_uid": 11,
+      "pred_uid": 10,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": true,
-      "op_correct": true,
+      "el_correct": false,
+      "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 11, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 11 matches the sub-task target: Sort by\"}"
+      "raw_output": "{\"element_uid\": 10, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 10 matches the sub-task target: Sort by\"}"
     },
     {
       "action_uid": "4bcb1f23-2f53-480d-bb62-369418d7d890",
@@ -1353,13 +1353,13 @@
       "action_uid": "991faa8d-3370-40dc-9e77-c234ea1cc8e5",
       "sub_task": "Hotels",
       "gt_index": 2,
-      "pred_uid": 1,
+      "pred_uid": 2,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 1, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 1 matches the sub-task target: Hotels\"}"
+      "raw_output": "{\"element_uid\": 2, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 2 matches the sub-task target: Hotels\"}"
     },
     {
       "action_uid": "dcfc5046-bb82-47a7-8c9f-2b673dbe2e47",
@@ -1437,13 +1437,13 @@
       "action_uid": "ef210961-543a-41b8-ae8f-f07bf22a003e",
       "sub_task": "check all restaurant available in Buchanan, MI to book a dine in reservation with Spanish cuisine fo",
       "gt_index": 12,
-      "pred_uid": 18,
+      "pred_uid": 14,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 18, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 18 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 14, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 14 matches the sub-task target: \"}"
     },
     {
       "action_uid": "9573f6e3-070d-4519-baed-3c183aa218a0",
@@ -1545,13 +1545,13 @@
       "action_uid": "5c3ad478-e314-499f-8dee-52b3c96d5653",
       "sub_task": "Search for a full-time job in sales in Springfield and apply for the most recent job.",
       "gt_index": 0,
-      "pred_uid": 18,
+      "pred_uid": 0,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 18, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 18 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 0, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 0 matches the sub-task target: \"}"
     },
     {
       "action_uid": "817e114d-d315-4508-a57b-4b006463c3c4",
@@ -1593,13 +1593,13 @@
       "action_uid": "bc63e5eb-1aca-4429-af24-e4efe7ae88aa",
       "sub_task": "BEFORE YOU GO Tickets & fares, accessible travel s...",
       "gt_index": 7,
-      "pred_uid": 10,
+      "pred_uid": 7,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 10, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 10 matches the sub-task target: BEFORE YOU GO Tickets & fares, accessible travel s...\"}"
+      "raw_output": "{\"element_uid\": 7, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 7 matches the sub-task target: BEFORE YOU GO Tickets & fares, accessible travel s...\"}"
     },
     {
       "action_uid": "d8c0684c-f2ec-4d3f-824d-773b449759bb",
@@ -1617,25 +1617,25 @@
       "action_uid": "85788dc3-a02c-4122-ba19-3e10bd203588",
       "sub_task": "04/06/2023",
       "gt_index": 3,
-      "pred_uid": 17,
+      "pred_uid": 19,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 17, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 17 matches the sub-task target: 04/06/2023\"}"
+      "raw_output": "{\"element_uid\": 19, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 19 matches the sub-task target: 04/06/2023\"}"
     },
     {
       "action_uid": "aefacfb0-a05d-4780-91db-704237fdd34b",
       "sub_task": "Look up round trip flights for 1 person to Japan at the Narita airport departing on 6/16 and returni",
       "gt_index": 12,
-      "pred_uid": 16,
+      "pred_uid": 12,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 16, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 16 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 12, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 12 matches the sub-task target: \"}"
     },
     {
       "action_uid": "27579272-112f-4a22-bdd5-a1b0a72d53f6",
@@ -1809,13 +1809,13 @@
       "action_uid": "2199df14-a07c-4655-8acf-ffe5463c07d2",
       "sub_task": "Rent a small air-conditioned car with collision damage coverage from the Liverpool Airport car renta",
       "gt_index": 18,
-      "pred_uid": 18,
+      "pred_uid": 13,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": true,
-      "op_correct": true,
+      "el_correct": false,
+      "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 18, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 18 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 13, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 13 matches the sub-task target: \"}"
     },
     {
       "action_uid": "4d806711-d5d8-4b4b-964e-c7bdfa74e785",
@@ -1881,13 +1881,13 @@
       "action_uid": "928b03e6-79d6-4f20-94c5-61fb759a7d7a",
       "sub_task": "Click to add to watchlist",
       "gt_index": 11,
-      "pred_uid": 11,
+      "pred_uid": 13,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": true,
-      "op_correct": true,
+      "el_correct": false,
+      "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 11, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 11 matches the sub-task target: Click to add to watchlist\"}"
+      "raw_output": "{\"element_uid\": 13, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 13 matches the sub-task target: Click to add to watchlist\"}"
     },
     {
       "action_uid": "e12e57cd-5bc0-49a9-bb32-4c498ca61720",
@@ -1953,13 +1953,13 @@
       "action_uid": "bf95f6bb-0cdf-4d5b-95d8-1a30f94c85fe",
       "sub_task": "Depeche Mode",
       "gt_index": 11,
-      "pred_uid": 18,
+      "pred_uid": 15,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 18, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 18 matches the sub-task target: Depeche Mode\"}"
+      "raw_output": "{\"element_uid\": 15, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 15 matches the sub-task target: Depeche Mode\"}"
     },
     {
       "action_uid": "2473d471-9cc4-4ae9-adf5-c7d340f2ddb6",
@@ -2085,13 +2085,13 @@
       "action_uid": "2770506e-b110-4eeb-b9f3-cb5c29bb497a",
       "sub_task": "Tue May 09 2023",
       "gt_index": 9,
-      "pred_uid": 18,
+      "pred_uid": 9,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": false,
-      "op_correct": false,
+      "el_correct": true,
+      "op_correct": true,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 18, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 18 matches the sub-task target: Tue May 09 2023\"}"
+      "raw_output": "{\"element_uid\": 9, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 9 matches the sub-task target: Tue May 09 2023\"}"
     },
     {
       "action_uid": "e2d19ea2-f0a3-47a8-b7f9-378552c19c8f",
@@ -2109,13 +2109,13 @@
       "action_uid": "de11b7d5-ac0d-44bd-8a0b-097eeb2e8af6",
       "sub_task": "Find one way flights for one person from Sacramento to Houston IAH on June 2, 2023 that can be booke",
       "gt_index": 11,
-      "pred_uid": 16,
+      "pred_uid": 19,
       "gt_action": "click",
       "pred_action": "click",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 16, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 16 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 19, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 19 matches the sub-task target: \"}"
     },
     {
       "action_uid": "ac1ed956-8710-452f-9cd4-77783b248d95",
@@ -2145,13 +2145,13 @@
       "action_uid": "617676c0-64c7-4b7e-96be-4ae0a7657a82",
       "sub_task": "Nightstands",
       "gt_index": 1,
-      "pred_uid": 1,
+      "pred_uid": 16,
       "gt_action": "click",
       "pred_action": "click",
-      "el_correct": true,
-      "op_correct": true,
+      "el_correct": false,
+      "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 1, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 1 matches the sub-task target: Nightstands\"}"
+      "raw_output": "{\"element_uid\": 16, \"action\": \"click\", \"value\": \"\", \"confidence\": 0.95, \"reasoning\": \"Element 16 matches the sub-task target: Nightstands\"}"
     },
     {
       "action_uid": "b2e5839d-a7b0-4fbc-ac35-6b5b9683923f",
@@ -2181,13 +2181,13 @@
       "action_uid": "df695b5d-884e-4ada-bdad-635b506af71f",
       "sub_task": "Add a e-gift card to bag of $100 for recipient John and email address abc@test.com from buckeye.foob",
       "gt_index": 12,
-      "pred_uid": 18,
+      "pred_uid": 6,
       "gt_action": "type",
       "pred_action": "type",
       "el_correct": false,
       "op_correct": false,
       "format_ok": true,
-      "raw_output": "{\"element_uid\": 18, \"action\": \"type\", \"value\": \"abc@test.com\", \"confidence\": 0.95, \"reasoning\": \"Element 18 matches the sub-task target: \"}"
+      "raw_output": "{\"element_uid\": 6, \"action\": \"type\", \"value\": \"abc@test.com\", \"confidence\": 0.95, \"reasoning\": \"Element 6 matches the sub-task target: \"}"
     },
     {
       "action_uid": "b3181c6f-301c-436c-bd03-3a44ca1c62b6",
