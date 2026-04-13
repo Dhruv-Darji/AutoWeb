@@ -19,6 +19,7 @@ import time as _time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -45,6 +46,14 @@ except ImportError as _e:
     print(f"[warn] Research enhancements not loaded: {_e}")
     _ENHANCEMENTS_AVAILABLE = False
 
+try:
+    from AutoWeb.src.policyHub.policy_hub import PolicyHub
+    from shared.hitl.hitl_confidence import HITLConfidenceGate
+    _HITL_AVAILABLE = True
+except ImportError as _e:
+    print(f"[warn] HITL modules not loaded: {_e}")
+    _HITL_AVAILABLE = False
+
 # -----------------------------
 # Configuration (Notebook parity)
 # -----------------------------
@@ -53,6 +62,7 @@ FILTER_MODEL = os.getenv("PRUNE4WEB_FILTER_MODEL", "gpt-4o")
 GROUNDER_MODEL = os.getenv("PRUNE4WEB_GROUNDER_MODEL", "gpt-4o")
 MAX_STEPS = int(os.getenv("PRUNE4WEB_MAX_STEPS", "5"))
 USE_VISION = os.getenv("PRUNE4WEB_USE_VISION", "1").strip().lower() in {"1", "true", "yes", "y"}
+USE_HITL = os.getenv("PRUNE4WEB_USE_HITL", "1").strip().lower() in {"1", "true", "yes", "y"}
 
 TOP_N_CANDIDATES = 20
 FUZZY_THRESHOLD = 0.6
@@ -61,6 +71,15 @@ FUZZY_THRESHOLD = 0.6
 USE_DOM_DELTA   = os.getenv("PRUNE4WEB_DOM_DELTA", "1").strip().lower() in {"1", "true", "yes", "y"}
 USE_PRIVACY     = os.getenv("PRUNE4WEB_PRIVACY", "1").strip().lower() in {"1", "true", "yes", "y"}
 DP_EPSILON      = float(os.getenv("PRUNE4WEB_DP_EPSILON", "0"))  # 0 = DP off
+
+HITL_THRESHOLD = int(os.getenv("PRUNE4WEB_HITL_THRESHOLD", os.getenv("HITL_THRESHOLD", "75")))
+HITL_LOW_CONFIDENCE_FLOOR = int(
+    os.getenv("PRUNE4WEB_HITL_LOW_CONFIDENCE_FLOOR", os.getenv("LOW_CONFIDENCE_FLOOR", "30"))
+)
+POLICY_HUB_PATH = os.getenv(
+    "PRUNE4WEB_POLICY_HUB_PATH",
+    str(Path(_PROJECT_ROOT) / "AutoWeb" / "src" / "policyHub" / "policies.json"),
+)
 
 
 ALPHA_EXACT = 4.0
@@ -198,6 +217,33 @@ def parse_json_from_llm(text: str) -> Dict:
     raw = re.sub(r"^[^\[{]*", "", raw)
     raw = re.sub(r"[^\]\}]*$", "", raw)
     return json.loads(raw)
+
+
+def _to_bool(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y"}
+    if isinstance(value, (int, float)):
+        return value != 0
+    return False
+
+
+def _to_confidence_0_100(value, default: float = 50.0) -> float:
+    try:
+        conf = float(value)
+    except (TypeError, ValueError):
+        conf = float(default)
+    if conf <= 1.0:
+        conf *= 100.0
+    return max(0.0, min(100.0, conf))
+
+
+def _extract_domain(url: str) -> str:
+    try:
+        return urlparse(url).netloc.lower().strip()
+    except Exception:
+        return ""
 
 
 INTERACTIVE_TAGS = {"a", "button", "input", "select", "textarea", "label", "option", "details", "summary"}
@@ -361,7 +407,10 @@ for this step as a JSON object with exactly these fields:
   "sub_task": "<short imperative sentence identifying the target element semantically>",
   "action_type": "<click|type|select|scroll|hover|check>",
   "value": "<text to type or option; empty string if not applicable>",
-  "reasoning": "<<=2 sentence chain-of-thought>"
+  "reasoning": "<=2 sentence chain-of-thought>",
+  "confidence": <integer 0-100>,
+  "policy_risk": <true|false>,
+  "hitl_reason": "<short reason, empty string if no risk>"
 }
 Return ONLY the JSON. No markdown fences. No preamble.
 """
@@ -503,10 +552,17 @@ class StepResult:
     grounded_uid: int
     grounded_element_summary: str
     action_value: str
+    llm_confidence: float
+    composite_confidence: float
+    policy_risk_flag: bool
+    hitl_triggered: bool
+    hitl_reason: str
+    hitl_details: Dict
     confidence: float
     reasoning: str
     executed: bool
     executed_selector: str
+    grounding_error: str
 
 
 def _clean_action(action: str, fallback: str) -> str:
@@ -760,11 +816,19 @@ def print_step_results(results: List[StepResult]) -> None:
         print(f"  action        : {result.action_type}('{result.action_value}')")
         print(f"  keywords      : {result.keyword_weights}")
         print(f"  dom_filter    : {result.num_dom_nodes} -> {result.num_candidates} ({reduction:.1f}x)")
+        print(f"  llm_conf      : {result.llm_confidence:.1f}")
+        print(f"  composite_conf: {result.composite_confidence:.1f}")
+        print(f"  policy_risk   : {result.policy_risk_flag}")
+        print(f"  hitl_triggered: {result.hitl_triggered}")
+        if result.hitl_reason:
+            print(f"  hitl_reason   : {result.hitl_reason}")
         print(f"  grounded_uid  : {result.grounded_uid}")
         print(f"  grounded_elem : {result.grounded_element_summary}")
         print(f"  confidence    : {result.confidence:.3f}")
         print(f"  reasoning     : {result.reasoning}")
         print(f"  executed      : {result.executed} ({result.executed_selector or 'none'})")
+        if result.grounding_error:
+            print(f"  grounding_err : {result.grounding_error}")
         print("-" * 72)
     if results:
         avg_reduction = sum(r.num_dom_nodes / max(r.num_candidates, 1) for r in results) / len(results)
@@ -773,10 +837,35 @@ def print_step_results(results: List[StepResult]) -> None:
     print("=" * 72)
 
 
-async def run_prune4web_live(url: str, task: str, max_steps: int = MAX_STEPS, headless: bool = False) -> List[StepResult]:
+async def run_prune4web_live(
+    url: str,
+    task: str,
+    max_steps: int = MAX_STEPS,
+    headless: bool = False,
+    website_domain: str = "",
+) -> List[StepResult]:
     results: List[StepResult] = []
     history: List[str] = []
     screenshot_dir = Path(tempfile.gettempdir())
+    domain = website_domain or _extract_domain(url)
+
+    policy_hub = None
+    hitl_gate = None
+    policy_risk_keywords: List[str] = []
+    if USE_HITL and _HITL_AVAILABLE:
+        policy_hub = PolicyHub(json_path=POLICY_HUB_PATH)
+        hitl_gate = HITLConfidenceGate(
+            low_confidence_floor=HITL_LOW_CONFIDENCE_FLOOR,
+            threshold=HITL_THRESHOLD,
+        )
+        policy_risk_keywords = policy_hub.get_policy_risk_keywords()
+        print(
+            "  [hitl] ENABLED "
+            f"(domain={domain or 'n/a'}, low_conf_floor={HITL_LOW_CONFIDENCE_FLOOR}, "
+            f"keywords={len(policy_risk_keywords)})"
+        )
+    elif USE_HITL:
+        print("  [hitl] requested but unavailable; continuing without HITL")
 
     # --- Research enhancement setup ----------------------------------------
     delta_processor = None
@@ -854,25 +943,80 @@ async def run_prune4web_live(url: str, task: str, max_steps: int = MAX_STEPS, he
             candidate_source = delta_elements if delta_elements is not None else elements
             # ---------------------------------------------------------------
 
-            # Choose LLM caller (privacy-aware or raw)
-            _llm = privacy_llm.call if privacy_llm else llm_call
-
             plan = planner(task=task, screenshot_path=str(screenshot_path), history=history, page_title=title)
             sub_task = str(plan.get("sub_task", "")).strip()
             planned_action = str(plan.get("action_type", "click")).strip()
             value_hint = str(plan.get("value", "")).strip()
             planner_reason = str(plan.get("reasoning", "")).strip()
+            llm_confidence = _to_confidence_0_100(plan.get("confidence", 50.0))
+            policy_risk_flag = _to_bool(plan.get("policy_risk", False))
+            hitl_reason_from_llm = str(plan.get("hitl_reason", "")).strip()
 
             print(f"  planner_sub_task: {sub_task}")
             print(f"  planner_action  : {planned_action}")
             print(f"  planner_value   : {value_hint}")
             print(f"  planner_reason  : {planner_reason}")
+            print(f"  planner_conf    : {llm_confidence:.1f}")
+            print(f"  planner_policy  : {policy_risk_flag}")
+            if hitl_reason_from_llm:
+                print(f"  planner_hitl    : {hitl_reason_from_llm}")
 
             if not sub_task:
                 print("  Planner did not return a sub-task. Stopping.")
                 break
             if any(marker in sub_task.lower() for marker in ["task complete", "already done", "finished", "done"]):
                 print("  Planner signaled task completion.")
+                break
+
+            hitl_details: Dict = {}
+            composite_confidence = llm_confidence
+            hitl_triggered = False
+            hitl_reason = hitl_reason_from_llm
+            if hitl_gate is not None:
+                action_text = f"{sub_task} -> {planned_action} {value_hint}".strip()
+                hitl_details = hitl_gate.compute_composite_confidence(
+                    llm_confidence=llm_confidence,
+                    action_text=action_text,
+                    policy_risk_keywords=policy_risk_keywords,
+                    policy_risk_flag=policy_risk_flag,
+                    hitl_reason=hitl_reason_from_llm,
+                )
+                composite_confidence = float(hitl_details.get("final_confidence", llm_confidence))
+                hitl_triggered = bool(hitl_details.get("hitl_triggered", False))
+                if not hitl_reason:
+                    hitl_reason = "; ".join(hitl_details.get("trigger_reasons", []))
+                print(
+                    f"  hitl_gate       : triggered={hitl_triggered} "
+                    f"reasons={hitl_details.get('trigger_reasons', [])}"
+                )
+
+            if hitl_triggered:
+                action = _clean_action(planned_action, "click")
+                step_result = StepResult(
+                    step_idx=step_idx,
+                    sub_task=sub_task,
+                    action_type=action,
+                    keyword_weights={},
+                    num_dom_nodes=len(elements),
+                    num_candidates=0,
+                    grounded_uid=-1,
+                    grounded_element_summary="(skipped: HITL triggered)",
+                    action_value=value_hint,
+                    llm_confidence=llm_confidence,
+                    composite_confidence=composite_confidence,
+                    policy_risk_flag=policy_risk_flag,
+                    hitl_triggered=True,
+                    hitl_reason=hitl_reason,
+                    hitl_details=hitl_details,
+                    confidence=0.0,
+                    reasoning="Grounding skipped due to HITL trigger.",
+                    executed=False,
+                    executed_selector="",
+                    grounding_error="hitl_triggered",
+                )
+                results.append(step_result)
+                history.append(f"{sub_task} -> HITL(triggered) action={action}")
+                print("  HITL triggered: skipping filter/grounding/execution and stopping for human review.")
                 break
 
             candidates, keywords = programmatic_element_filter(
@@ -907,10 +1051,17 @@ async def run_prune4web_live(url: str, task: str, max_steps: int = MAX_STEPS, he
                 grounded_uid=grounded_uid,
                 grounded_element_summary=matched.to_summary() if matched else "(not found in top candidates)",
                 action_value=action_value,
+                llm_confidence=llm_confidence,
+                composite_confidence=composite_confidence,
+                policy_risk_flag=policy_risk_flag,
+                hitl_triggered=False,
+                hitl_reason=hitl_reason,
+                hitl_details=hitl_details,
                 confidence=confidence,
                 reasoning=reasoning,
                 executed=executed,
                 executed_selector=selector,
+                grounding_error="",
             )
             results.append(step_result)
             history.append(f"{sub_task} -> {action}('{action_value}') uid={grounded_uid} executed={executed}")
@@ -973,11 +1124,15 @@ def print_runtime_parameters(url: str, task: str, max_steps: int) -> None:
     print(f"dom_delta_enabled   : {USE_DOM_DELTA and _ENHANCEMENTS_AVAILABLE}")
     print(f"privacy_enabled     : {USE_PRIVACY and _ENHANCEMENTS_AVAILABLE}")
     print(f"dp_epsilon          : {DP_EPSILON if DP_EPSILON > 0 else 'disabled'}")
+    print(f"hitl_enabled        : {USE_HITL and _HITL_AVAILABLE}")
+    print(f"hitl_low_conf_floor : {HITL_LOW_CONFIDENCE_FLOOR}")
+    print(f"hitl_threshold      : {HITL_THRESHOLD}")
+    print(f"policy_hub_path     : {POLICY_HUB_PATH}")
     print("=" * 72)
 
 
 def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]) -> None:
-    """Save a structured JSON log for each live run to results/live_runs/."""
+    """Save JSON + plain-text .log artifacts for each live run."""
     import datetime
     run_dir = Path(__file__).resolve().parent / "results" / "live_runs"
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -985,7 +1140,8 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
     ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     # Sanitize URL for filename
     domain = url.split("//")[-1].split("/")[0].replace(".", "_").replace(":", "")
-    filename = f"{ts}_{domain}.json"
+    base_name = f"{ts}_{domain}"
+    filename = f"{base_name}.json"
 
     use_local = os.getenv("GROUNDER_USE_LOCAL", "").strip() in {"1", "true", "yes"}
     steps_data = []
@@ -1000,10 +1156,17 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
             "candidates": r.num_candidates,
             "grounded_uid": r.grounded_uid,
             "grounded_element": r.grounded_element_summary,
+            "llm_confidence": r.llm_confidence,
+            "composite_confidence": r.composite_confidence,
+            "policy_risk_flag": r.policy_risk_flag,
+            "hitl_triggered": r.hitl_triggered,
+            "hitl_reason": r.hitl_reason,
+            "hitl_details": r.hitl_details,
             "confidence": r.confidence,
             "reasoning": r.reasoning,
             "executed": r.executed,
             "executed_selector": r.executed_selector,
+            "grounding_error": r.grounding_error,
         })
 
     usage_data = []
@@ -1018,11 +1181,14 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
 
     total_cost = sum(c.estimated_cost_usd or 0.0 for c in USAGE_TRACKER.calls)
     executed_count = sum(1 for r in results if r.executed)
+    hitl_count = sum(1 for r in results if r.hitl_triggered)
+    domain_only = _extract_domain(url)
 
     run_log = {
         "timestamp": ts,
         "input": {
             "url": url,
+            "domain": domain_only,
             "task": task,
             "max_steps": max_steps,
         },
@@ -1034,11 +1200,17 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
             "top_n_candidates": TOP_N_CANDIDATES,
             "dom_delta_enabled": USE_DOM_DELTA and _ENHANCEMENTS_AVAILABLE,
             "privacy_enabled": USE_PRIVACY and _ENHANCEMENTS_AVAILABLE,
+            "hitl_enabled": USE_HITL and _HITL_AVAILABLE,
+            "hitl_low_confidence_floor": HITL_LOW_CONFIDENCE_FLOOR,
+            "hitl_threshold": HITL_THRESHOLD,
+            "policy_hub_path": POLICY_HUB_PATH,
         },
         "output": {
             "total_steps": len(results),
             "steps_executed": executed_count,
             "steps_failed": len(results) - executed_count,
+            "hitl_triggers": hitl_count,
+            "hitl_trigger_rate": round(hitl_count / len(results), 4) if results else 0,
             "success_rate": f"{executed_count / len(results) * 100:.1f}%" if results else "0%",
             "total_api_cost_usd": round(total_cost, 6),
         },
@@ -1049,7 +1221,37 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
     out_path = run_dir / filename
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(run_log, f, indent=2, ensure_ascii=False)
+
+    txt_lines = [
+        f"timestamp={ts}",
+        f"url={url}",
+        f"domain={domain_only}",
+        f"task={task}",
+        f"max_steps={max_steps}",
+        f"total_steps={len(results)}",
+        f"steps_executed={executed_count}",
+        f"hitl_triggers={hitl_count}",
+        f"api_cost_usd={round(total_cost, 6)}",
+        "",
+        "steps:",
+    ]
+    for r in results:
+        txt_lines.append(
+            f"step={r.step_idx} action={r.action_type} executed={r.executed} "
+            f"hitl={r.hitl_triggered} llm_conf={r.llm_confidence:.1f} "
+            f"comp_conf={r.composite_confidence:.1f} sub_task={r.sub_task}"
+        )
+        if r.hitl_reason:
+            txt_lines.append(f"  hitl_reason={r.hitl_reason}")
+        if r.grounding_error:
+            txt_lines.append(f"  grounding_error={r.grounding_error}")
+
+    txt_path = run_dir / f"{base_name}.log"
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(txt_lines) + "\n")
+
     print(f"\nRun log saved -> {out_path}")
+    print(f"Text log saved -> {txt_path}")
 
 
 def main() -> None:

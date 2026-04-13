@@ -271,6 +271,7 @@ def save_site_result(run_dir: Path, task_entry: Dict, steps: List[StepResult],
                      elapsed: float, error: str = "") -> Dict:
     """Save per-site result JSON and return summary dict."""
     executed = sum(1 for s in steps if s.executed)
+    hitl_count = sum(1 for s in steps if s.hitl_triggered)
     total = len(steps)
     success_rate = (executed / total * 100) if total else 0.0
 
@@ -283,6 +284,8 @@ def save_site_result(run_dir: Path, task_entry: Dict, steps: List[StepResult],
         "total_steps": total,
         "steps_executed": executed,
         "steps_failed": total - executed,
+        "hitl_triggers": hitl_count,
+        "hitl_trigger_rate_pct": round((hitl_count / total * 100), 1) if total else 0.0,
         "success_rate_pct": round(success_rate, 1),
         "elapsed_seconds": round(elapsed, 1),
         "error": error,
@@ -299,10 +302,16 @@ def save_site_result(run_dir: Path, task_entry: Dict, steps: List[StepResult],
             "candidates": s.num_candidates,
             "grounded_uid": s.grounded_uid,
             "grounded_element": s.grounded_element_summary,
+            "llm_confidence": s.llm_confidence,
+            "composite_confidence": s.composite_confidence,
+            "policy_risk_flag": s.policy_risk_flag,
+            "hitl_triggered": s.hitl_triggered,
+            "hitl_reason": s.hitl_reason,
             "confidence": s.confidence,
             "reasoning": s.reasoning,
             "executed": s.executed,
             "selector": s.executed_selector,
+            "grounding_error": s.grounding_error,
         })
 
     # Sanitize name for filename
@@ -326,17 +335,21 @@ def save_run_summary(run_dir: Path, all_summaries: List[Dict], total_elapsed: fl
     for cat, items in sorted(by_cat.items()):
         total_steps = sum(i["total_steps"] for i in items)
         exec_steps = sum(i["steps_executed"] for i in items)
+        hitl_steps = sum(i.get("hitl_triggers", 0) for i in items)
         failed_sites = sum(1 for i in items if i.get("error"))
         cat_stats[cat] = {
             "sites": len(items),
             "total_steps": total_steps,
             "steps_executed": exec_steps,
+            "hitl_triggers": hitl_steps,
+            "hitl_trigger_rate_pct": round(hitl_steps / max(total_steps, 1) * 100, 1),
             "step_success_rate_pct": round(exec_steps / max(total_steps, 1) * 100, 1),
             "failed_sites": failed_sites,
         }
 
     total_steps = sum(s["total_steps"] for s in all_summaries)
     total_exec = sum(s["steps_executed"] for s in all_summaries)
+    total_hitl = sum(s.get("hitl_triggers", 0) for s in all_summaries)
 
     use_local = os.getenv("GROUNDER_USE_LOCAL", "").strip() in {"1", "true", "yes"}
     report = {
@@ -350,6 +363,8 @@ def save_run_summary(run_dir: Path, all_summaries: List[Dict], total_elapsed: fl
             "total_sites": n,
             "total_steps": total_steps,
             "steps_executed": total_exec,
+            "hitl_triggers": total_hitl,
+            "hitl_trigger_rate_pct": round(total_hitl / max(total_steps, 1) * 100, 1),
             "step_success_rate_pct": round(total_exec / max(total_steps, 1) * 100, 1),
             "total_elapsed_seconds": round(total_elapsed, 1),
         },
@@ -374,20 +389,23 @@ def print_benchmark_summary(report: Dict):
     print(f"  Total sites      : {overall['total_sites']}")
     print(f"  Total steps      : {overall['total_steps']}")
     print(f"  Steps executed   : {overall['steps_executed']}")
+    print(f"  HITL triggers    : {overall.get('hitl_triggers', 0)} ({overall.get('hitl_trigger_rate_pct', 0.0)}%)")
     print(f"  Step success rate: {overall['step_success_rate_pct']}%")
     print(f"  Total time       : {overall['total_elapsed_seconds']:.0f}s")
 
-    print(f"\n  {'Category':<10} {'Sites':>6} {'Steps':>6} {'Executed':>9} {'Rate':>8}")
-    print(f"  {'-'*10} {'-'*6} {'-'*6} {'-'*9} {'-'*8}")
+    print(f"\n  {'Category':<10} {'Sites':>6} {'Steps':>6} {'Executed':>9} {'HITL':>7} {'Rate':>8}")
+    print(f"  {'-'*10} {'-'*6} {'-'*6} {'-'*9} {'-'*7} {'-'*8}")
     for cat, stats in report["by_category"].items():
         print(f"  {cat:<10} {stats['sites']:>6} {stats['total_steps']:>6} "
-              f"{stats['steps_executed']:>9} {stats['step_success_rate_pct']:>7}%")
+              f"{stats['steps_executed']:>9} {stats.get('hitl_triggers', 0):>7} "
+              f"{stats['step_success_rate_pct']:>7}%")
 
     print(f"\n  Per-site results:")
     for s in report["sites"]:
         mark = "OK" if s["steps_executed"] > 0 and not s.get("error") else "X "
         print(f"    [{mark}] {s['category']:<6} {s['name']:<30} "
               f"exec={s['steps_executed']}/{s['total_steps']} "
+              f"hitl={s.get('hitl_triggers', 0)} "
               f"rate={s['success_rate_pct']}% time={s['elapsed_seconds']}s")
 
     print("=" * 72)

@@ -1,0 +1,46 @@
+{
+  "name": "W3Schools HTML Forms",
+  "url": "https://www.w3schools.com/html/html_forms.asp",
+  "domain": "w3schools.com",
+  "instruction": "Open Text field example",
+  "risk_level": "low",
+  "requires_hitl": false,
+  "policy_category": "public_demo",
+  "elapsed_seconds": 10.5,
+  "error": "",
+  "total_steps": 1,
+  "steps_executed": 1,
+  "steps_failed": 0,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "click on 'HTML Input Types' in the sidebar",
+      "action": "click",
+      "action_value": "",
+      "llm_confidence": 90.0,
+      "composite_confidence": 90.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "keyword_weights": {
+        "HTML Input Types": 2.5,
+        "sidebar": 2.0,
+        "navigation": 1.5,
+        "menu": 1.0,
+        "input types": 1.0,
+        "list": 0.5
+      },
+      "dom_nodes": 995,
+      "candidates": 20,
+      "grounded_uid": 814,
+      "grounded_element": "[814] <a> HTML Input Types",
+      "grounder_confidence": 0.95,
+      "grounder_reasoning": "The element with UID 814 is the top-ranked candidate and matches the exact text 'HTML Input Types', which is the target for the click action.",
+      "executed": true,
+      "executed_selector": "text:HTML Input Types",
+      "grounding_error": ""
+    }
+  ]
+}
