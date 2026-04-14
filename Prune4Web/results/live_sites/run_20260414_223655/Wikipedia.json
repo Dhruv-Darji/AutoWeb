@@ -1,0 +1,49 @@
+{
+  "name": "Wikipedia",
+  "url": "https://www.wikipedia.org/",
+  "domain": "wikipedia.org",
+  "instruction": "Search for Artificial Intelligence and open first result.",
+  "risk_level": "low",
+  "requires_hitl": false,
+  "policy_category": "public_navigation",
+  "elapsed_seconds": 10.66,
+  "error": "",
+  "total_steps": 1,
+  "steps_executed": 1,
+  "steps_failed": 0,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Type 'Artificial Intelligence' in search box",
+      "action": "type",
+      "action_value": "Artificial Intelligence",
+      "llm_confidence": 95.0,
+      "composite_confidence": 95.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "keyword_weights": {
+        "search": 2.5,
+        "find": 1.5,
+        "query": 1.0,
+        "lookup": 0.5,
+        "input": 2.0,
+        "box": 1.0,
+        "field": 0.8,
+        "type": 1.5,
+        "text": 1.0
+      },
+      "dom_nodes": 459,
+      "candidates": 20,
+      "grounded_uid": 12,
+      "grounded_element": "[12] <input id=\"searchInput\" type=\"search\">",
+      "grounder_confidence": 0.95,
+      "grounder_reasoning": "The element with UID 12 is an input field of type 'search', which is the appropriate element for typing a search query.",
+      "executed": true,
+      "executed_selector": "js-id:searchInput",
+      "grounding_error": ""
+    }
+  ]
+}

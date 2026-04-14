@@ -401,18 +401,39 @@ def score_elements(elements: List[ElementNode], keyword_weights: Dict[str, float
 PLANNER_SYSTEM = """\
 You are the Planner of Prune4Web, a web automation agent.
 
-Given a high-level task and current page state, output ONE low-level sub-task
-for this step as a JSON object with exactly these fields:
+Given a high-level task and current page state, output ONE next UI step.
+Respond with exactly one JSON object using this schema:
 {
   "sub_task": "<short imperative sentence identifying the target element semantically>",
   "action_type": "<click|type|select|scroll|hover|check>",
   "value": "<text to type or option; empty string if not applicable>",
-  "reasoning": "<=2 sentence chain-of-thought>",
+  "reasoning": "<=2 short sentences>",
   "confidence": <integer 0-100>,
   "policy_risk": <true|false>,
   "hitl_reason": "<short reason, empty string if no risk>"
 }
-Return ONLY the JSON. No markdown fences. No preamble.
+
+Confidence rubric (automation safety / HITL likelihood):
+- 80-100: safe to automate, low HITL likelihood
+- 60-79: moderate risk/uncertainty, monitor closely
+- 30-59: high HITL likelihood, prefer human review
+- 0-29: very high HITL likelihood, should be escalated
+Do not default to 95/100.
+Use lower confidence when action may require human approval.
+
+Set policy_risk=true only for: credentials/login submission, payment/checkout/
+financial operations, destructive actions (delete/remove/cancel), account or
+security setting changes, CAPTCHA/security verification.
+Set policy_risk=false for normal navigation/search/reading and non-sensitive typing.
+If policy_risk=true, confidence must be <=40.
+If policy_risk=true, hitl_reason must explain the risk in <=10 words.
+If policy_risk=false, hitl_reason must be "".
+
+Examples:
+{"sub_task":"Type 'machine learning' in search box","action_type":"type","value":"machine learning","reasoning":"Search is required before opening results.","confidence":86,"policy_risk":false,"hitl_reason":""}
+{"sub_task":"Click 'I'm not a robot' checkbox","action_type":"click","value":"","reasoning":"This is a CAPTCHA verification step.","confidence":58,"policy_risk":true,"hitl_reason":"CAPTCHA security verification"}
+
+Return ONLY raw JSON. No markdown. No preamble.
 """
 
 FILTER_SYSTEM = """\
@@ -973,7 +994,17 @@ async def run_prune4web_live(
             hitl_triggered = False
             hitl_reason = hitl_reason_from_llm
             if hitl_gate is not None:
-                action_text = f"{sub_task} -> {planned_action} {value_hint}".strip()
+                # Use richer context (not just sub_task text) so policy keyword
+                # matching can catch login/captcha/payment pages reliably.
+                action_text = (
+                    f"url={url_now} "
+                    f"domain={domain} "
+                    f"title={title} "
+                    f"task={task} "
+                    f"sub_task={sub_task} "
+                    f"action={planned_action} "
+                    f"value={value_hint}"
+                ).strip()
                 hitl_details = hitl_gate.compute_composite_confidence(
                     llm_confidence=llm_confidence,
                     action_text=action_text,

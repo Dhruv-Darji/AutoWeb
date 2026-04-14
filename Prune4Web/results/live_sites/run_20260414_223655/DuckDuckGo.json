@@ -1,0 +1,50 @@
+{
+  "name": "DuckDuckGo",
+  "url": "https://duckduckgo.com/",
+  "domain": "duckduckgo.com",
+  "instruction": "Search for Multimodal AI models and scroll once.",
+  "risk_level": "low",
+  "requires_hitl": false,
+  "policy_category": "public_search",
+  "elapsed_seconds": 9.21,
+  "error": "",
+  "total_steps": 1,
+  "steps_executed": 1,
+  "steps_failed": 0,
+  "hitl_triggers": 0,
+  "hitl_trigger_rate": 0.0,
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Type 'Multimodal AI models' in search box",
+      "action": "type",
+      "action_value": "Multimodal AI models",
+      "llm_confidence": 90.0,
+      "composite_confidence": 90.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "keyword_weights": {
+        "search": 2.5,
+        "find": 1.5,
+        "query": 1.5,
+        "lookup": 1.5,
+        "input": 2.0,
+        "box": 1.0,
+        "type": 1.0,
+        "multimodal": 1.5,
+        "ai": 1.5,
+        "models": 1.0
+      },
+      "dom_nodes": 161,
+      "candidates": 20,
+      "grounded_uid": 10,
+      "grounded_element": "[10] <input id=\"searchbox_input\" type=\"text\" aria-label=\"Search with DuckDuckGo\" placeholder=\"Search privately\">",
+      "grounder_confidence": 0.95,
+      "grounder_reasoning": "The element with UID 10 is an input field specifically labeled for search, making it the most appropriate target for typing a search query.",
+      "executed": true,
+      "executed_selector": "js-id:searchbox_input",
+      "grounding_error": ""
+    }
+  ]
+}
