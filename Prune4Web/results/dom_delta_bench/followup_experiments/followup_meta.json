@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-04-17T13:05:02.922147",
+  "experiments": [
+    {
+      "label": "Experiment 1: per-domain breakdown",
+      "returncode": 0,
+      "elapsed_s": 1.9
+    },
+    {
+      "label": "Experiment 2: actual Qwen tokens (500 samples, test_domain)",
+      "returncode": 0,
+      "elapsed_s": 367.5
+    },
+    {
+      "label": "Experiment 3: top-10 Recall (500 samples, test_domain)",
+      "returncode": 0,
+      "elapsed_s": 224.6
+    },
+    {
+      "label": "Experiment 3: top-50 Recall (500 samples, test_domain)",
+      "returncode": 0,
+      "elapsed_s": 328.9
+    },
+    {
+      "label": "Experiment 5: latency breakdown (200 samples, test_domain)",
+      "returncode": 0,
+      "elapsed_s": 159.0
+    },
+    {
+      "label": "Experiment 4: Element Accuracy via local Qwen (200 samples)",
+      "returncode": 0,
+      "elapsed_s": 5793.0
+    }
+  ],
+  "total_elapsed_s": 6874.9
+}

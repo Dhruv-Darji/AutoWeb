@@ -59,6 +59,12 @@ class SnapshotElement:
     checked: bool
     selected: bool
     xpath: str              # approximate structural path (for display)
+    # Improvement B.3 (HTML-T5, Gur et al. ICLR 2024): ancestor chain gives the
+    # grounder enough structural context to disambiguate visually-identical
+    # elements (e.g. an "email" input inside the signup form vs. the newsletter
+    # form). Viewport flag biases the grounder toward on-screen targets.
+    ancestors: List[str] = field(default_factory=list)  # outer-most first
+    in_viewport: Optional[bool] = None                   # None if unknown
 
     # ---------- helpers ----------
     def fingerprint(self) -> str:
@@ -68,7 +74,13 @@ class SnapshotElement:
         )
         return hashlib.md5(payload.encode("utf-8")).hexdigest()
 
-    def to_summary(self) -> str:
+    def semantic_text(self) -> str:
+        """Concatenated natural-language signal for embedding models."""
+        pieces = [self.text, self.aria_label, self.placeholder, self.title,
+                  self.name, self.elem_id]
+        return " ".join(p for p in pieces if p)[:240]
+
+    def to_summary(self, include_ancestors: bool = True) -> str:
         parts = [f"[{self.uid[:6]}] <{self.tag}"]
         if self.elem_id:
             parts.append(f' id="{self.elem_id}"')
@@ -81,6 +93,10 @@ class SnapshotElement:
         parts.append(">")
         if self.text:
             parts.append(f" {self.text[:80]}")
+        if include_ancestors and self.ancestors:
+            parts.append(f"  ctx={' > '.join(self.ancestors[-2:])}")
+        if self.in_viewport is True:
+            parts.append("  [visible]")
         return "".join(parts)
 
     def to_dict(self) -> Dict:
@@ -150,6 +166,44 @@ def _xpath_approx(el) -> str:
     return "/" + "/".join(parts) if parts else f"/{el.name or 'unknown'}"
 
 
+# Tags whose ancestor context carries semantic signal for grounding
+# (form, section, nav, aside, header, footer, article, main, dialog, table,
+#  tr/td for tabular layouts, fieldset for grouped inputs).
+_SEMANTIC_ANCESTOR_TAGS = frozenset({
+    "form", "fieldset", "section", "nav", "aside", "header", "footer",
+    "article", "main", "dialog", "table", "tr", "td", "li", "ul", "ol",
+})
+
+
+def _ancestor_summary(el, max_hops: int = 4) -> List[str]:
+    """Walk up to *max_hops* semantically useful ancestors.
+
+    Returns a list like ["form#signup", "fieldset[aria-label=Address]"] —
+    outermost first. Mirrors the hierarchical representation used by
+    HTML-T5 (Gur et al., ICLR 2024, arXiv:2307.12856).
+    """
+    out: List[str] = []
+    hops = 0
+    for ancestor in el.parents:
+        if hops >= max_hops:
+            break
+        name = (ancestor.name or "").lower()
+        if name not in _SEMANTIC_ANCESTOR_TAGS:
+            # Still count container divs if they carry aria-label / role
+            if name != "div" or not (ancestor.get("aria-label") or ancestor.get("role")):
+                continue
+        token = name
+        if ancestor.get("id"):
+            token += f"#{ancestor.get('id')}"
+        if ancestor.get("aria-label"):
+            token += f"[{ancestor.get('aria-label')[:30]}]"
+        elif ancestor.get("role"):
+            token += f"[role={ancestor.get('role')}]"
+        out.append(token)
+        hops += 1
+    return list(reversed(out))
+
+
 def capture_dom_state(
     html: str,
     url: str = "",
@@ -210,6 +264,8 @@ def capture_dom_state(
             checked=el.has_attr("checked"),
             selected=el.has_attr("selected"),
             xpath=_xpath_approx(el),
+            ancestors=_ancestor_summary(el),
+            in_viewport=None,  # populated later if Playwright bbox data is attached
         )
         # uid = hash of structural identity (id/name/tag/xpath) so that the
         # same logical element gets the same uid across page re-renders.

@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-04-16T18:33:12.367547",
+  "configs": [
+    "FULL",
+    "DELTA_KW",
+    "DELTA_EMBED",
+    "DELTA_HYBRID"
+  ],
+  "splits": [
+    {
+      "split": "test_task",
+      "returncode": 0,
+      "elapsed_s": 502.7
+    },
+    {
+      "split": "test_website",
+      "returncode": 0,
+      "elapsed_s": 366.5
+    },
+    {
+      "split": "test_domain",
+      "returncode": 0,
+      "elapsed_s": 1195.2
+    }
+  ],
+  "total_elapsed_s": 2064.4
+}

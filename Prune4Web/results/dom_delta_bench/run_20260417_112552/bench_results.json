@@ -1,0 +1,5645 @@
+{
+  "timestamp": "20260417_112552",
+  "config": {
+    "split": "test_domain",
+    "num_samples": 200,
+    "top_n": 20,
+    "seed": 42,
+    "configs": [
+      "FULL",
+      "DELTA_HYBRID"
+    ],
+    "max_files": 0,
+    "count_actual_tokens": false,
+    "with_grounder": false,
+    "grounder_configs": [
+      "FULL",
+      "DELTA_HYBRID"
+    ]
+  },
+  "overall_elapsed_s": 74.6,
+  "aggregate": {
+    "FULL": {
+      "samples": 200,
+      "recall_at_20_pct": 90.5,
+      "mean_tokens_proxy": 1348.8,
+      "median_tokens_proxy": 1370.0,
+      "mean_elapsed_ms": 19.773,
+      "mean_gt_rank": 0.59
+    },
+    "DELTA_HYBRID": {
+      "samples": 200,
+      "recall_at_20_pct": 89.5,
+      "mean_tokens_proxy": 1153.3,
+      "median_tokens_proxy": 1187.0,
+      "mean_elapsed_ms": 223.294,
+      "mean_gt_rank": 0.7,
+      "mean_kw_scoring_ms": 1.19,
+      "mean_embed_fuse_ms": 222.08,
+      "delta_recall_pp": -1.0,
+      "token_reduction_pct": 14.5
+    }
+  },
+  "samples": [
+    {
+      "action_uid": "aaf737fe-6ebc-4500-8579-df63a4d969d3",
+      "sub_task": "Rating",
+      "gt_action": "click",
+      "gt_backend_node_id": "17781",
+      "num_dom_nodes": 380,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "bbb.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1307,
+          "elapsed_ms": 9.11,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 805,
+          "elapsed_ms": 152.25,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.4,
+          "embed_fuse_ms": 151.84
+        }
+      }
+    },
+    {
+      "action_uid": "3b76e62b-4191-4777-96b7-6aa2f21ba475",
+      "sub_task": "Los Angeles, CA",
+      "gt_action": "click",
+      "gt_backend_node_id": "12180",
+      "num_dom_nodes": 343,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1344,
+          "elapsed_ms": 14.77,
+          "gt_rank": 2
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1261,
+          "elapsed_ms": 141.06,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.54,
+          "embed_fuse_ms": 140.5
+        }
+      }
+    },
+    {
+      "action_uid": "96b0108b-74fb-46ac-8f50-6cdf4b661ca5",
+      "sub_task": "Business",
+      "gt_action": "click",
+      "gt_backend_node_id": "7588",
+      "num_dom_nodes": 687,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "udemy",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1475,
+          "elapsed_ms": 11.35,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1178,
+          "elapsed_ms": 248.42,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.05,
+          "embed_fuse_ms": 247.36
+        }
+      }
+    },
+    {
+      "action_uid": "c0d7a5a4-a0c3-4556-8df5-33c8e21d6306",
+      "sub_task": "Get Location Information",
+      "gt_action": "click",
+      "gt_backend_node_id": "91",
+      "num_dom_nodes": 341,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "fedex",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1515,
+          "elapsed_ms": 16.92,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1146,
+          "elapsed_ms": 150.48,
+          "gt_rank": -1,
+          "kw_scoring_ms": 1.06,
+          "embed_fuse_ms": 149.39
+        }
+      }
+    },
+    {
+      "action_uid": "4f0a38d6-5ea1-46a6-9ccc-846bd6e22b22",
+      "sub_task": "Vehicle Storage",
+      "gt_action": "click",
+      "gt_backend_node_id": "5276",
+      "num_dom_nodes": 316,
+      "domain": "Service",
+      "subdomain": "Moving",
+      "website": "extraspace",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1252,
+          "elapsed_ms": 10.04,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1136,
+          "elapsed_ms": 121.73,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.68,
+          "embed_fuse_ms": 121.03
+        }
+      }
+    },
+    {
+      "action_uid": "b3c3b96b-690b-46fd-b78e-aeaf0b1f79e8",
+      "sub_task": "Request Transcript",
+      "gt_action": "click",
+      "gt_backend_node_id": "7939",
+      "num_dom_nodes": 280,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1628,
+          "elapsed_ms": 14.56,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 954,
+          "elapsed_ms": 155.1,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.71,
+          "embed_fuse_ms": 154.36
+        }
+      }
+    },
+    {
+      "action_uid": "09c5645e-ae38-49f0-80aa-e5700fa7d5d1",
+      "sub_task": "Texas, USA",
+      "gt_action": "click",
+      "gt_backend_node_id": "23700",
+      "num_dom_nodes": 226,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "fedex",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1789,
+          "elapsed_ms": 9.23,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1742,
+          "elapsed_ms": 102.59,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.55,
+          "embed_fuse_ms": 102.02
+        }
+      }
+    },
+    {
+      "action_uid": "309425b1-c224-4775-8ee9-150e9f909450",
+      "sub_task": "Shipping",
+      "gt_action": "click",
+      "gt_backend_node_id": "99",
+      "num_dom_nodes": 213,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1624,
+          "elapsed_ms": 3.28,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1330,
+          "elapsed_ms": 100.05,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.32,
+          "embed_fuse_ms": 99.71
+        }
+      }
+    },
+    {
+      "action_uid": "372178f5-b5f0-4b19-a3b3-b75da98441c1",
+      "sub_task": "Calendar",
+      "gt_action": "click",
+      "gt_backend_node_id": "4934",
+      "num_dom_nodes": 446,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "osu.edu",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1462,
+          "elapsed_ms": 7.07,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1391,
+          "elapsed_ms": 164.69,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.68,
+          "embed_fuse_ms": 163.99
+        }
+      }
+    },
+    {
+      "action_uid": "1e41d5b2-0eef-4bab-ab38-507671708c47",
+      "sub_task": "used car dealer",
+      "gt_action": "click",
+      "gt_backend_node_id": "2823",
+      "num_dom_nodes": 419,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "bbb.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1361,
+          "elapsed_ms": 20.42,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 769,
+          "elapsed_ms": 171.61,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.13,
+          "embed_fuse_ms": 170.46
+        }
+      }
+    },
+    {
+      "action_uid": "2cbaebfe-63f4-4df0-acbe-02c160568665",
+      "sub_task": "New portfolio",
+      "gt_action": "click",
+      "gt_backend_node_id": "7053",
+      "num_dom_nodes": 588,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.google",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1102,
+          "elapsed_ms": 22.51,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1367,
+          "elapsed_ms": 252.6,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.34,
+          "embed_fuse_ms": 251.24
+        }
+      }
+    },
+    {
+      "action_uid": "dad855c0-a6eb-4ce6-b2b7-996d80c60770",
+      "sub_task": "Board",
+      "gt_action": "click",
+      "gt_backend_node_id": "3259",
+      "num_dom_nodes": 83,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "pinterest",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 826,
+          "elapsed_ms": 0.87,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 495,
+          "elapsed_ms": 64.07,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.13,
+          "embed_fuse_ms": 63.93
+        }
+      }
+    },
+    {
+      "action_uid": "c6d6360a-fd66-4b45-8dd9-74568f9c5717",
+      "sub_task": "View Profile (opens in a new tab)",
+      "gt_action": "click",
+      "gt_backend_node_id": "19801",
+      "num_dom_nodes": 631,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 858,
+          "elapsed_ms": 43.97,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 858,
+          "elapsed_ms": 229.68,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.07,
+          "embed_fuse_ms": 227.57
+        }
+      }
+    },
+    {
+      "action_uid": "6cc78ce6-6f21-4807-a267-d672a45a97ac",
+      "sub_task": "Search",
+      "gt_action": "click",
+      "gt_backend_node_id": "12472",
+      "num_dom_nodes": 462,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "thumbtack",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 992,
+          "elapsed_ms": 6.45,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 916,
+          "elapsed_ms": 181.82,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.68,
+          "embed_fuse_ms": 181.13
+        }
+      }
+    },
+    {
+      "action_uid": "4870f4f4-4020-453b-86e0-a499b8b6b762",
+      "sub_task": "By 11:30 AM",
+      "gt_action": "click",
+      "gt_backend_node_id": "19392",
+      "num_dom_nodes": 229,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1720,
+          "elapsed_ms": 7.12,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1695,
+          "elapsed_ms": 119.76,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.43,
+          "embed_fuse_ms": 119.3
+        }
+      }
+    },
+    {
+      "action_uid": "177f8f6a-1107-475f-bf3a-71d7ca650afa",
+      "sub_task": "search titles only",
+      "gt_action": "click",
+      "gt_backend_node_id": "93363",
+      "num_dom_nodes": 318,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "craigslist.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1113,
+          "elapsed_ms": 15.08,
+          "gt_rank": 11
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1099,
+          "elapsed_ms": 123.6,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.83,
+          "embed_fuse_ms": 122.75
+        }
+      }
+    },
+    {
+      "action_uid": "2554a37e-7259-4022-98f6-2b14f7fbdd42",
+      "sub_task": "Select",
+      "gt_action": "click",
+      "gt_backend_node_id": "34736",
+      "num_dom_nodes": 389,
+      "domain": "Service",
+      "subdomain": "Moving",
+      "website": "uhaul",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 856,
+          "elapsed_ms": 4.12,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 386,
+          "elapsed_ms": 165.24,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.58,
+          "embed_fuse_ms": 164.64
+        }
+      }
+    },
+    {
+      "action_uid": "791f31ba-38c8-4834-a831-f4d57eae71dd",
+      "sub_task": "Pediatric Dentists",
+      "gt_action": "click",
+      "gt_backend_node_id": "15273",
+      "num_dom_nodes": 407,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "health.usnews",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1663,
+          "elapsed_ms": 9.46,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1444,
+          "elapsed_ms": 161.37,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.66,
+          "embed_fuse_ms": 160.7
+        }
+      }
+    },
+    {
+      "action_uid": "316f9fad-7bd0-42bf-99b0-05a8124af575",
+      "sub_task": "Launch Service of Apply for a Cal Grant",
+      "gt_action": "click",
+      "gt_backend_node_id": "22952",
+      "num_dom_nodes": 357,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ca.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1771,
+          "elapsed_ms": 30.97,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1736,
+          "elapsed_ms": 143.96,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.35,
+          "embed_fuse_ms": 142.58
+        }
+      }
+    },
+    {
+      "action_uid": "51fb38fc-ad54-4408-9f0a-3b9e6489dea6",
+      "sub_task": "View details",
+      "gt_action": "click",
+      "gt_backend_node_id": "42086",
+      "num_dom_nodes": 557,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "drugs",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1574,
+          "elapsed_ms": 16.88,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1609,
+          "elapsed_ms": 220.59,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.11,
+          "embed_fuse_ms": 219.46
+        }
+      }
+    },
+    {
+      "action_uid": "12fd4f6d-4f59-4e80-8341-ddad227dd417",
+      "sub_task": "Browse Companies",
+      "gt_action": "click",
+      "gt_backend_node_id": "75",
+      "num_dom_nodes": 117,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1465,
+          "elapsed_ms": 4.43,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1334,
+          "elapsed_ms": 61.78,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.27,
+          "embed_fuse_ms": 61.49
+        }
+      }
+    },
+    {
+      "action_uid": "038f6982-9251-4f82-bf8d-04e44d3d5d2b",
+      "sub_task": "NEXT",
+      "gt_action": "click",
+      "gt_backend_node_id": "8261",
+      "num_dom_nodes": 29,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthline",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 959,
+          "elapsed_ms": 0.44,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 789,
+          "elapsed_ms": 33.71,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.05,
+          "embed_fuse_ms": 33.65
+        }
+      }
+    },
+    {
+      "action_uid": "92cb5b56-8313-4c0a-b998-79ea3480db69",
+      "sub_task": "Find obedience trials in state of New York during the month of May",
+      "gt_action": "click",
+      "gt_backend_node_id": "110466",
+      "num_dom_nodes": 369,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "akc.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1707,
+          "elapsed_ms": 23.23,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1485,
+          "elapsed_ms": 142.72,
+          "gt_rank": -1,
+          "kw_scoring_ms": 1.23,
+          "embed_fuse_ms": 141.46
+        }
+      }
+    },
+    {
+      "action_uid": "f033c7e7-67d8-4790-839b-c5af3a2e6df4",
+      "sub_task": "Search",
+      "gt_action": "click",
+      "gt_backend_node_id": "9835",
+      "num_dom_nodes": 388,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "bbb.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1464,
+          "elapsed_ms": 4.91,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1293,
+          "elapsed_ms": 162.91,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.61,
+          "embed_fuse_ms": 162.28
+        }
+      }
+    },
+    {
+      "action_uid": "535bc1b9-574f-4951-a5f7-1e281ec3044c",
+      "sub_task": "Valtrex",
+      "gt_action": "click",
+      "gt_backend_node_id": "7115",
+      "num_dom_nodes": 416,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "drugs",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 309,
+          "elapsed_ms": 5.22,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 446,
+          "elapsed_ms": 424.0,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.59,
+          "embed_fuse_ms": 423.39
+        }
+      }
+    },
+    {
+      "action_uid": "34d38394-730e-4d8c-a5a9-858e1eda68af",
+      "sub_task": "More ",
+      "gt_action": "click",
+      "gt_backend_node_id": "9503",
+      "num_dom_nodes": 1081,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "apartments",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 771,
+          "elapsed_ms": 35.33,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 317,
+          "elapsed_ms": 418.43,
+          "gt_rank": 3,
+          "kw_scoring_ms": 2.17,
+          "embed_fuse_ms": 416.23
+        }
+      }
+    },
+    {
+      "action_uid": "c4f7810e-bd78-4bd5-98b7-eb165a81ae4a",
+      "sub_task": "Portland, OR, USA",
+      "gt_action": "click",
+      "gt_backend_node_id": "11311",
+      "num_dom_nodes": 241,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1744,
+          "elapsed_ms": 10.55,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1744,
+          "elapsed_ms": 109.51,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.59,
+          "embed_fuse_ms": 108.9
+        }
+      }
+    },
+    {
+      "action_uid": "928cb345-1b01-4b9e-9a54-7823da7ae98f",
+      "sub_task": "Search by job title, skill or company",
+      "gt_action": "type",
+      "gt_backend_node_id": "78",
+      "num_dom_nodes": 170,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "ohiomeansjobs.ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1456,
+          "elapsed_ms": 17.81,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1673,
+          "elapsed_ms": 103.22,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.73,
+          "embed_fuse_ms": 102.46
+        }
+      }
+    },
+    {
+      "action_uid": "e728a5e9-1096-42b3-982d-b5b47b3edf9b",
+      "sub_task": "Show me recipes with:",
+      "gt_action": "type",
+      "gt_backend_node_id": "7148",
+      "num_dom_nodes": 227,
+      "domain": "Info",
+      "subdomain": "Cooking",
+      "website": "cookpad",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1179,
+          "elapsed_ms": 9.41,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1282,
+          "elapsed_ms": 106.96,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.54,
+          "embed_fuse_ms": 106.39
+        }
+      }
+    },
+    {
+      "action_uid": "a1df9b71-00a1-465c-9e57-be347d145b15",
+      "sub_task": "See Pickup Options",
+      "gt_action": "click",
+      "gt_backend_node_id": "2663",
+      "num_dom_nodes": 223,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1717,
+          "elapsed_ms": 13.76,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1717,
+          "elapsed_ms": 107.43,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.65,
+          "embed_fuse_ms": 106.76
+        }
+      }
+    },
+    {
+      "action_uid": "87e0c663-8019-488f-81cc-7fdb2de6b4fc",
+      "sub_task": "Remote",
+      "gt_action": "click",
+      "gt_backend_node_id": "25989",
+      "num_dom_nodes": 475,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1768,
+          "elapsed_ms": 6.73,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1120,
+          "elapsed_ms": 202.31,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.87,
+          "embed_fuse_ms": 201.42
+        }
+      }
+    },
+    {
+      "action_uid": "2be04959-1639-40f1-a08f-d73683b7fffe",
+      "sub_task": "*Phone Number",
+      "gt_action": "type",
+      "gt_backend_node_id": "105621",
+      "num_dom_nodes": 568,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "usps",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1250,
+          "elapsed_ms": 17.49,
+          "gt_rank": 17
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1205,
+          "elapsed_ms": 204.0,
+          "gt_rank": -1,
+          "kw_scoring_ms": 1.27,
+          "embed_fuse_ms": 202.71
+        }
+      }
+    },
+    {
+      "action_uid": "f05eddaf-24da-489c-9a17-f55991093848",
+      "sub_task": "Enter your email",
+      "gt_action": "type",
+      "gt_backend_node_id": "17508",
+      "num_dom_nodes": 291,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthline",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1572,
+          "elapsed_ms": 16.87,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1306,
+          "elapsed_ms": 137.53,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.9,
+          "embed_fuse_ms": 136.6
+        }
+      }
+    },
+    {
+      "action_uid": "2d51fbc8-d4cf-4eb2-8069-38be29e6d5c7",
+      "sub_task": "ORDER ONLINE",
+      "gt_action": "click",
+      "gt_backend_node_id": "6899",
+      "num_dom_nodes": 405,
+      "domain": "Service",
+      "subdomain": "Moving",
+      "website": "extraspace",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1267,
+          "elapsed_ms": 14.62,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1361,
+          "elapsed_ms": 178.66,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.88,
+          "embed_fuse_ms": 177.76
+        }
+      }
+    },
+    {
+      "action_uid": "7fc6970e-cece-403f-8d6c-4eeb748055fb",
+      "sub_task": "Location",
+      "gt_action": "click",
+      "gt_backend_node_id": "8576",
+      "num_dom_nodes": 257,
+      "domain": "Info",
+      "subdomain": "Weather",
+      "website": "accuweather",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1253,
+          "elapsed_ms": 3.55,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 808,
+          "elapsed_ms": 128.3,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.4,
+          "embed_fuse_ms": 127.88
+        }
+      }
+    },
+    {
+      "action_uid": "6b011e83-5fc1-4b45-823f-58e9e03e8c16",
+      "sub_task": "To*",
+      "gt_action": "type",
+      "gt_backend_node_id": "8467",
+      "num_dom_nodes": 234,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1618,
+          "elapsed_ms": 3.75,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1273,
+          "elapsed_ms": 119.64,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.35,
+          "embed_fuse_ms": 119.27
+        }
+      }
+    },
+    {
+      "action_uid": "cae566b9-3818-40fb-8a35-b962ffae0226",
+      "sub_task": "Apply",
+      "gt_action": "click",
+      "gt_backend_node_id": "51273",
+      "num_dom_nodes": 1169,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1139,
+          "elapsed_ms": 15.73,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 870,
+          "elapsed_ms": 469.54,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.66,
+          "embed_fuse_ms": 467.86
+        }
+      }
+    },
+    {
+      "action_uid": "bc9c7b93-f2a6-4fa2-bf10-7f604004f259",
+      "sub_task": "Landscape Contractors",
+      "gt_action": "click",
+      "gt_backend_node_id": "12300",
+      "num_dom_nodes": 418,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "bbb.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 985,
+          "elapsed_ms": 16.32,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 984,
+          "elapsed_ms": 162.38,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.93,
+          "embed_fuse_ms": 161.42
+        }
+      }
+    },
+    {
+      "action_uid": "2dcc182e-19b1-46c5-925a-244c2fcde8a4",
+      "sub_task": "More +",
+      "gt_action": "click",
+      "gt_backend_node_id": "120607",
+      "num_dom_nodes": 329,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1279,
+          "elapsed_ms": 5.36,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 706,
+          "elapsed_ms": 140.57,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.42,
+          "embed_fuse_ms": 140.14
+        }
+      }
+    },
+    {
+      "action_uid": "edb768b4-1dc3-442c-9e43-f9190e532c82",
+      "sub_task": "Search on Thumbtack",
+      "gt_action": "type",
+      "gt_backend_node_id": "4402",
+      "num_dom_nodes": 483,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "thumbtack",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1501,
+          "elapsed_ms": 19.35,
+          "gt_rank": 2
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1003,
+          "elapsed_ms": 195.81,
+          "gt_rank": 1,
+          "kw_scoring_ms": 1.1,
+          "embed_fuse_ms": 194.68
+        }
+      }
+    },
+    {
+      "action_uid": "f312ef29-e0cb-4141-86e7-3537f07364d8",
+      "sub_task": "Location",
+      "gt_action": "type",
+      "gt_backend_node_id": "28291",
+      "num_dom_nodes": 419,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1180,
+          "elapsed_ms": 5.27,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1063,
+          "elapsed_ms": 162.67,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.6,
+          "embed_fuse_ms": 162.06
+        }
+      }
+    },
+    {
+      "action_uid": "eb3aeeb2-84e0-49aa-9e2a-9f30ac2e0acf",
+      "sub_task": "Twitter",
+      "gt_action": "click",
+      "gt_backend_node_id": "45375",
+      "num_dom_nodes": 783,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.yahoo",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1008,
+          "elapsed_ms": 10.43,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 535,
+          "elapsed_ms": 341.29,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.13,
+          "embed_fuse_ms": 340.13
+        }
+      }
+    },
+    {
+      "action_uid": "d32fb2f4-9495-4db3-8287-50a90be8834b",
+      "sub_task": "Mom's 🥇Southern Style Green Beans and Potatoes Sou...",
+      "gt_action": "click",
+      "gt_backend_node_id": "8104",
+      "num_dom_nodes": 219,
+      "domain": "Info",
+      "subdomain": "Cooking",
+      "website": "cookpad",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1676,
+          "elapsed_ms": 12.72,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1564,
+          "elapsed_ms": 102.88,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.87,
+          "embed_fuse_ms": 101.98
+        }
+      }
+    },
+    {
+      "action_uid": "0e162c98-6aa4-4081-8260-faaf68046c2e",
+      "sub_task": "Jobs in Bradley County, TN",
+      "gt_action": "click",
+      "gt_backend_node_id": "5532",
+      "num_dom_nodes": 1927,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 742,
+          "elapsed_ms": 82.55,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 697,
+          "elapsed_ms": 598.28,
+          "gt_rank": 0,
+          "kw_scoring_ms": 5.57,
+          "embed_fuse_ms": 592.68
+        }
+      }
+    },
+    {
+      "action_uid": "d358628d-d3ed-47d2-ac61-27c7686d5874",
+      "sub_task": "Amazon mentoring link",
+      "gt_action": "click",
+      "gt_backend_node_id": "3552",
+      "num_dom_nodes": 160,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "hiring.amazon",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1600,
+          "elapsed_ms": 5.29,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1780,
+          "elapsed_ms": 78.78,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.34,
+          "embed_fuse_ms": 78.43
+        }
+      }
+    },
+    {
+      "action_uid": "0f391ce8-8948-48bc-b8ec-f3030387873a",
+      "sub_task": "apply",
+      "gt_action": "click",
+      "gt_backend_node_id": "34230",
+      "num_dom_nodes": 673,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "craigslist.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1555,
+          "elapsed_ms": 11.66,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 977,
+          "elapsed_ms": 222.5,
+          "gt_rank": 4,
+          "kw_scoring_ms": 1.17,
+          "embed_fuse_ms": 221.3
+        }
+      }
+    },
+    {
+      "action_uid": "62541b15-6992-42df-8ff7-062ae8c7eb64",
+      "sub_task": "max",
+      "gt_action": "type",
+      "gt_backend_node_id": "32086",
+      "num_dom_nodes": 574,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "craigslist.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1636,
+          "elapsed_ms": 9.37,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 543,
+          "elapsed_ms": 185.68,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.78,
+          "embed_fuse_ms": 184.89
+        }
+      }
+    },
+    {
+      "action_uid": "c87d8c1b-45d7-4719-9185-5146141e9390",
+      "sub_task": "San Francisco, CA",
+      "gt_action": "click",
+      "gt_backend_node_id": "38169",
+      "num_dom_nodes": 361,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "fedex",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1661,
+          "elapsed_ms": 16.74,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1721,
+          "elapsed_ms": 158.13,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.64,
+          "embed_fuse_ms": 157.47
+        }
+      }
+    },
+    {
+      "action_uid": "b52a379e-d32b-4f97-9fbf-f97028616c2e",
+      "sub_task": "Any",
+      "gt_action": "select",
+      "gt_backend_node_id": "86389",
+      "num_dom_nodes": 1786,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "redfin",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1233,
+          "elapsed_ms": 25.82,
+          "gt_rank": 5
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 966,
+          "elapsed_ms": 851.29,
+          "gt_rank": 17,
+          "kw_scoring_ms": 2.84,
+          "embed_fuse_ms": 848.43
+        }
+      }
+    },
+    {
+      "action_uid": "195e435a-8037-4842-a455-5ffea30fd324",
+      "sub_task": "Enter search terms",
+      "gt_action": "type",
+      "gt_backend_node_id": "9321",
+      "num_dom_nodes": 717,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "webmd",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1550,
+          "elapsed_ms": 31.45,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1483,
+          "elapsed_ms": 267.94,
+          "gt_rank": 3,
+          "kw_scoring_ms": 1.79,
+          "embed_fuse_ms": 266.12
+        }
+      }
+    },
+    {
+      "action_uid": "54605a6b-8c3b-4637-920a-7e37a755b629",
+      "sub_task": "Apply for Online",
+      "gt_action": "click",
+      "gt_backend_node_id": "4770",
+      "num_dom_nodes": 452,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "osu.edu",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1176,
+          "elapsed_ms": 26.27,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1147,
+          "elapsed_ms": 179.15,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.23,
+          "embed_fuse_ms": 177.89
+        }
+      }
+    },
+    {
+      "action_uid": "1480e317-5c97-4639-87e5-86ce08a618ea",
+      "sub_task": "What’s your nationality as shown on your passport ...",
+      "gt_action": "select",
+      "gt_backend_node_id": "5407",
+      "num_dom_nodes": 115,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "gov.uk",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1548,
+          "elapsed_ms": 9.7,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1273,
+          "elapsed_ms": 60.76,
+          "gt_rank": 15,
+          "kw_scoring_ms": 0.49,
+          "embed_fuse_ms": 60.23
+        }
+      }
+    },
+    {
+      "action_uid": "8ab24ad0-29c9-4d00-a721-b998a599431e",
+      "sub_task": "42K Reviews",
+      "gt_action": "click",
+      "gt_backend_node_id": "10987",
+      "num_dom_nodes": 1102,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "glassdoor",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1475,
+          "elapsed_ms": 40.87,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1374,
+          "elapsed_ms": 414.42,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.33,
+          "embed_fuse_ms": 412.06
+        }
+      }
+    },
+    {
+      "action_uid": "e5ec313d-0c7a-4d94-a947-5792f5e852e8",
+      "sub_task": "Add to Cart",
+      "gt_action": "click",
+      "gt_backend_node_id": "10029",
+      "num_dom_nodes": 409,
+      "domain": "Service",
+      "subdomain": "Moving",
+      "website": "uhaul",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1302,
+          "elapsed_ms": 12.17,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1254,
+          "elapsed_ms": 154.22,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.74,
+          "embed_fuse_ms": 153.46
+        }
+      }
+    },
+    {
+      "action_uid": "2e29b3ad-68c2-4380-a4fc-33133db76224",
+      "sub_task": "Search",
+      "gt_action": "click",
+      "gt_backend_node_id": "12170",
+      "num_dom_nodes": 961,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.yahoo",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1180,
+          "elapsed_ms": 7.05,
+          "gt_rank": 2
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1476,
+          "elapsed_ms": 393.19,
+          "gt_rank": 3,
+          "kw_scoring_ms": 0.81,
+          "embed_fuse_ms": 392.37
+        }
+      }
+    },
+    {
+      "action_uid": "9bdbd8ae-aab4-43af-b285-bb621becdab2",
+      "sub_task": "Amazon AWS",
+      "gt_action": "click",
+      "gt_backend_node_id": "4400",
+      "num_dom_nodes": 1228,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "udemy",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1632,
+          "elapsed_ms": 46.8,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1629,
+          "elapsed_ms": 486.43,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.69,
+          "embed_fuse_ms": 483.72
+        }
+      }
+    },
+    {
+      "action_uid": "1df4405e-0c39-42df-a2ac-ec78276c0046",
+      "sub_task": "university",
+      "gt_action": "click",
+      "gt_backend_node_id": "15265",
+      "num_dom_nodes": 584,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "usnews.education",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1307,
+          "elapsed_ms": 8.35,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1178,
+          "elapsed_ms": 220.21,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.85,
+          "embed_fuse_ms": 219.33
+        }
+      }
+    },
+    {
+      "action_uid": "3ae854f6-ef28-4599-b685-87ab27fcec1e",
+      "sub_task": "Select Gender, Any",
+      "gt_action": "click",
+      "gt_backend_node_id": "8855",
+      "num_dom_nodes": 597,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "petfinder",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1314,
+          "elapsed_ms": 32.55,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1202,
+          "elapsed_ms": 222.78,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.59,
+          "embed_fuse_ms": 221.17
+        }
+      }
+    },
+    {
+      "action_uid": "97428a69-bce5-4555-a93a-18287a008d4c",
+      "sub_task": "hiring your first -- or next -- employee, This lin...",
+      "gt_action": "click",
+      "gt_backend_node_id": "20901",
+      "num_dom_nodes": 195,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1837,
+          "elapsed_ms": 23.8,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1934,
+          "elapsed_ms": 112.74,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.95,
+          "embed_fuse_ms": 111.75
+        }
+      }
+    },
+    {
+      "action_uid": "48ec208c-6259-402c-87b0-8be6a7e27aaa",
+      "sub_task": "White",
+      "gt_action": "click",
+      "gt_backend_node_id": "125608",
+      "num_dom_nodes": 886,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1288,
+          "elapsed_ms": 9.37,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 935,
+          "elapsed_ms": 289.53,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.21,
+          "embed_fuse_ms": 288.3
+        }
+      }
+    },
+    {
+      "action_uid": "5950c7f1-f15c-4e97-a886-58f585bb65ac",
+      "sub_task": "Find political every door direct mail service in zip 04401, choose the top 5 routes with the most residences, and checko",
+      "gt_action": "click",
+      "gt_backend_node_id": "89932",
+      "num_dom_nodes": 999,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "usps",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1629,
+          "elapsed_ms": 76.03,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1493,
+          "elapsed_ms": 361.16,
+          "gt_rank": -1,
+          "kw_scoring_ms": 4.09,
+          "embed_fuse_ms": 357.03
+        }
+      }
+    },
+    {
+      "action_uid": "f3e2f934-50d8-432a-b7f0-ec6844ccf857",
+      "sub_task": "Detroit",
+      "gt_action": "click",
+      "gt_backend_node_id": "4101",
+      "num_dom_nodes": 386,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "apartments",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1419,
+          "elapsed_ms": 5.79,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1351,
+          "elapsed_ms": 175.18,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.62,
+          "embed_fuse_ms": 174.55
+        }
+      }
+    },
+    {
+      "action_uid": "5abbb890-2b62-40b7-b4ad-da062b28389b",
+      "sub_task": "search jobs",
+      "gt_action": "type",
+      "gt_backend_node_id": "2846",
+      "num_dom_nodes": 595,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "craigslist.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1222,
+          "elapsed_ms": 25.32,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1242,
+          "elapsed_ms": 275.57,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.54,
+          "embed_fuse_ms": 274.0
+        }
+      }
+    },
+    {
+      "action_uid": "ffdc1308-2712-4fd9-9a7f-5cd2c368a20e",
+      "sub_task": "Eligibility",
+      "gt_action": "click",
+      "gt_backend_node_id": "4721",
+      "num_dom_nodes": 248,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "dmv.virginia.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1256,
+          "elapsed_ms": 3.11,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1196,
+          "elapsed_ms": 106.35,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.36,
+          "embed_fuse_ms": 105.97
+        }
+      }
+    },
+    {
+      "action_uid": "4a84046c-2c66-4633-8d37-1e70abea851e",
+      "sub_task": "Look up if the phone number 555555555 is a scam",
+      "gt_action": "type",
+      "gt_backend_node_id": "7624",
+      "num_dom_nodes": 275,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "bbb.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1381,
+          "elapsed_ms": 17.81,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1056,
+          "elapsed_ms": 134.04,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.85,
+          "embed_fuse_ms": 133.17
+        }
+      }
+    },
+    {
+      "action_uid": "4c2a8965-e99b-40f2-8b69-48fe4962d177",
+      "sub_task": "Packing Supplies",
+      "gt_action": "click",
+      "gt_backend_node_id": "4925",
+      "num_dom_nodes": 315,
+      "domain": "Service",
+      "subdomain": "Moving",
+      "website": "extraspace",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1215,
+          "elapsed_ms": 10.05,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1513,
+          "elapsed_ms": 126.48,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.65,
+          "embed_fuse_ms": 125.81
+        }
+      }
+    },
+    {
+      "action_uid": "6a8628ba-1230-4108-9951-0a302b7f7f21",
+      "sub_task": "Florida",
+      "gt_action": "click",
+      "gt_backend_node_id": "9846",
+      "num_dom_nodes": 508,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1369,
+          "elapsed_ms": 8.03,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1177,
+          "elapsed_ms": 237.85,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.78,
+          "embed_fuse_ms": 237.05
+        }
+      }
+    },
+    {
+      "action_uid": "35d976d9-2661-43fe-ad49-10b0dab13645",
+      "sub_task": "Turn on notifications",
+      "gt_action": "click",
+      "gt_backend_node_id": "28021",
+      "num_dom_nodes": 490,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "twitter",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1570,
+          "elapsed_ms": 16.05,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1572,
+          "elapsed_ms": 217.95,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.03,
+          "embed_fuse_ms": 216.9
+        }
+      }
+    },
+    {
+      "action_uid": "c8d78f1a-d6da-4194-b8ae-fde4e0f67808",
+      "sub_task": "Notary Public Service",
+      "gt_action": "click",
+      "gt_backend_node_id": "47698",
+      "num_dom_nodes": 288,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1514,
+          "elapsed_ms": 20.25,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1270,
+          "elapsed_ms": 144.63,
+          "gt_rank": -1,
+          "kw_scoring_ms": 1.24,
+          "embed_fuse_ms": 143.36
+        }
+      }
+    },
+    {
+      "action_uid": "cfb7577c-9f7f-4bcc-ab3d-b0d8c9926ec4",
+      "sub_task": "Subtitles",
+      "gt_action": "click",
+      "gt_backend_node_id": "39623",
+      "num_dom_nodes": 929,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "udemy",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1371,
+          "elapsed_ms": 12.77,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 937,
+          "elapsed_ms": 405.05,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.45,
+          "embed_fuse_ms": 403.58
+        }
+      }
+    },
+    {
+      "action_uid": "72735984-f157-4d01-94a0-68d74ac2a5f9",
+      "sub_task": "Students",
+      "gt_action": "click",
+      "gt_backend_node_id": "237",
+      "num_dom_nodes": 342,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "careers.walmart",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1520,
+          "elapsed_ms": 4.9,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 414,
+          "elapsed_ms": 150.92,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.51,
+          "embed_fuse_ms": 150.39
+        }
+      }
+    },
+    {
+      "action_uid": "df9d47db-8c71-4ba6-bd98-4ec77c590b60",
+      "sub_task": "Excel Deep Dive: Pivot Tables Workshop",
+      "gt_action": "click",
+      "gt_backend_node_id": "23231",
+      "num_dom_nodes": 1422,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "udemy",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1830,
+          "elapsed_ms": 116.14,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1836,
+          "elapsed_ms": 560.39,
+          "gt_rank": -1,
+          "kw_scoring_ms": 5.28,
+          "embed_fuse_ms": 555.07
+        }
+      }
+    },
+    {
+      "action_uid": "e44106fc-fa71-462c-8be9-9b62a74ee8ee",
+      "sub_task": "0",
+      "gt_action": "type",
+      "gt_backend_node_id": "60487",
+      "num_dom_nodes": 379,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "babycenter",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1580,
+          "elapsed_ms": 3.7,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1512,
+          "elapsed_ms": 150.04,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.37,
+          "embed_fuse_ms": 149.66
+        }
+      }
+    },
+    {
+      "action_uid": "8daf6768-18ed-400a-8775-b358059a1853",
+      "sub_task": "More filters",
+      "gt_action": "click",
+      "gt_backend_node_id": "21435",
+      "num_dom_nodes": 1436,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "zocdoc",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1339,
+          "elapsed_ms": 55.66,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1296,
+          "elapsed_ms": 512.68,
+          "gt_rank": 0,
+          "kw_scoring_ms": 3.35,
+          "embed_fuse_ms": 509.31
+        }
+      }
+    },
+    {
+      "action_uid": "fe87d377-e9e6-4a0a-bf3a-fea2d49df835",
+      "sub_task": "Next",
+      "gt_action": "click",
+      "gt_backend_node_id": "40772",
+      "num_dom_nodes": 178,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ca.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1052,
+          "elapsed_ms": 2.99,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 445,
+          "elapsed_ms": 87.99,
+          "gt_rank": 4,
+          "kw_scoring_ms": 0.29,
+          "embed_fuse_ms": 87.68
+        }
+      }
+    },
+    {
+      "action_uid": "b98f79fd-7379-4d1c-8993-c1ab33ecc93e",
+      "sub_task": "(305)",
+      "gt_action": "click",
+      "gt_backend_node_id": "39054",
+      "num_dom_nodes": 1511,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "zocdoc",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1182,
+          "elapsed_ms": 22.36,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 726,
+          "elapsed_ms": 563.54,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.22,
+          "embed_fuse_ms": 561.3
+        }
+      }
+    },
+    {
+      "action_uid": "edfe7cfe-af9b-45d4-b6de-52a45271e372",
+      "sub_task": "Apply Filters",
+      "gt_action": "click",
+      "gt_backend_node_id": "37161",
+      "num_dom_nodes": 545,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "usps",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1160,
+          "elapsed_ms": 14.53,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 838,
+          "elapsed_ms": 227.26,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.58,
+          "embed_fuse_ms": 226.67
+        }
+      }
+    },
+    {
+      "action_uid": "6e9086d1-6b63-44f3-a3b4-74c85035b1b4",
+      "sub_task": "Launch Service of Find Your Local School",
+      "gt_action": "click",
+      "gt_backend_node_id": "4631",
+      "num_dom_nodes": 339,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ca.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1550,
+          "elapsed_ms": 31.97,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1713,
+          "elapsed_ms": 152.4,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.35,
+          "embed_fuse_ms": 151.02
+        }
+      }
+    },
+    {
+      "action_uid": "fe4432d0-29cc-4e26-8965-46e54f77f159",
+      "sub_task": "Watchlists",
+      "gt_action": "click",
+      "gt_backend_node_id": "117",
+      "num_dom_nodes": 1135,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.yahoo",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 866,
+          "elapsed_ms": 15.76,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 920,
+          "elapsed_ms": 457.21,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.68,
+          "embed_fuse_ms": 455.51
+        }
+      }
+    },
+    {
+      "action_uid": "5e44bffa-2fca-4260-9683-1a33e922821b",
+      "sub_task": "Sort:",
+      "gt_action": "click",
+      "gt_backend_node_id": "63883",
+      "num_dom_nodes": 983,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1320,
+          "elapsed_ms": 13.07,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 937,
+          "elapsed_ms": 339.39,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.94,
+          "embed_fuse_ms": 338.43
+        }
+      }
+    },
+    {
+      "action_uid": "f429796a-fc3d-411e-a981-0b928e6d36a9",
+      "sub_task": "1-3 Months",
+      "gt_action": "click",
+      "gt_backend_node_id": "47389",
+      "num_dom_nodes": 277,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "coursera.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1264,
+          "elapsed_ms": 7.02,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 765,
+          "elapsed_ms": 120.45,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.51,
+          "embed_fuse_ms": 119.93
+        }
+      }
+    },
+    {
+      "action_uid": "c169b00c-de29-4550-9e2b-76e8e4d6ddf6",
+      "sub_task": " Top",
+      "gt_action": "click",
+      "gt_backend_node_id": "82",
+      "num_dom_nodes": 784,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "reddit",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1563,
+          "elapsed_ms": 20.59,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1563,
+          "elapsed_ms": 313.09,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.43,
+          "embed_fuse_ms": 311.64
+        }
+      }
+    },
+    {
+      "action_uid": "08be944d-c072-4039-a19a-577c9a4986c8",
+      "sub_task": "Apply Filters",
+      "gt_action": "click",
+      "gt_backend_node_id": "32776",
+      "num_dom_nodes": 826,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1223,
+          "elapsed_ms": 31.91,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 573,
+          "elapsed_ms": 293.91,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.86,
+          "embed_fuse_ms": 292.03
+        }
+      }
+    },
+    {
+      "action_uid": "0c2c92a3-e1de-44a3-a1fb-0b2317b1cd4c",
+      "sub_task": "Type ingredients...",
+      "gt_action": "type",
+      "gt_backend_node_id": "88",
+      "num_dom_nodes": 228,
+      "domain": "Info",
+      "subdomain": "Cooking",
+      "website": "cookpad",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1266,
+          "elapsed_ms": 5.66,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 890,
+          "elapsed_ms": 99.63,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.54,
+          "embed_fuse_ms": 99.07
+        }
+      }
+    },
+    {
+      "action_uid": "5333851d-ca55-4040-b127-cde962926d8b",
+      "sub_task": "Tests for Food Allergies",
+      "gt_action": "click",
+      "gt_backend_node_id": "13508",
+      "num_dom_nodes": 873,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "webmd",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1523,
+          "elapsed_ms": 46.82,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1263,
+          "elapsed_ms": 310.53,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.45,
+          "embed_fuse_ms": 309.06
+        }
+      }
+    },
+    {
+      "action_uid": "bcfe9afe-8ab9-43bd-a1ee-5aa6cdf1d902",
+      "sub_task": "view cheapest apartment available for student in the university of Leeds with WIFI and cleaning services.",
+      "gt_action": "click",
+      "gt_backend_node_id": "54568",
+      "num_dom_nodes": 692,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1795,
+          "elapsed_ms": 72.52,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1737,
+          "elapsed_ms": 571.14,
+          "gt_rank": -1,
+          "kw_scoring_ms": 3.15,
+          "embed_fuse_ms": 567.95
+        }
+      }
+    },
+    {
+      "action_uid": "b85ea98a-8441-4e84-b53e-acd50c454349",
+      "sub_task": "Netflix",
+      "gt_action": "click",
+      "gt_backend_node_id": "25212",
+      "num_dom_nodes": 598,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.google",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1155,
+          "elapsed_ms": 8.48,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 904,
+          "elapsed_ms": 288.48,
+          "gt_rank": 3,
+          "kw_scoring_ms": 0.88,
+          "embed_fuse_ms": 287.58
+        }
+      }
+    },
+    {
+      "action_uid": "b13db646-b47e-4bc2-96d9-133901ff3073",
+      "sub_task": "Find a property in London with Bike Storage and Gym facilities with lowest price.",
+      "gt_action": "click",
+      "gt_backend_node_id": "41980",
+      "num_dom_nodes": 833,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1730,
+          "elapsed_ms": 68.51,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1264,
+          "elapsed_ms": 307.98,
+          "gt_rank": -1,
+          "kw_scoring_ms": 3.15,
+          "embed_fuse_ms": 304.79
+        }
+      }
+    },
+    {
+      "action_uid": "57d9f2ff-dd85-49fd-8b22-2e6d1d18efa8",
+      "sub_task": "Passports, travel and living abroad",
+      "gt_action": "click",
+      "gt_backend_node_id": "3266",
+      "num_dom_nodes": 292,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "gov.uk",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1494,
+          "elapsed_ms": 20.69,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1350,
+          "elapsed_ms": 125.8,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.0,
+          "embed_fuse_ms": 124.77
+        }
+      }
+    },
+    {
+      "action_uid": "c86fa817-4b6e-48ec-8e38-963cceb4c81f",
+      "sub_task": "ROAMING ROVER MOBILE GROOMER",
+      "gt_action": "click",
+      "gt_backend_node_id": "48670",
+      "num_dom_nodes": 139,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "akc.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1399,
+          "elapsed_ms": 8.99,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1328,
+          "elapsed_ms": 98.33,
+          "gt_rank": 2,
+          "kw_scoring_ms": 0.45,
+          "embed_fuse_ms": 97.85
+        }
+      }
+    },
+    {
+      "action_uid": "d3cfa353-4562-4b44-a89e-937f723327db",
+      "sub_task": "Enter City, State, or ZIP location",
+      "gt_action": "type",
+      "gt_backend_node_id": "6048",
+      "num_dom_nodes": 364,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "petfinder",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1585,
+          "elapsed_ms": 28.07,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1378,
+          "elapsed_ms": 145.11,
+          "gt_rank": 1,
+          "kw_scoring_ms": 1.25,
+          "embed_fuse_ms": 143.83
+        }
+      }
+    },
+    {
+      "action_uid": "3fe24b15-98c3-4eae-a375-b187719062ee",
+      "sub_task": "Amazon Pharmacy",
+      "gt_action": "click",
+      "gt_backend_node_id": "4701",
+      "num_dom_nodes": 240,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "hiring.amazon",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1245,
+          "elapsed_ms": 8.79,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 907,
+          "elapsed_ms": 110.02,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.56,
+          "embed_fuse_ms": 109.44
+        }
+      }
+    },
+    {
+      "action_uid": "9a8a8830-73c3-43a4-b9f7-9dd801c8e8cd",
+      "sub_task": "Prices",
+      "gt_action": "click",
+      "gt_backend_node_id": "26544",
+      "num_dom_nodes": 733,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "webmd",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1386,
+          "elapsed_ms": 8.94,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1326,
+          "elapsed_ms": 271.86,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.04,
+          "embed_fuse_ms": 270.81
+        }
+      }
+    },
+    {
+      "action_uid": "3129b876-7f4d-4355-8ffd-78b00f81cb69",
+      "sub_task": "View All Jobs >",
+      "gt_action": "click",
+      "gt_backend_node_id": "36777",
+      "num_dom_nodes": 610,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "glassdoor",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1301,
+          "elapsed_ms": 26.7,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1588,
+          "elapsed_ms": 229.78,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.55,
+          "embed_fuse_ms": 228.2
+        }
+      }
+    },
+    {
+      "action_uid": "7f10857e-ab21-4bdb-afdd-a74fad5ee2c9",
+      "sub_task": "Credit card expiration year. Last 2 numbers of yea...",
+      "gt_action": "select",
+      "gt_backend_node_id": "66537",
+      "num_dom_nodes": 167,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "fedex",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1171,
+          "elapsed_ms": 17.34,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1186,
+          "elapsed_ms": 92.85,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.76,
+          "embed_fuse_ms": 92.06
+        }
+      }
+    },
+    {
+      "action_uid": "96bbe4fd-caa1-4f62-9c23-139f5c0ad8e9",
+      "sub_task": "Search",
+      "gt_action": "click",
+      "gt_backend_node_id": "5724",
+      "num_dom_nodes": 170,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "ohiomeansjobs.ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1319,
+          "elapsed_ms": 3.09,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1302,
+          "elapsed_ms": 92.56,
+          "gt_rank": 3,
+          "kw_scoring_ms": 0.29,
+          "embed_fuse_ms": 92.25
+        }
+      }
+    },
+    {
+      "action_uid": "a2fa0aa5-4fe0-4ddd-a324-2f9dbebbbc90",
+      "sub_task": "Follow the Dallas Cowboys twitter account.",
+      "gt_action": "click",
+      "gt_backend_node_id": "5747",
+      "num_dom_nodes": 362,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "twitter",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1325,
+          "elapsed_ms": 17.93,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1376,
+          "elapsed_ms": 157.01,
+          "gt_rank": -1,
+          "kw_scoring_ms": 1.14,
+          "embed_fuse_ms": 155.84
+        }
+      }
+    },
+    {
+      "action_uid": "de401969-9e0c-4a02-a46e-b2cb5faecd68",
+      "sub_task": "Tennessee",
+      "gt_action": "click",
+      "gt_backend_node_id": "4324",
+      "num_dom_nodes": 409,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 267,
+          "elapsed_ms": 3.81,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 394,
+          "elapsed_ms": 162.87,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.55,
+          "embed_fuse_ms": 162.3
+        }
+      }
+    },
+    {
+      "action_uid": "650ebf70-b995-4575-a59b-326c8e86b8d7",
+      "sub_task": "Female",
+      "gt_action": "click",
+      "gt_backend_node_id": "31506",
+      "num_dom_nodes": 492,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "akc.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1092,
+          "elapsed_ms": 7.6,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 371,
+          "elapsed_ms": 200.6,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.74,
+          "embed_fuse_ms": 199.84
+        }
+      }
+    },
+    {
+      "action_uid": "1ad9044d-d844-4b56-9acd-2816e6f0909e",
+      "sub_task": "Chicken Pad Thai",
+      "gt_action": "click",
+      "gt_backend_node_id": "7082",
+      "num_dom_nodes": 213,
+      "domain": "Info",
+      "subdomain": "Cooking",
+      "website": "cookpad",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1146,
+          "elapsed_ms": 8.47,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1017,
+          "elapsed_ms": 107.63,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.39,
+          "embed_fuse_ms": 107.22
+        }
+      }
+    },
+    {
+      "action_uid": "f2089c44-4152-45fb-8ce6-9a26637d24b3",
+      "sub_task": "Register to Vote Service Details",
+      "gt_action": "click",
+      "gt_backend_node_id": "1227",
+      "num_dom_nodes": 5758,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ca.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1475,
+          "elapsed_ms": 360.5,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1458,
+          "elapsed_ms": 2229.91,
+          "gt_rank": 0,
+          "kw_scoring_ms": 16.22,
+          "embed_fuse_ms": 2213.66
+        }
+      }
+    },
+    {
+      "action_uid": "a36be50d-1961-4acb-9e30-c26eeddef678",
+      "sub_task": "Resources",
+      "gt_action": "click",
+      "gt_backend_node_id": "6398",
+      "num_dom_nodes": 183,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "coursera.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1260,
+          "elapsed_ms": 3.15,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1036,
+          "elapsed_ms": 83.25,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.28,
+          "embed_fuse_ms": 82.96
+        }
+      }
+    },
+    {
+      "action_uid": "ad476158-d73b-4358-9b7e-708728b1ed6f",
+      "sub_task": "California",
+      "gt_action": "click",
+      "gt_backend_node_id": "37232",
+      "num_dom_nodes": 418,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "usnews.education",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1510,
+          "elapsed_ms": 6.1,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1227,
+          "elapsed_ms": 181.39,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.64,
+          "embed_fuse_ms": 180.73
+        }
+      }
+    },
+    {
+      "action_uid": "1695dc3e-f0fc-4c87-8c03-8b9eef761f77",
+      "sub_task": "CONTINUE",
+      "gt_action": "click",
+      "gt_backend_node_id": "17761",
+      "num_dom_nodes": 357,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "petfinder",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 978,
+          "elapsed_ms": 5.43,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 404,
+          "elapsed_ms": 145.54,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.36,
+          "embed_fuse_ms": 145.17
+        }
+      }
+    },
+    {
+      "action_uid": "47cfc7d1-c526-42b5-a5c3-34a9b2c8a216",
+      "sub_task": "Treatments",
+      "gt_action": "click",
+      "gt_backend_node_id": "6281",
+      "num_dom_nodes": 245,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthline",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1620,
+          "elapsed_ms": 4.22,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1497,
+          "elapsed_ms": 112.79,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.38,
+          "embed_fuse_ms": 112.4
+        }
+      }
+    },
+    {
+      "action_uid": "2148f424-e7e5-4c1e-b8a0-d36006c20029",
+      "sub_task": "Find the emergencies section in the practice test for a motorcycle license",
+      "gt_action": "click",
+      "gt_backend_node_id": "2764",
+      "num_dom_nodes": 63,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "dmv.virginia.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1058,
+          "elapsed_ms": 4.5,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1199,
+          "elapsed_ms": 43.89,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.23,
+          "embed_fuse_ms": 43.63
+        }
+      }
+    },
+    {
+      "action_uid": "1640eebd-8ac8-4a8d-9829-bbb087d53f25",
+      "sub_task": "Part-Time",
+      "gt_action": "click",
+      "gt_backend_node_id": "25269",
+      "num_dom_nodes": 314,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "ohiomeansjobs.ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1530,
+          "elapsed_ms": 11.32,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1236,
+          "elapsed_ms": 135.88,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.73,
+          "embed_fuse_ms": 135.13
+        }
+      }
+    },
+    {
+      "action_uid": "96e92068-b2c1-46aa-a34e-e1384af41f8d",
+      "sub_task": "Search Stocktwits",
+      "gt_action": "type",
+      "gt_backend_node_id": "184",
+      "num_dom_nodes": 885,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "stocktwits",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1614,
+          "elapsed_ms": 28.84,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1607,
+          "elapsed_ms": 410.52,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.85,
+          "embed_fuse_ms": 408.66
+        }
+      }
+    },
+    {
+      "action_uid": "4e7bfa11-647d-460d-a814-54e7a423c8e3",
+      "sub_task": "Search",
+      "gt_action": "click",
+      "gt_backend_node_id": "5721",
+      "num_dom_nodes": 170,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "ohiomeansjobs.ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1322,
+          "elapsed_ms": 2.86,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1305,
+          "elapsed_ms": 82.56,
+          "gt_rank": 3,
+          "kw_scoring_ms": 0.29,
+          "embed_fuse_ms": 82.26
+        }
+      }
+    },
+    {
+      "action_uid": "b8abf6ed-c4c5-486e-b681-b855cdf88de7",
+      "sub_task": "gluten-free",
+      "gt_action": "click",
+      "gt_backend_node_id": "7515",
+      "num_dom_nodes": 29,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthline",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1265,
+          "elapsed_ms": 0.64,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1228,
+          "elapsed_ms": 29.99,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.05,
+          "embed_fuse_ms": 29.93
+        }
+      }
+    },
+    {
+      "action_uid": "cec1efa7-c0da-42c0-b801-b55f30bf545c",
+      "sub_task": "Date",
+      "gt_action": "click",
+      "gt_backend_node_id": "17718",
+      "num_dom_nodes": 221,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "careers.walmart",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 988,
+          "elapsed_ms": 3.06,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 445,
+          "elapsed_ms": 107.86,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.36,
+          "embed_fuse_ms": 107.49
+        }
+      }
+    },
+    {
+      "action_uid": "2d4c4183-e529-4914-880d-07badf1fc196",
+      "sub_task": "Find a pet",
+      "gt_action": "click",
+      "gt_backend_node_id": "409",
+      "num_dom_nodes": 741,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1635,
+          "elapsed_ms": 21.9,
+          "gt_rank": 2
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1590,
+          "elapsed_ms": 250.77,
+          "gt_rank": 2,
+          "kw_scoring_ms": 1.42,
+          "embed_fuse_ms": 249.33
+        }
+      }
+    },
+    {
+      "action_uid": "b94cc3b0-372d-4797-91a7-121037a75736",
+      "sub_task": "Select University",
+      "gt_action": "click",
+      "gt_backend_node_id": "18901",
+      "num_dom_nodes": 735,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1371,
+          "elapsed_ms": 28.01,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1004,
+          "elapsed_ms": 275.06,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.67,
+          "embed_fuse_ms": 273.37
+        }
+      }
+    },
+    {
+      "action_uid": "6518d0a7-29b4-46b2-bf0a-92bd9141f4a6",
+      "sub_task": "All Filters",
+      "gt_action": "click",
+      "gt_backend_node_id": "5587",
+      "num_dom_nodes": 665,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1274,
+          "elapsed_ms": 25.64,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 903,
+          "elapsed_ms": 254.92,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.62,
+          "embed_fuse_ms": 253.28
+        }
+      }
+    },
+    {
+      "action_uid": "167ecfde-efc8-405b-81bf-466c825b2713",
+      "sub_task": "Enter a City, County, State, or ID",
+      "gt_action": "type",
+      "gt_backend_node_id": "7979",
+      "num_dom_nodes": 855,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "landwatch",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1663,
+          "elapsed_ms": 51.15,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1623,
+          "elapsed_ms": 363.26,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.44,
+          "embed_fuse_ms": 360.8
+        }
+      }
+    },
+    {
+      "action_uid": "4d084bd3-0bc0-457f-833b-804b0ebe5563",
+      "sub_task": "Find a cat",
+      "gt_action": "click",
+      "gt_backend_node_id": "15492",
+      "num_dom_nodes": 719,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1659,
+          "elapsed_ms": 21.15,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1668,
+          "elapsed_ms": 254.28,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.48,
+          "embed_fuse_ms": 252.78
+        }
+      }
+    },
+    {
+      "action_uid": "38f6eb1d-afcd-440f-a281-09976c694044",
+      "sub_task": "Discontinuance of SNAP Emergency Allotments The fe...",
+      "gt_action": "click",
+      "gt_backend_node_id": "22018",
+      "num_dom_nodes": 213,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1885,
+          "elapsed_ms": 22.42,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1832,
+          "elapsed_ms": 111.59,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.0,
+          "embed_fuse_ms": 110.56
+        }
+      }
+    },
+    {
+      "action_uid": "aabb8810-bd78-4f4b-b6b0-ccde23ed9ab9",
+      "sub_task": "Manhattan, NY",
+      "gt_action": "click",
+      "gt_backend_node_id": "9021",
+      "num_dom_nodes": 424,
+      "domain": "Info",
+      "subdomain": "Weather",
+      "website": "weather",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1605,
+          "elapsed_ms": 14.46,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1112,
+          "elapsed_ms": 170.69,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.04,
+          "embed_fuse_ms": 169.63
+        }
+      }
+    },
+    {
+      "action_uid": "8e3d34c5-f0af-40a4-b5e1-2a1e16a926ec",
+      "sub_task": "NORTH AMERICA",
+      "gt_action": "click",
+      "gt_backend_node_id": "14411",
+      "num_dom_nodes": 632,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "hiring.amazon",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1222,
+          "elapsed_ms": 19.26,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1099,
+          "elapsed_ms": 229.15,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.29,
+          "embed_fuse_ms": 227.83
+        }
+      }
+    },
+    {
+      "action_uid": "e2e7f40a-4850-48b3-8933-e707665d148d",
+      "sub_task": "Offers Telehealth",
+      "gt_action": "click",
+      "gt_backend_node_id": "6033",
+      "num_dom_nodes": 642,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1530,
+          "elapsed_ms": 24.24,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1527,
+          "elapsed_ms": 246.04,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.51,
+          "embed_fuse_ms": 244.51
+        }
+      }
+    },
+    {
+      "action_uid": "68a7e144-6f9f-4d61-8388-5f8bd2f07f42",
+      "sub_task": "Air Quality Forecast",
+      "gt_action": "click",
+      "gt_backend_node_id": "28914",
+      "num_dom_nodes": 331,
+      "domain": "Info",
+      "subdomain": "Weather",
+      "website": "weather",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 591,
+          "elapsed_ms": 21.25,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1143,
+          "elapsed_ms": 146.56,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.03,
+          "embed_fuse_ms": 145.51
+        }
+      }
+    },
+    {
+      "action_uid": "da0b896b-bb1d-4539-bb9c-a770d0281e63",
+      "sub_task": "22 days",
+      "gt_action": "click",
+      "gt_backend_node_id": "28000",
+      "num_dom_nodes": 364,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "babycenter",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 798,
+          "elapsed_ms": 9.48,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 579,
+          "elapsed_ms": 153.92,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.68,
+          "embed_fuse_ms": 153.22
+        }
+      }
+    },
+    {
+      "action_uid": "c3d4579d-d5f7-4158-aa83-aee9d619412c",
+      "sub_task": "Search coin, pair, contract address or exchange",
+      "gt_action": "type",
+      "gt_backend_node_id": "8779",
+      "num_dom_nodes": 1028,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "coinmarketcap",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1379,
+          "elapsed_ms": 60.01,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1157,
+          "elapsed_ms": 405.78,
+          "gt_rank": 0,
+          "kw_scoring_ms": 3.14,
+          "embed_fuse_ms": 402.6
+        }
+      }
+    },
+    {
+      "action_uid": "e0365205-a6de-4541-95b1-9d2b73eee2bb",
+      "sub_task": "Find a cheapest accomodation near Tokyo International University for moving in July and moving out in December and which",
+      "gt_action": "click",
+      "gt_backend_node_id": "164039",
+      "num_dom_nodes": 496,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1824,
+          "elapsed_ms": 93.06,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1714,
+          "elapsed_ms": 193.64,
+          "gt_rank": -1,
+          "kw_scoring_ms": 3.86,
+          "embed_fuse_ms": 189.74
+        }
+      }
+    },
+    {
+      "action_uid": "968c1c37-8a3b-434f-9792-c0cbfc16a8b2",
+      "sub_task": "Quote",
+      "gt_action": "click",
+      "gt_backend_node_id": "593",
+      "num_dom_nodes": 213,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1450,
+          "elapsed_ms": 3.66,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 798,
+          "elapsed_ms": 101.77,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.33,
+          "embed_fuse_ms": 101.42
+        }
+      }
+    },
+    {
+      "action_uid": "9009bf3c-d8dd-43b3-b50d-5ba819941f3f",
+      "sub_task": "RESOURCES",
+      "gt_action": "click",
+      "gt_backend_node_id": "3603",
+      "num_dom_nodes": 192,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "apartments",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 971,
+          "elapsed_ms": 3.62,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 915,
+          "elapsed_ms": 84.67,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.31,
+          "embed_fuse_ms": 84.34
+        }
+      }
+    },
+    {
+      "action_uid": "51dd2de4-6906-4a2d-9944-ca630134ed69",
+      "sub_task": "Show navigation menu",
+      "gt_action": "click",
+      "gt_backend_node_id": "316",
+      "num_dom_nodes": 239,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "gov.uk",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1398,
+          "elapsed_ms": 12.38,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1131,
+          "elapsed_ms": 102.94,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.76,
+          "embed_fuse_ms": 102.15
+        }
+      }
+    },
+    {
+      "action_uid": "e4169196-16a5-4756-ba8c-8b60541f9381",
+      "sub_task": "Miami, FL",
+      "gt_action": "click",
+      "gt_backend_node_id": "7764",
+      "num_dom_nodes": 287,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1252,
+          "elapsed_ms": 6.36,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1188,
+          "elapsed_ms": 115.86,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.36,
+          "embed_fuse_ms": 115.48
+        }
+      }
+    },
+    {
+      "action_uid": "42078e04-dbe3-49e1-ac69-67f9d258afba",
+      "sub_task": "Remote (225)",
+      "gt_action": "click",
+      "gt_backend_node_id": "9426",
+      "num_dom_nodes": 463,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1256,
+          "elapsed_ms": 19.17,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1190,
+          "elapsed_ms": 203.85,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.12,
+          "embed_fuse_ms": 202.72
+        }
+      }
+    },
+    {
+      "action_uid": "c59f85df-7fd3-43a1-99ab-619026eadada",
+      "sub_task": "Show 1 Properties",
+      "gt_action": "click",
+      "gt_backend_node_id": "79830",
+      "num_dom_nodes": 700,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1310,
+          "elapsed_ms": 22.83,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1162,
+          "elapsed_ms": 248.55,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.45,
+          "embed_fuse_ms": 247.08
+        }
+      }
+    },
+    {
+      "action_uid": "9809c03d-61c1-4640-8bf6-46ce20a88578",
+      "sub_task": "Done",
+      "gt_action": "click",
+      "gt_backend_node_id": "112443",
+      "num_dom_nodes": 1526,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "redfin",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1466,
+          "elapsed_ms": 23.2,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1533,
+          "elapsed_ms": 645.08,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.75,
+          "embed_fuse_ms": 642.31
+        }
+      }
+    },
+    {
+      "action_uid": "9c455733-9fc6-4176-a006-41258f6913f7",
+      "sub_task": "longer than 6 months",
+      "gt_action": "click",
+      "gt_backend_node_id": "13646",
+      "num_dom_nodes": 137,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "gov.uk",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1269,
+          "elapsed_ms": 6.74,
+          "gt_rank": 14
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1198,
+          "elapsed_ms": 76.89,
+          "gt_rank": 12,
+          "kw_scoring_ms": 0.38,
+          "embed_fuse_ms": 76.48
+        }
+      }
+    },
+    {
+      "action_uid": "26607434-4501-43f5-9fc1-32b56b2571df",
+      "sub_task": "Crypto",
+      "gt_action": "click",
+      "gt_backend_node_id": "106",
+      "num_dom_nodes": 920,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.yahoo",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1446,
+          "elapsed_ms": 12.91,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 898,
+          "elapsed_ms": 383.69,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.37,
+          "embed_fuse_ms": 382.31
+        }
+      }
+    },
+    {
+      "action_uid": "968d6a1f-fb1d-4921-b19c-dd6b7b6a013c",
+      "sub_task": "Search for stocks, ETFs & more",
+      "gt_action": "type",
+      "gt_backend_node_id": "89",
+      "num_dom_nodes": 577,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.google",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1312,
+          "elapsed_ms": 42.66,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1446,
+          "elapsed_ms": 249.85,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.96,
+          "embed_fuse_ms": 247.85
+        }
+      }
+    },
+    {
+      "action_uid": "980bebb3-1a44-4b02-90e2-3b430ac96be7",
+      "sub_task": "Business Postal Code",
+      "gt_action": "type",
+      "gt_backend_node_id": "13396",
+      "num_dom_nodes": 284,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "bbb.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1518,
+          "elapsed_ms": 16.55,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1003,
+          "elapsed_ms": 124.88,
+          "gt_rank": 2,
+          "kw_scoring_ms": 0.76,
+          "embed_fuse_ms": 124.09
+        }
+      }
+    },
+    {
+      "action_uid": "b617a283-da46-40df-b596-e2e87091189b",
+      "sub_task": "Male",
+      "gt_action": "click",
+      "gt_backend_node_id": "54025",
+      "num_dom_nodes": 869,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1017,
+          "elapsed_ms": 9.07,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 431,
+          "elapsed_ms": 291.0,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.19,
+          "embed_fuse_ms": 289.79
+        }
+      }
+    },
+    {
+      "action_uid": "1cb560e5-ab33-4c1e-b683-e321f7da9cf9",
+      "sub_task": "Submit",
+      "gt_action": "click",
+      "gt_backend_node_id": "8486",
+      "num_dom_nodes": 174,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "umich.edu",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 834,
+          "elapsed_ms": 2.12,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 434,
+          "elapsed_ms": 74.33,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.25,
+          "embed_fuse_ms": 74.06
+        }
+      }
+    },
+    {
+      "action_uid": "edf2e575-5410-4952-890f-44f1095acee5",
+      "sub_task": "Confirm",
+      "gt_action": "click",
+      "gt_backend_node_id": "125387",
+      "num_dom_nodes": 764,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1252,
+          "elapsed_ms": 10.04,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 683,
+          "elapsed_ms": 263.65,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.06,
+          "embed_fuse_ms": 262.57
+        }
+      }
+    },
+    {
+      "action_uid": "af62b1e3-1ae4-4ee4-ab7d-4e28b94a71c3",
+      "sub_task": "Select Gender, Male",
+      "gt_action": "click",
+      "gt_backend_node_id": "87184",
+      "num_dom_nodes": 315,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "petfinder",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1849,
+          "elapsed_ms": 14.89,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1634,
+          "elapsed_ms": 129.38,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.82,
+          "embed_fuse_ms": 128.54
+        }
+      }
+    },
+    {
+      "action_uid": "eb73a105-6aca-44a6-9aa5-f33c848331d4",
+      "sub_task": "Health & Wellness",
+      "gt_action": "click",
+      "gt_backend_node_id": "105",
+      "num_dom_nodes": 1533,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "health.usnews",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1340,
+          "elapsed_ms": 60.32,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 885,
+          "elapsed_ms": 925.03,
+          "gt_rank": 0,
+          "kw_scoring_ms": 3.51,
+          "embed_fuse_ms": 921.49
+        }
+      }
+    },
+    {
+      "action_uid": "a1c46b3a-32e5-4844-a159-c8d623bdc4cc",
+      "sub_task": "Language",
+      "gt_action": "click",
+      "gt_backend_node_id": "20005",
+      "num_dom_nodes": 1157,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "udemy",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1684,
+          "elapsed_ms": 15.81,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1046,
+          "elapsed_ms": 450.84,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.68,
+          "embed_fuse_ms": 449.14
+        }
+      }
+    },
+    {
+      "action_uid": "9c798df0-1112-4ada-b07c-0209c4e65eea",
+      "sub_task": "What",
+      "gt_action": "type",
+      "gt_backend_node_id": "58",
+      "num_dom_nodes": 117,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 976,
+          "elapsed_ms": 1.65,
+          "gt_rank": 14
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 496,
+          "elapsed_ms": 62.89,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.2,
+          "embed_fuse_ms": 62.68
+        }
+      }
+    },
+    {
+      "action_uid": "f9b3cbfa-7e93-4226-b92b-7a2d7ee08b1c",
+      "sub_task": "6M",
+      "gt_action": "click",
+      "gt_backend_node_id": "82959",
+      "num_dom_nodes": 736,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.google",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1097,
+          "elapsed_ms": 10.38,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1098,
+          "elapsed_ms": 303.54,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.07,
+          "embed_fuse_ms": 302.45
+        }
+      }
+    },
+    {
+      "action_uid": "3bb6fbfb-e1b4-4882-a746-1888904a9410",
+      "sub_task": "Follow",
+      "gt_action": "click",
+      "gt_backend_node_id": "17015",
+      "num_dom_nodes": 704,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.google",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 954,
+          "elapsed_ms": 8.63,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 928,
+          "elapsed_ms": 282.22,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.98,
+          "embed_fuse_ms": 281.23
+        }
+      }
+    },
+    {
+      "action_uid": "c934d942-971d-41db-b9bd-346a7a1fd96e",
+      "sub_task": "Courses Learn from top instructors with graded ass...",
+      "gt_action": "click",
+      "gt_backend_node_id": "36030",
+      "num_dom_nodes": 423,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "coursera.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 2364,
+          "elapsed_ms": 42.11,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1689,
+          "elapsed_ms": 169.34,
+          "gt_rank": -1,
+          "kw_scoring_ms": 1.77,
+          "embed_fuse_ms": 167.53
+        }
+      }
+    },
+    {
+      "action_uid": "5d58c2f1-8867-470f-a29b-258a2839ca43",
+      "sub_task": "AMC",
+      "gt_action": "click",
+      "gt_backend_node_id": "7303",
+      "num_dom_nodes": 527,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.google",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1466,
+          "elapsed_ms": 7.27,
+          "gt_rank": 2
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1519,
+          "elapsed_ms": 257.99,
+          "gt_rank": 3,
+          "kw_scoring_ms": 0.75,
+          "embed_fuse_ms": 257.22
+        }
+      }
+    },
+    {
+      "action_uid": "07f2268e-a9f5-4e0c-aae3-47923654a57e",
+      "sub_task": "Search for Graduate Schools",
+      "gt_action": "click",
+      "gt_backend_node_id": "7775",
+      "num_dom_nodes": 1020,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "usnews.education",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1234,
+          "elapsed_ms": 64.0,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 999,
+          "elapsed_ms": 402.85,
+          "gt_rank": 0,
+          "kw_scoring_ms": 3.24,
+          "embed_fuse_ms": 399.58
+        }
+      }
+    },
+    {
+      "action_uid": "66cdbc6b-8245-420f-acc8-82cac66652dd",
+      "sub_task": "Giving",
+      "gt_action": "click",
+      "gt_backend_node_id": "67",
+      "num_dom_nodes": 339,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "umich.edu",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1051,
+          "elapsed_ms": 3.86,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 650,
+          "elapsed_ms": 133.6,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.5,
+          "embed_fuse_ms": 133.08
+        }
+      }
+    },
+    {
+      "action_uid": "296b7962-b6a3-4cce-a18c-b6923540d4bc",
+      "sub_task": "Landscaper",
+      "gt_action": "click",
+      "gt_backend_node_id": "4621",
+      "num_dom_nodes": 482,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "thumbtack",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1403,
+          "elapsed_ms": 7.01,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1410,
+          "elapsed_ms": 185.29,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.73,
+          "embed_fuse_ms": 184.54
+        }
+      }
+    },
+    {
+      "action_uid": "e8cb5100-25e3-4d8d-8a7a-23be47d401e0",
+      "sub_task": "News & Events",
+      "gt_action": "click",
+      "gt_backend_node_id": "1276",
+      "num_dom_nodes": 451,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "ohiomeansjobs.ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 406,
+          "elapsed_ms": 14.59,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1477,
+          "elapsed_ms": 169.99,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.96,
+          "embed_fuse_ms": 169.01
+        }
+      }
+    },
+    {
+      "action_uid": "63bef6e3-7c9a-437f-9638-ddbf1f5aa08f",
+      "sub_task": "Academic Calendar ",
+      "gt_action": "click",
+      "gt_backend_node_id": "2418",
+      "num_dom_nodes": 339,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "umich.edu",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1383,
+          "elapsed_ms": 11.17,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1171,
+          "elapsed_ms": 133.92,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.79,
+          "embed_fuse_ms": 133.11
+        }
+      }
+    },
+    {
+      "action_uid": "ebed9b7a-597c-43da-a345-c4811af2a7ef",
+      "sub_task": "Course & Class Information",
+      "gt_action": "click",
+      "gt_backend_node_id": "7739",
+      "num_dom_nodes": 824,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "osu.edu",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1479,
+          "elapsed_ms": 31.06,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1531,
+          "elapsed_ms": 288.99,
+          "gt_rank": 1,
+          "kw_scoring_ms": 1.86,
+          "embed_fuse_ms": 287.11
+        }
+      }
+    },
+    {
+      "action_uid": "9a988fe8-39e4-4ec1-95ed-169a2980aa2a",
+      "sub_task": "Resources",
+      "gt_action": "click",
+      "gt_backend_node_id": "147",
+      "num_dom_nodes": 653,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "justice.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1136,
+          "elapsed_ms": 11.27,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 806,
+          "elapsed_ms": 273.14,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.03,
+          "embed_fuse_ms": 272.09
+        }
+      }
+    },
+    {
+      "action_uid": "20d7cf38-e355-4f66-b387-86a9866c2562",
+      "sub_task": "Select a state",
+      "gt_action": "select",
+      "gt_backend_node_id": "10375",
+      "num_dom_nodes": 106,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "apartments",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1838,
+          "elapsed_ms": 3.61,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1607,
+          "elapsed_ms": 64.38,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.25,
+          "embed_fuse_ms": 64.11
+        }
+      }
+    },
+    {
+      "action_uid": "a9175330-894d-4af6-bc1a-33c0635f91df",
+      "sub_task": "Turn on all notifications from Calico Life Science...",
+      "gt_action": "click",
+      "gt_backend_node_id": "25680",
+      "num_dom_nodes": 419,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "linkedin",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1989,
+          "elapsed_ms": 39.83,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1993,
+          "elapsed_ms": 172.38,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.69,
+          "embed_fuse_ms": 170.66
+        }
+      }
+    },
+    {
+      "action_uid": "a8e97d1a-bb1e-430e-a5f1-55563fd918e9",
+      "sub_task": "Dosage",
+      "gt_action": "click",
+      "gt_backend_node_id": "11125",
+      "num_dom_nodes": 504,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthline",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1425,
+          "elapsed_ms": 8.72,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1428,
+          "elapsed_ms": 223.01,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.78,
+          "embed_fuse_ms": 222.22
+        }
+      }
+    },
+    {
+      "action_uid": "10962e58-2fc8-4d00-81d2-2e920b0c671b",
+      "sub_task": "1",
+      "gt_action": "click",
+      "gt_backend_node_id": "30481",
+      "num_dom_nodes": 303,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "webmd",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1230,
+          "elapsed_ms": 4.7,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 541,
+          "elapsed_ms": 143.87,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.41,
+          "embed_fuse_ms": 143.44
+        }
+      }
+    },
+    {
+      "action_uid": "fe4a8032-81c1-43b7-be75-b9e8e47384c1",
+      "sub_task": "Find a drop off location",
+      "gt_action": "click",
+      "gt_backend_node_id": "10799",
+      "num_dom_nodes": 208,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1595,
+          "elapsed_ms": 15.3,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1479,
+          "elapsed_ms": 107.71,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.67,
+          "embed_fuse_ms": 107.01
+        }
+      }
+    },
+    {
+      "action_uid": "c4ff7eb3-1fe2-47cd-961a-bb36c60af435",
+      "sub_task": "Search",
+      "gt_action": "type",
+      "gt_backend_node_id": "201",
+      "num_dom_nodes": 282,
+      "domain": "Info",
+      "subdomain": "Weather",
+      "website": "accuweather",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1596,
+          "elapsed_ms": 3.92,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 386,
+          "elapsed_ms": 130.91,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.41,
+          "embed_fuse_ms": 130.48
+        }
+      }
+    },
+    {
+      "action_uid": "97556fbe-a0cf-4eee-8a48-f059608f1e5a",
+      "sub_task": "  Type ",
+      "gt_action": "click",
+      "gt_backend_node_id": "11877",
+      "num_dom_nodes": 507,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "movoto",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1173,
+          "elapsed_ms": 12.15,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 376,
+          "elapsed_ms": 232.68,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.92,
+          "embed_fuse_ms": 231.74
+        }
+      }
+    },
+    {
+      "action_uid": "2bcc743c-ba3f-475e-b01f-0988450b28a3",
+      "sub_task": "Healthcare",
+      "gt_action": "click",
+      "gt_backend_node_id": "31581",
+      "num_dom_nodes": 407,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.yahoo",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1244,
+          "elapsed_ms": 6.55,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1132,
+          "elapsed_ms": 200.97,
+          "gt_rank": -1,
+          "kw_scoring_ms": 0.71,
+          "embed_fuse_ms": 200.24
+        }
+      }
+    },
+    {
+      "action_uid": "defc26b1-83cc-46ba-a2b5-a54ed247728c",
+      "sub_task": "Follow",
+      "gt_action": "click",
+      "gt_backend_node_id": "28666",
+      "num_dom_nodes": 777,
+      "domain": "Info",
+      "subdomain": "Finance",
+      "website": "finance.yahoo",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1236,
+          "elapsed_ms": 10.09,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1049,
+          "elapsed_ms": 330.42,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.16,
+          "embed_fuse_ms": 329.25
+        }
+      }
+    },
+    {
+      "action_uid": "3adf218c-3797-4738-bb0f-71bee5b544a5",
+      "sub_task": "Beginner Favorites",
+      "gt_action": "click",
+      "gt_backend_node_id": "25878",
+      "num_dom_nodes": 1370,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "udemy",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 664,
+          "elapsed_ms": 58.62,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 664,
+          "elapsed_ms": 899.11,
+          "gt_rank": 0,
+          "kw_scoring_ms": 3.08,
+          "embed_fuse_ms": 896.01
+        }
+      }
+    },
+    {
+      "action_uid": "0d666b4a-0e3c-4806-971b-b94347a7d8c9",
+      "sub_task": "30-MINUTE SEAFOOD MAIN DISHES",
+      "gt_action": "click",
+      "gt_backend_node_id": "17808",
+      "num_dom_nodes": 369,
+      "domain": "Info",
+      "subdomain": "Cooking",
+      "website": "allrecipes",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1294,
+          "elapsed_ms": 18.72,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1288,
+          "elapsed_ms": 138.46,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.05,
+          "embed_fuse_ms": 137.38
+        }
+      }
+    },
+    {
+      "action_uid": "80cb2b9b-6cd9-4d64-8083-dbcdc49f8464",
+      "sub_task": "Last Name",
+      "gt_action": "type",
+      "gt_backend_node_id": "3887",
+      "num_dom_nodes": 284,
+      "domain": "Service",
+      "subdomain": "Home service",
+      "website": "bbb.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1114,
+          "elapsed_ms": 11.34,
+          "gt_rank": 10
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 621,
+          "elapsed_ms": 122.58,
+          "gt_rank": 5,
+          "kw_scoring_ms": 0.67,
+          "embed_fuse_ms": 121.89
+        }
+      }
+    },
+    {
+      "action_uid": "ae0a3d76-2fd2-4983-aaed-467fc9296cbb",
+      "sub_task": "Husky",
+      "gt_action": "click",
+      "gt_backend_node_id": "97795",
+      "num_dom_nodes": 746,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 880,
+          "elapsed_ms": 8.22,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 890,
+          "elapsed_ms": 246.71,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.0,
+          "embed_fuse_ms": 245.69
+        }
+      }
+    },
+    {
+      "action_uid": "e9832a2e-4db2-4928-8747-bac7499b3935",
+      "sub_task": "Search all of Reddit",
+      "gt_action": "type",
+      "gt_backend_node_id": "72",
+      "num_dom_nodes": 770,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "reddit",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1449,
+          "elapsed_ms": 35.42,
+          "gt_rank": 14
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1449,
+          "elapsed_ms": 287.87,
+          "gt_rank": 9,
+          "kw_scoring_ms": 1.89,
+          "embed_fuse_ms": 285.95
+        }
+      }
+    },
+    {
+      "action_uid": "5e150687-eb33-41c6-8767-60dc3ec0b506",
+      "sub_task": "Adult",
+      "gt_action": "click",
+      "gt_backend_node_id": "60093",
+      "num_dom_nodes": 401,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "petfinder",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 2433,
+          "elapsed_ms": 5.17,
+          "gt_rank": 1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1131,
+          "elapsed_ms": 166.4,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.59,
+          "embed_fuse_ms": 165.79
+        }
+      }
+    },
+    {
+      "action_uid": "ec775ed6-cfc7-4823-8853-6947616c88d1",
+      "sub_task": "Pick Up Location",
+      "gt_action": "type",
+      "gt_backend_node_id": "120",
+      "num_dom_nodes": 487,
+      "domain": "Service",
+      "subdomain": "Moving",
+      "website": "uhaul",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1388,
+          "elapsed_ms": 17.15,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1238,
+          "elapsed_ms": 188.8,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.07,
+          "embed_fuse_ms": 187.7
+        }
+      }
+    },
+    {
+      "action_uid": "3c28bc53-70bf-48cc-8ae1-fd66697acff5",
+      "sub_task": "X icon for close button",
+      "gt_action": "click",
+      "gt_backend_node_id": "98758",
+      "num_dom_nodes": 944,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1040,
+          "elapsed_ms": 48.05,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1040,
+          "elapsed_ms": 330.78,
+          "gt_rank": -1,
+          "kw_scoring_ms": 2.52,
+          "embed_fuse_ms": 328.23
+        }
+      }
+    },
+    {
+      "action_uid": "f3fa7779-b562-48e2-bd19-6cfef59c4eb7",
+      "sub_task": "View Profile (opens in a new tab)",
+      "gt_action": "click",
+      "gt_backend_node_id": "27243",
+      "num_dom_nodes": 531,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 858,
+          "elapsed_ms": 33.9,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 858,
+          "elapsed_ms": 203.08,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.74,
+          "embed_fuse_ms": 201.3
+        }
+      }
+    },
+    {
+      "action_uid": "d10e79d2-678c-40ca-81aa-883bfb528842",
+      "sub_task": "2,010 Reviews",
+      "gt_action": "click",
+      "gt_backend_node_id": "14324",
+      "num_dom_nodes": 608,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "drugs",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 634,
+          "elapsed_ms": 24.45,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 883,
+          "elapsed_ms": 260.45,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.36,
+          "embed_fuse_ms": 259.07
+        }
+      }
+    },
+    {
+      "action_uid": "fee9d39d-6239-4fc5-ba42-57778403fddd",
+      "sub_task": "business information kit, This link will open in a...",
+      "gt_action": "click",
+      "gt_backend_node_id": "12108",
+      "num_dom_nodes": 256,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ohio.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 2089,
+          "elapsed_ms": 31.71,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 2012,
+          "elapsed_ms": 115.39,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.28,
+          "embed_fuse_ms": 114.08
+        }
+      }
+    },
+    {
+      "action_uid": "9de734c2-95a5-4946-950c-04d7b0ba7e65",
+      "sub_task": "Psychiatrist",
+      "gt_action": "click",
+      "gt_backend_node_id": "3304",
+      "num_dom_nodes": 440,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1493,
+          "elapsed_ms": 6.25,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1375,
+          "elapsed_ms": 165.27,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.65,
+          "embed_fuse_ms": 164.6
+        }
+      }
+    },
+    {
+      "action_uid": "dc342f79-9ccc-403f-8ec6-e9e7b89e9875",
+      "sub_task": "Doing Business",
+      "gt_action": "click",
+      "gt_backend_node_id": "360",
+      "num_dom_nodes": 272,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "ca.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1372,
+          "elapsed_ms": 11.37,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 569,
+          "elapsed_ms": 120.71,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.65,
+          "embed_fuse_ms": 120.04
+        }
+      }
+    },
+    {
+      "action_uid": "1aa6fca8-ccec-418c-b89a-4967a768d3f9",
+      "sub_task": "Microsoft",
+      "gt_action": "click",
+      "gt_backend_node_id": "6707",
+      "num_dom_nodes": 384,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "glassdoor",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1489,
+          "elapsed_ms": 4.88,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1434,
+          "elapsed_ms": 145.84,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.55,
+          "embed_fuse_ms": 145.27
+        }
+      }
+    },
+    {
+      "action_uid": "a43e060f-fcbc-45fa-bc77-fafac65f9746",
+      "sub_task": "nuts",
+      "gt_action": "click",
+      "gt_backend_node_id": "12190",
+      "num_dom_nodes": 186,
+      "domain": "Info",
+      "subdomain": "Cooking",
+      "website": "cookpad",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1351,
+          "elapsed_ms": 2.37,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1073,
+          "elapsed_ms": 86.69,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.14,
+          "embed_fuse_ms": 86.53
+        }
+      }
+    },
+    {
+      "action_uid": "fb497747-f63a-4eba-851b-1290b05a3dfa",
+      "sub_task": "Sign up for job alerts",
+      "gt_action": "click",
+      "gt_backend_node_id": "6602",
+      "num_dom_nodes": 134,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "hiring.amazon",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1613,
+          "elapsed_ms": 8.78,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1474,
+          "elapsed_ms": 76.9,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.42,
+          "embed_fuse_ms": 76.45
+        }
+      }
+    },
+    {
+      "action_uid": "4de0d637-620c-4211-b70e-78a42d6781f5",
+      "sub_task": "Services",
+      "gt_action": "click",
+      "gt_backend_node_id": "61122",
+      "num_dom_nodes": 368,
+      "domain": "Service",
+      "subdomain": "Shipping",
+      "website": "ups",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1591,
+          "elapsed_ms": 5.75,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1550,
+          "elapsed_ms": 176.05,
+          "gt_rank": 2,
+          "kw_scoring_ms": 0.56,
+          "embed_fuse_ms": 175.47
+        }
+      }
+    },
+    {
+      "action_uid": "3c019cd6-d2cc-46aa-9663-1749d670edfb",
+      "sub_task": "Continue",
+      "gt_action": "click",
+      "gt_backend_node_id": "17052",
+      "num_dom_nodes": 140,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "gov.uk",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1384,
+          "elapsed_ms": 1.97,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 906,
+          "elapsed_ms": 78.22,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.22,
+          "embed_fuse_ms": 77.99
+        }
+      }
+    },
+    {
+      "action_uid": "e3205775-9339-4288-a177-df6f12f99199",
+      "sub_task": "More ",
+      "gt_action": "click",
+      "gt_backend_node_id": "245570",
+      "num_dom_nodes": 777,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "apartments",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1113,
+          "elapsed_ms": 22.61,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1055,
+          "elapsed_ms": 319.78,
+          "gt_rank": 4,
+          "kw_scoring_ms": 1.54,
+          "embed_fuse_ms": 318.22
+        }
+      }
+    },
+    {
+      "action_uid": "71aa3d1b-45f2-41c5-9418-0027b90adda5",
+      "sub_task": "Search",
+      "gt_action": "type",
+      "gt_backend_node_id": "18721",
+      "num_dom_nodes": 282,
+      "domain": "Info",
+      "subdomain": "Weather",
+      "website": "accuweather",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1455,
+          "elapsed_ms": 4.18,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 454,
+          "elapsed_ms": 129.87,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.44,
+          "embed_fuse_ms": 129.42
+        }
+      }
+    },
+    {
+      "action_uid": "7ed0ac27-f3da-4518-aa84-f1ab538e1212",
+      "sub_task": "Jobs in kohima",
+      "gt_action": "click",
+      "gt_backend_node_id": "2153",
+      "num_dom_nodes": 77,
+      "domain": "Info",
+      "subdomain": "Job",
+      "website": "indeed",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1118,
+          "elapsed_ms": 2.56,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 713,
+          "elapsed_ms": 63.88,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.19,
+          "embed_fuse_ms": 63.68
+        }
+      }
+    },
+    {
+      "action_uid": "296de8be-26a6-4ca7-9825-68a87f27c2b2",
+      "sub_task": "NEXT",
+      "gt_action": "click",
+      "gt_backend_node_id": "8265",
+      "num_dom_nodes": 29,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthline",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 959,
+          "elapsed_ms": 0.47,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 789,
+          "elapsed_ms": 42.89,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.05,
+          "embed_fuse_ms": 42.82
+        }
+      }
+    },
+    {
+      "action_uid": "45ae4b22-20c0-4850-b05a-9eaf4dd4b752",
+      "sub_task": "Highway Safety",
+      "gt_action": "click",
+      "gt_backend_node_id": "108",
+      "num_dom_nodes": 252,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "dmv.virginia.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1492,
+          "elapsed_ms": 8.63,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1419,
+          "elapsed_ms": 104.84,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.57,
+          "embed_fuse_ms": 104.24
+        }
+      }
+    },
+    {
+      "action_uid": "174b4d95-4322-48d9-b7ba-23a2e50dc17e",
+      "sub_task": "Done",
+      "gt_action": "click",
+      "gt_backend_node_id": "16529",
+      "num_dom_nodes": 201,
+      "domain": "Info",
+      "subdomain": "Social media",
+      "website": "pinterest",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1206,
+          "elapsed_ms": 2.44,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 538,
+          "elapsed_ms": 104.07,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.3,
+          "embed_fuse_ms": 103.76
+        }
+      }
+    },
+    {
+      "action_uid": "e04214d6-0bd4-4ea0-80a9-6d2b6f69eaff",
+      "sub_task": "Add to Wishlist",
+      "gt_action": "click",
+      "gt_backend_node_id": "29583",
+      "num_dom_nodes": 1019,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "udemy",
+      "results": {
+        "FULL": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1111,
+          "elapsed_ms": 38.46,
+          "gt_rank": -1
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 0,
+          "num_candidates": 20,
+          "tokens_proxy": 1111,
+          "elapsed_ms": 373.24,
+          "gt_rank": -1,
+          "kw_scoring_ms": 2.2,
+          "embed_fuse_ms": 371.0
+        }
+      }
+    },
+    {
+      "action_uid": "749220bf-5a0a-481b-bdc7-c381743ffb56",
+      "sub_task": "Search by college, city or property",
+      "gt_action": "type",
+      "gt_backend_node_id": "87",
+      "num_dom_nodes": 309,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1240,
+          "elapsed_ms": 21.4,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1245,
+          "elapsed_ms": 131.97,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.97,
+          "embed_fuse_ms": 130.98
+        }
+      }
+    },
+    {
+      "action_uid": "9e1fe9c8-eeed-412e-88f7-641f5ffe5789",
+      "sub_task": "Vitamins & Supplements",
+      "gt_action": "click",
+      "gt_backend_node_id": "20500",
+      "num_dom_nodes": 384,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "akc.org",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1267,
+          "elapsed_ms": 13.7,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1170,
+          "elapsed_ms": 148.6,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.83,
+          "embed_fuse_ms": 147.75
+        }
+      }
+    },
+    {
+      "action_uid": "6acaeecc-2908-4483-bb34-80d72a71a86f",
+      "sub_task": "Group Booking",
+      "gt_action": "click",
+      "gt_backend_node_id": "11634",
+      "num_dom_nodes": 288,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "student",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1569,
+          "elapsed_ms": 11.35,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1341,
+          "elapsed_ms": 129.14,
+          "gt_rank": 1,
+          "kw_scoring_ms": 0.66,
+          "embed_fuse_ms": 128.46
+        }
+      }
+    },
+    {
+      "action_uid": "35c924eb-e66e-46cf-948a-3afc25529456",
+      "sub_task": "Hunting & Fishing Licenses",
+      "gt_action": "click",
+      "gt_backend_node_id": "8338",
+      "num_dom_nodes": 183,
+      "domain": "Service",
+      "subdomain": "Government",
+      "website": "dmv.virginia.gov",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1413,
+          "elapsed_ms": 8.64,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1317,
+          "elapsed_ms": 93.79,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.5,
+          "embed_fuse_ms": 93.26
+        }
+      }
+    },
+    {
+      "action_uid": "dc2ceb61-2e4b-4b0b-a0da-597ade18180d",
+      "sub_task": "Get Started",
+      "gt_action": "click",
+      "gt_backend_node_id": "46439",
+      "num_dom_nodes": 716,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1550,
+          "elapsed_ms": 21.4,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1360,
+          "elapsed_ms": 256.15,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.47,
+          "embed_fuse_ms": 254.66
+        }
+      }
+    },
+    {
+      "action_uid": "b0c34536-a9b2-4a8e-a6fb-7241f733fe9e",
+      "sub_task": "Find a pet",
+      "gt_action": "click",
+      "gt_backend_node_id": "418",
+      "num_dom_nodes": 741,
+      "domain": "Service",
+      "subdomain": "Pet",
+      "website": "adoptapet",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1635,
+          "elapsed_ms": 19.31,
+          "gt_rank": 2
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1590,
+          "elapsed_ms": 253.15,
+          "gt_rank": 2,
+          "kw_scoring_ms": 1.56,
+          "embed_fuse_ms": 251.57
+        }
+      }
+    },
+    {
+      "action_uid": "b772d76f-b920-4e98-8a26-789d3071f65d",
+      "sub_task": "Offers Telehealth",
+      "gt_action": "click",
+      "gt_backend_node_id": "6155",
+      "num_dom_nodes": 607,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthgrades",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 833,
+          "elapsed_ms": 21.21,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 756,
+          "elapsed_ms": 241.04,
+          "gt_rank": 13,
+          "kw_scoring_ms": 1.35,
+          "embed_fuse_ms": 239.67
+        }
+      }
+    },
+    {
+      "action_uid": "c5c94af7-3a7b-4734-ab58-53815d053334",
+      "sub_task": "Browse drugs and medications by letter: C",
+      "gt_action": "click",
+      "gt_backend_node_id": "4668",
+      "num_dom_nodes": 632,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "drugs",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1318,
+          "elapsed_ms": 43.51,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1318,
+          "elapsed_ms": 253.59,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.18,
+          "embed_fuse_ms": 251.38
+        }
+      }
+    },
+    {
+      "action_uid": "c593883f-e992-4ffb-b024-4075ac27bd7d",
+      "sub_task": "1 Review",
+      "gt_action": "click",
+      "gt_backend_node_id": "24881",
+      "num_dom_nodes": 492,
+      "domain": "Info",
+      "subdomain": "Cooking",
+      "website": "allrecipes",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1410,
+          "elapsed_ms": 12.46,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1343,
+          "elapsed_ms": 203.12,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.9,
+          "embed_fuse_ms": 202.2
+        }
+      }
+    },
+    {
+      "action_uid": "0bd5fbed-712f-4864-a03a-e45c4eb7bd51",
+      "sub_task": "applicant center (link is external)",
+      "gt_action": "click",
+      "gt_backend_node_id": "9462",
+      "num_dom_nodes": 196,
+      "domain": "Info",
+      "subdomain": "Education",
+      "website": "osu.edu",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1413,
+          "elapsed_ms": 15.66,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1329,
+          "elapsed_ms": 99.65,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.67,
+          "embed_fuse_ms": 98.95
+        }
+      }
+    },
+    {
+      "action_uid": "61940005-0677-40a5-9a89-bea4e66c27c7",
+      "sub_task": "Farms and Ranches 9",
+      "gt_action": "click",
+      "gt_backend_node_id": "10144",
+      "num_dom_nodes": 914,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "landwatch",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1568,
+          "elapsed_ms": 42.02,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1568,
+          "elapsed_ms": 365.58,
+          "gt_rank": 0,
+          "kw_scoring_ms": 2.31,
+          "embed_fuse_ms": 363.25
+        }
+      }
+    },
+    {
+      "action_uid": "de18b9c2-2791-4cc6-b3af-6f92c3969536",
+      "sub_task": "Expand Plan options",
+      "gt_action": "click",
+      "gt_backend_node_id": "693",
+      "num_dom_nodes": 243,
+      "domain": "Service",
+      "subdomain": "Health",
+      "website": "healthline",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1477,
+          "elapsed_ms": 12.42,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1140,
+          "elapsed_ms": 101.58,
+          "gt_rank": 0,
+          "kw_scoring_ms": 0.63,
+          "embed_fuse_ms": 100.93
+        }
+      }
+    },
+    {
+      "action_uid": "8d97cf12-faa1-498e-bfcd-bf29aaa6aa92",
+      "sub_task": "Add",
+      "gt_action": "click",
+      "gt_backend_node_id": "45971",
+      "num_dom_nodes": 843,
+      "domain": "Info",
+      "subdomain": "Housing",
+      "website": "landwatch",
+      "results": {
+        "FULL": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1400,
+          "elapsed_ms": 9.73,
+          "gt_rank": 0
+        },
+        "DELTA_HYBRID": {
+          "recall_at_20": 1,
+          "num_candidates": 20,
+          "tokens_proxy": 1030,
+          "elapsed_ms": 303.3,
+          "gt_rank": 0,
+          "kw_scoring_ms": 1.14,
+          "embed_fuse_ms": 302.14
+        }
+      }
+    }
+  ]
+}

@@ -209,9 +209,14 @@ def ground(sub_task: str, candidates: List[ElementNode], action_value: str = "")
         {"role": "system", "content": GROUNDER_SYSTEM},
         {"role": "user", "content": user_msg},
     ]
-    prompt_text = _tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    chat_kwargs = {"tokenize": False, "add_generation_prompt": True}
+    if os.getenv("GROUNDER_DISABLE_THINKING", "0") == "1":
+        chat_kwargs["enable_thinking"] = False
+    try:
+        prompt_text = _tokenizer.apply_chat_template(messages, **chat_kwargs)
+    except TypeError:
+        chat_kwargs.pop("enable_thinking", None)
+        prompt_text = _tokenizer.apply_chat_template(messages, **chat_kwargs)
     inputs = _tokenizer(
         prompt_text,
         return_tensors="pt",

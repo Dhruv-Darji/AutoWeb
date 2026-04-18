@@ -1,0 +1,267 @@
+{
+  "splits": {
+    "test_task": {
+      "n_total": 1257,
+      "by_domain": {
+        "Travel": {
+          "n": 761,
+          "configs": {
+            "FULL": {
+              "samples": 761,
+              "recall_at_20_pct": 84.1,
+              "mean_tokens_proxy": 1481.0
+            },
+            "DELTA_KW": {
+              "samples": 761,
+              "recall_at_20_pct": 83.57,
+              "mean_tokens_proxy": 1181.6,
+              "delta_recall_pp": -0.53,
+              "token_reduction_pct": 20.2
+            },
+            "DELTA_EMBED": {
+              "samples": 761,
+              "recall_at_20_pct": 81.87,
+              "mean_tokens_proxy": 943.3,
+              "delta_recall_pp": -2.23,
+              "token_reduction_pct": 36.3
+            },
+            "DELTA_HYBRID": {
+              "samples": 761,
+              "recall_at_20_pct": 83.97,
+              "mean_tokens_proxy": 1242.8,
+              "delta_recall_pp": -0.13,
+              "token_reduction_pct": 16.1
+            }
+          }
+        },
+        "Entertainment": {
+          "n": 210,
+          "configs": {
+            "FULL": {
+              "samples": 210,
+              "recall_at_20_pct": 88.1,
+              "mean_tokens_proxy": 1331.6
+            },
+            "DELTA_KW": {
+              "samples": 210,
+              "recall_at_20_pct": 87.62,
+              "mean_tokens_proxy": 1071.0,
+              "delta_recall_pp": -0.48,
+              "token_reduction_pct": 19.6
+            },
+            "DELTA_EMBED": {
+              "samples": 210,
+              "recall_at_20_pct": 85.71,
+              "mean_tokens_proxy": 842.2,
+              "delta_recall_pp": -2.39,
+              "token_reduction_pct": 36.8
+            },
+            "DELTA_HYBRID": {
+              "samples": 210,
+              "recall_at_20_pct": 86.19,
+              "mean_tokens_proxy": 1117.3,
+              "delta_recall_pp": -1.91,
+              "token_reduction_pct": 16.1
+            }
+          }
+        },
+        "Shopping": {
+          "n": 286,
+          "configs": {
+            "FULL": {
+              "samples": 286,
+              "recall_at_20_pct": 84.62,
+              "mean_tokens_proxy": 1376.8
+            },
+            "DELTA_KW": {
+              "samples": 286,
+              "recall_at_20_pct": 84.97,
+              "mean_tokens_proxy": 1088.8,
+              "delta_recall_pp": 0.35,
+              "token_reduction_pct": 20.9
+            },
+            "DELTA_EMBED": {
+              "samples": 286,
+              "recall_at_20_pct": 80.77,
+              "mean_tokens_proxy": 856.4,
+              "delta_recall_pp": -3.85,
+              "token_reduction_pct": 37.8
+            },
+            "DELTA_HYBRID": {
+              "samples": 286,
+              "recall_at_20_pct": 85.31,
+              "mean_tokens_proxy": 1128.5,
+              "delta_recall_pp": 0.69,
+              "token_reduction_pct": 18.0
+            }
+          }
+        }
+      }
+    },
+    "test_website": {
+      "n_total": 975,
+      "by_domain": {
+        "Shopping": {
+          "n": 400,
+          "configs": {
+            "FULL": {
+              "samples": 400,
+              "recall_at_20_pct": 89.5,
+              "mean_tokens_proxy": 1383.7
+            },
+            "DELTA_KW": {
+              "samples": 400,
+              "recall_at_20_pct": 88.5,
+              "mean_tokens_proxy": 1061.5,
+              "delta_recall_pp": -1.0,
+              "token_reduction_pct": 23.3
+            },
+            "DELTA_EMBED": {
+              "samples": 400,
+              "recall_at_20_pct": 88.25,
+              "mean_tokens_proxy": 858.5,
+              "delta_recall_pp": -1.25,
+              "token_reduction_pct": 38.0
+            },
+            "DELTA_HYBRID": {
+              "samples": 400,
+              "recall_at_20_pct": 90.5,
+              "mean_tokens_proxy": 1135.0,
+              "delta_recall_pp": 1.0,
+              "token_reduction_pct": 18.0
+            }
+          }
+        },
+        "Travel": {
+          "n": 350,
+          "configs": {
+            "FULL": {
+              "samples": 350,
+              "recall_at_20_pct": 87.71,
+              "mean_tokens_proxy": 1406.3
+            },
+            "DELTA_KW": {
+              "samples": 350,
+              "recall_at_20_pct": 87.71,
+              "mean_tokens_proxy": 1158.1,
+              "delta_recall_pp": 0.0,
+              "token_reduction_pct": 17.6
+            },
+            "DELTA_EMBED": {
+              "samples": 350,
+              "recall_at_20_pct": 85.71,
+              "mean_tokens_proxy": 867.6,
+              "delta_recall_pp": -2.0,
+              "token_reduction_pct": 38.3
+            },
+            "DELTA_HYBRID": {
+              "samples": 350,
+              "recall_at_20_pct": 86.86,
+              "mean_tokens_proxy": 1161.8,
+              "delta_recall_pp": -0.85,
+              "token_reduction_pct": 17.4
+            }
+          }
+        },
+        "Entertainment": {
+          "n": 225,
+          "configs": {
+            "FULL": {
+              "samples": 225,
+              "recall_at_20_pct": 88.44,
+              "mean_tokens_proxy": 1233.5
+            },
+            "DELTA_KW": {
+              "samples": 225,
+              "recall_at_20_pct": 88.44,
+              "mean_tokens_proxy": 899.3,
+              "delta_recall_pp": 0.0,
+              "token_reduction_pct": 27.1
+            },
+            "DELTA_EMBED": {
+              "samples": 225,
+              "recall_at_20_pct": 87.56,
+              "mean_tokens_proxy": 784.3,
+              "delta_recall_pp": -0.88,
+              "token_reduction_pct": 36.4
+            },
+            "DELTA_HYBRID": {
+              "samples": 225,
+              "recall_at_20_pct": 87.56,
+              "mean_tokens_proxy": 1014.3,
+              "delta_recall_pp": -0.88,
+              "token_reduction_pct": 17.8
+            }
+          }
+        }
+      }
+    },
+    "test_domain": {
+      "n_total": 3838,
+      "by_domain": {
+        "Service": {
+          "n": 2011,
+          "configs": {
+            "FULL": {
+              "samples": 2011,
+              "recall_at_20_pct": 85.38,
+              "mean_tokens_proxy": 1392.4
+            },
+            "DELTA_KW": {
+              "samples": 2011,
+              "recall_at_20_pct": 84.24,
+              "mean_tokens_proxy": 1114.2,
+              "delta_recall_pp": -1.14,
+              "token_reduction_pct": 20.0
+            },
+            "DELTA_EMBED": {
+              "samples": 2011,
+              "recall_at_20_pct": 85.03,
+              "mean_tokens_proxy": 888.6,
+              "delta_recall_pp": -0.35,
+              "token_reduction_pct": 36.2
+            },
+            "DELTA_HYBRID": {
+              "samples": 2011,
+              "recall_at_20_pct": 87.37,
+              "mean_tokens_proxy": 1158.5,
+              "delta_recall_pp": 1.99,
+              "token_reduction_pct": 16.8
+            }
+          }
+        },
+        "Info": {
+          "n": 1827,
+          "configs": {
+            "FULL": {
+              "samples": 1827,
+              "recall_at_20_pct": 89.27,
+              "mean_tokens_proxy": 1352.3
+            },
+            "DELTA_KW": {
+              "samples": 1827,
+              "recall_at_20_pct": 88.4,
+              "mean_tokens_proxy": 1053.4,
+              "delta_recall_pp": -0.87,
+              "token_reduction_pct": 22.1
+            },
+            "DELTA_EMBED": {
+              "samples": 1827,
+              "recall_at_20_pct": 87.41,
+              "mean_tokens_proxy": 877.5,
+              "delta_recall_pp": -1.86,
+              "token_reduction_pct": 35.1
+            },
+            "DELTA_HYBRID": {
+              "samples": 1827,
+              "recall_at_20_pct": 89.6,
+              "mean_tokens_proxy": 1123.2,
+              "delta_recall_pp": 0.33,
+              "token_reduction_pct": 16.9
+            }
+          }
+        }
+      }
+    }
+  }
+}

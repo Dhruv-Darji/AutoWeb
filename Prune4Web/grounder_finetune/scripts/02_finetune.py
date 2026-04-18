@@ -161,6 +161,20 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
+    # Qwen3-family: force non-thinking template so training targets stay flat JSON.
+    # No-op for Qwen2.5 (tokenizer ignores the kwarg via TypeError fallback).
+    if os.getenv("GROUNDER_DISABLE_THINKING", "0") == "1":
+        _orig_apply = tokenizer.apply_chat_template
+        def _apply_no_think(messages, **kwargs):
+            kwargs.setdefault("enable_thinking", False)
+            try:
+                return _orig_apply(messages, **kwargs)
+            except TypeError:
+                kwargs.pop("enable_thinking", None)
+                return _orig_apply(messages, **kwargs)
+        tokenizer.apply_chat_template = _apply_no_think
+        log.info("  chat template: non-thinking mode (enable_thinking=False)")
+
     # ---------------- Load model (4-bit) ----------------
     log.info("Loading base model in 4-bit...")
     bnb = BitsAndBytesConfig(

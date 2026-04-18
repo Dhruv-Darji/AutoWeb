@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-04-18T07:13:16.158541",
+  "base_model": "D:\\Environments\\Models\\Qwen3-0.6B",
+  "adapter_dir": "D:\\Environments\\Models\\Qwen3-0.6B-Prune4Web-Grounder",
+  "steps": [
+    {"label": "download Qwen/Qwen3-0.6B", "returncode": 0, "elapsed_s": 98.5},
+    {"label": "smoke_test_template",     "returncode": 0, "elapsed_s": 34.6},
+    {"label": "train Qwen3-0.6B QLoRA (2 epochs)",       "returncode": 0, "elapsed_s": 19895.7},
+    {"label": "test_task EA (200 samples)",              "returncode": 0, "elapsed_s": 3963.5},
+    {"label": "DOM-Delta EA (test_domain 200, FULL+DELTA_HYBRID)", "returncode": 0, "elapsed_s": 6954.9}
+  ],
+  "test_task_EA": 88.0,
+  "test_task_op_accuracy": 88.0,
+  "test_task_format_validity": 100.0,
+  "train_runtime_min": 325.06,
+  "final_eval_loss": 0.7576245665550232,
+  "num_train_examples": 6626,
+  "num_epochs": 2.0,
+  "dom_delta_run": "run_20260418_051722",
+  "dom_delta_EA_FULL": 77.5,
+  "dom_delta_EA_DELTA_HYBRID": 71.5,
+  "dom_delta_recall_FULL": 90.5,
+  "dom_delta_recall_DELTA_HYBRID": 89.5,
+  "dom_delta_tokens_FULL": 1348.8,
+  "dom_delta_tokens_DELTA_HYBRID": 1153.3,
+  "dom_delta_token_reduction_pct": 14.5,
+  "dom_delta_latency_FULL_ms": 20.182,
+  "dom_delta_latency_DELTA_HYBRID_ms": 380.856
+}

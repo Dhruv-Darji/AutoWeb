@@ -26,6 +26,7 @@ Usage example (inside run_prune4web_live):
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
@@ -170,6 +171,8 @@ def get_relevant_elements(
     delta: DOMDelta,
     task_context: str,
     include_unchanged: bool = False,
+    use_embeddings: Optional[bool] = None,
+    top_k: int = 20,
 ) -> List[SnapshotElement]:
     """
     Return elements most relevant to the current task step.
@@ -186,6 +189,12 @@ def get_relevant_elements(
     include_unchanged: Also include unchanged elements that keyword-match the task.
                        Set True for the first step (no before-state) or when
                        delta has very few changed elements.
+    use_embeddings:    If True, re-rank the final pool with MiniLM sentence
+                       embeddings (SBERT-style). Defaults to the environment
+                       flag DOM_DELTA_USE_EMBEDDINGS=1. See
+                       `AutoWeb/src/dom_relevance_embed.py`.
+    top_k:             Maximum number of elements to return when embedding
+                       re-ranking is enabled. Ignored for the pure-keyword path.
     """
     keywords = _task_keywords(task_context)
     relevant: List[SnapshotElement] = []
@@ -213,6 +222,17 @@ def get_relevant_elements(
         if el.uid not in seen:
             seen.add(el.uid)
             deduped.append(el)
+
+    # Optional embedding re-rank (Improvement B.2)
+    if use_embeddings is None:
+        use_embeddings = os.getenv("DOM_DELTA_USE_EMBEDDINGS", "").strip() in {"1", "true", "yes"}
+    if use_embeddings and deduped and task_context:
+        try:
+            from AutoWeb.src.dom_relevance_embed import score_elements_semantic
+        except ImportError:
+            from src.dom_relevance_embed import score_elements_semantic  # type: ignore
+        ranked = score_elements_semantic(task_context, deduped, top_k=top_k)
+        deduped = [el for el, _ in ranked]
 
     return deduped
 
@@ -278,24 +298,40 @@ class DOMDeltaProcessor:
         delta: Optional[DOMDelta],
         task_context: str,
         full_state: Optional[DOMState] = None,
+        use_embeddings: Optional[bool] = None,
+        top_k: int = 20,
     ) -> List[SnapshotElement]:
         """
         Convenience wrapper.  When *delta* is None (first step), falls back
         to keyword-filtering the full_state or previous state.
         """
+        if use_embeddings is None:
+            use_embeddings = os.getenv("DOM_DELTA_USE_EMBEDDINGS", "").strip() in {"1", "true", "yes"}
+
         if delta is not None:
             # Always include unchanged on first real delta (few changed nodes)
             include_unch = delta.changed_count < 5
-            return get_relevant_elements(delta, task_context, include_unchanged=include_unch)
+            return get_relevant_elements(
+                delta, task_context,
+                include_unchanged=include_unch,
+                use_embeddings=use_embeddings, top_k=top_k,
+            )
 
         # No delta yet – keyword-filter the entire current state
         state = full_state or self._prev_state
         if state is None:
             return []
         keywords = _task_keywords(task_context)
-        if not keywords:
-            return list(state.elements.values())
-        return [
+        pool = list(state.elements.values()) if not keywords else [
             el for el in state.elements.values()
             if _element_matches_task(el, keywords)
         ] or list(state.elements.values())
+
+        if use_embeddings and task_context and pool:
+            try:
+                from AutoWeb.src.dom_relevance_embed import score_elements_semantic
+            except ImportError:
+                from src.dom_relevance_embed import score_elements_semantic  # type: ignore
+            ranked = score_elements_semantic(task_context, pool, top_k=top_k)
+            pool = [el for el, _ in ranked]
+        return pool
