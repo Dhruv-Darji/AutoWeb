@@ -1,0 +1,46 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[pdftex]{graphicx}
+\DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\usepackage[compact]{titlesec}
+\usepackage{report}
+\usepackage{setspace}
+%\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{placeins}
+\usepackage{tabularx}
+%\usepackage{subfigure}
+
+\renewcommand{\baselinestretch}{1.5}
+
+\begin{document}
+\renewcommand{\thepage}{\roman{page}}
+\include{coverpages}
+
+\begin{singlespace}
+\newpage
+\tableofcontents
+%\newpage
+%\listoftables \addcontentsline{toc}{chapter}{List of Tables}
+\newpage
+\listoffigures \addcontentsline{toc}{chapter}{List of Figures}
+\newpage
+\end{singlespace}
+\pagenumbering{arabic}
+
+\include{01Introduction}
+\include{02LiteratureReview}
+\include{03BasePaperSeeAct}
+\include{04ProposedWork}
+\include{05Conclusion}
+
+\newpage
+\bibliographystyle{ieeetr}
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{mybib}
+
+
+\end{document}

@@ -1,0 +1,110 @@
+\chapter{Literature Survey}
+
+\section{Early Automation} 
+
+Early-stage automation relied on random, rule-based, and script-based strategies. These methods had notable limitations and do not provide high flexibility and scalability.
+
+\begin{enumerate}
+    \item \textbf{Random-based automation} Random testing is helpful for identifying bugs that structured automation may miss \cite{RandomTesting:inproceedings}. Applying a random operation on the GUI is the idea for the random-based automation. It is not the best tool due to its highly redundant and useless action performance.
+    \item \textbf{Ruled-based automation} Ruled-based automation is planned automation with idea to apply rules on known UI structure \cite{RuledBasedAutomation}. It is a widely used testing strategy for exploring testing and bug detection
+    \item \textbf{Script-based automation} To control GUI interactions, script-based automation uses code scripts.  Java binaries and the JVM are used by programs like jRapture \cite{ScriptBasedAutomation} to record and replay Java-based GUI sequences, allowing consistent execution by accurately replicating input sequences.
+\end{enumerate}
+
+
+
+\section{Shift Toward Intelligent GUI Automation} 
+Machine Learning and Deep Learning based approaches motivate intelligent GUI automation. Furthermore, LLM and MLLM enhance this field with large prompt and visual input capabilities.\\ 
+\textbf{GPT‑4V(ision) is a Generalist Web Agent, if Grounded (SeeAct):}\\
+SeeAct \cite{SeeAct} is foundational work showing that the large multimodal models like GPT-4V can act as generalist web agents. It uses both visual and textual values to generate actions and use the Plawright environment for action executions \cite{SeeAct}. The paper achieve 51.1\% accuracy on online evaluation, which is 20-30\% improvement over only text-based methods \cite{SeeAct}. The paper also shows that grounding remains the main bottleneck and possible improvement suggestion on grounding \cite{SeeAct}. \\
+\textbf{AdaptAgent: Adapting Multimodal Web Agents with Few‑Shot Learning from Human Demonstrations:}\\
+This paper addresses a key limitation of SeeAct for unseen websites or domains. AdaptAgent proposes a few-shot learning based method over a new website or domain \cite{FewShotLearning:verma2024adaptagentadaptingmultimodalweb}. Experiments on standard benchmarks show that even with few shots, agents improve success rate by 3.36\% to 7.21\% \cite{FewShotLearning:verma2024adaptagentadaptingmultimodalweb}.
+This suggests that few-shot adaptation is a promising, efficient way to make MLLM-based agents more robust across diverse websites, instead of relying solely on large-scale fine-tuning.\\
+\textbf{Browsing Like Human: A Multimodal Web Agent with Experiential Fast-and-Slow Thinking (WebExperT):}\\
+The goal of this latest effort is to improve web agents' human-like reasoning.  The authors present a dual-process planning paradigm: "fast" initial passes and "slow" deliberation when necessary \cite{Browsinglikehuman:luo2025browsing}. It also incorporates experience learning, whereby the agent considers its past mistakes and modifies its behaviour going forward \cite{Browsinglikehuman:luo2025browsing}.  WebExperT outperforms baseline multimodal agents on the Mind2Web benchmark \cite{Browsinglikehuman:luo2025browsing}. WebExperT greatly increases the sophistication of multimodal online agents by combining memory, reflection, and a human-like reasoning style.
+
+
+\section{Key Recent Works summary}
+Table \ref{Literature:SummaryTable} shows the summary of all recent advancements in the field of GUI automation.
+
+\begin{table}[!h]
+\small
+\centering
+\begin{tabularx}{\textwidth}{X|X|X|c}
+\hline
+\textbf{Title} & \textbf{Key Contribution} & \textbf{Limitations} & \textbf{Ref.} \\
+\hline
+
+Large Language Model-Brained GUI Agents: A Survey &
+Gives a clear overview of how GUI agents using LLMs have grown, how they work, and what tools and datasets exist. &
+Points out missing areas like stable grounding, better benchmarks, and long-task handling. 
+& \cite{zhang2025largelanguagemodelbrainedgui} \\
+\hline
+
+A Survey on (M)LLM-Based GUI Agents &
+Explains how GUI agents process screens, explore pages, plan actions, and interact. Reviews limits in current methods. &
+Notes issues with uneven benchmarks, weak evaluation methods, and poor element detection. 
+& \cite{tang2025surveymllmbasedguiagents} \\
+\hline
+
+A Survey of WebAgents: Towards Next-Generation AI Agents for Web Automation &
+Covers how WebAgents are built, trained, and used. Shows how foundation models make web automation easier. &
+Raises concerns about reliability, safety, and the need for stronger training and rules. 
+& \cite{ning2025surveywebagentsnextgenerationai} \\
+\hline
+
+GUI Agents with Foundation Models: A Comprehensive Survey &
+Summarizes FM and LLM-based GUI agent research, giving a simple structure and dataset overview. &
+Mentions missing model checkpoints, uneven experiments, and reproducibility problems. 
+& \cite{wang2025guiagentsfoundationmodels} \\
+\hline
+
+GPT-4V(ision) is a Generalist Web Agent, if Grounded &
+Shows GPT-4V can act as a web agent when given screenshots and HTML. Introduces SeeAct with good accuracy. &
+Grounding is not perfect; large models and manual setup are still required.
+& \cite{SeeAct} \\
+\hline
+
+AdaptAgent: Adapting Multimodal Web Agents with Few-Shot Learning &
+Uses a few human demos to improve agent performance on new sites; gives noticeable accuracy improvements. &
+Depends a lot on which demos are chosen; still struggles with very different websites.
+& \cite{FewShotLearning:verma2024adaptagentadaptingmultimodalweb} \\
+\hline
+
+LiteWebAgent: The Open-Source Suite for VLM-Based Web-Agent Applications &
+Provides an easy, open toolkit with planning, memory, and search modules to build VLM web agents. &
+Performance varies based on which model and grounding method are used. 
+& \cite{zhang2025litewebagentopensourcesuitevlmbased} \\
+\hline
+
+OpenWebAgent: An Open Toolkit to Enable Web Agents on LLMs &
+Gives a modular toolkit (HTML parser, action generator, UI) to quickly build web agents; fully open-source. &
+Does not provide new accuracy results; depends on how users integrate models.
+& \cite{iong2024openwebagent} \\
+\hline
+
+Browsing Like Human (WebExperT) &
+Adds fast-and-slow reasoning and learning from past mistakes, improving handling of complex tasks. &
+More complex design may need extra compute and careful setup.
+& \cite{Browsinglikehuman:luo2025browsing} \\
+\hline
+
+\end{tabularx}
+\caption{Summary of GUI automation recent work}
+\label{Literature:SummaryTable}
+\end{table}
+
+
+\section{Critical Research Gaps \& Motivation for Our Work}
+Although recent advances, research on multimodal GUI-agents and web automation still GUI automation has important gaps. Recognising these gaps helps motivate work on building a lightweight, DOM-summarising, fallback-enabled agent architecture. Blow are the listed critical gaps:
+
+\begin{enumerate}
+    \item \textbf{Unreliable element grounding:} While multimodal like SeeAct \cite{SeeAct} generate action from screenshot images, they rely on mapping of the generated outcome and DOM. SeeAct \cite{SeeAct} provides three grounding strategies, still all of them struggle with grounding and drop agent performance due to element grounding limitation.SeeAct \cite{SeeAct} motivates us to work on element grounding, where instead of relying only on the key pair comparison, we directly ask the LLM for the exact grounding value.
+
+    \item \textbf{Privacy concern and Human-in-Loop:} GUI agents become more autonomous and powerful, which raises concerns about security, privacy, and safe execution. Survey \cite{tang2025surveymllmbasedguiagents} \cite{ning2025surveywebagentsnextgenerationai} call out deficiencies in safety-aware execution control and benchmark standardisation.
+
+    \item \textbf{Large and complex DOMs, missing js, css:} Real-world websites contain thousands of DOM elements, where model has their input limitation beyond which they won't work \cite{wang2025guiagentsfoundationmodels}. Model does not look at JS or CSS while inference, thus loses the context where the user prompt contains context about visual values \cite{wang2025guiagentsfoundationmodels}. 
+    
+    \item \textbf{Cost and Token Inefficiency with Large Models:} Using large multimodal models (like GPT-4V) along with full HTML/DOM inputs and images is resource-intensive and often infeasible for small-scale or low-resource environments, which raises concern regarding cost and input limitations \cite{tang2025surveymllmbasedguiagents}.
+
+    
+\end{enumerate}

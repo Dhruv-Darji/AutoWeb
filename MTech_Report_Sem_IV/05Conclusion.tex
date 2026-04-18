@@ -1,0 +1,36 @@
+\chapter{Conclusion}
+
+\section{Limitations}
+The suggested method shows that combining multimodal input (screenshot + DOM) with a lightweight model and organized prompting is feasible, although there are still a limitations remain:
+
+\begin{itemize}
+  \item \textbf{Grounding Reliability:} Our initial experiment revealed that even when model confidence is high, the predicted CSS selector may not correspond to a valid element due to hallucination, which indicates that grounding remains a bottleneck.
+  \item \textbf{Limited Dataset / Sample Size:} As of now we have tested only on a single sample (single step), which does not guarantee generalization across different websites, layouts, tasks, or dynamic content.  
+  \item \textbf{No DOM Summarization Yet:} In this first phase, we used the trimmed DOM. Without summarization, which may remove the target value while trimming and result in hallucination.  
+  \item \textbf{No Full Automation / Safety Checks:} The current pipeline lacks fallback logic, human-in-the-loop (HITL) safeguards, and error handling, so it is not yet ready for deployment beyond experimental trials.  
+  \item \textbf{Resource \& Model Constraints:} Using a smaller model (Qwen2-VL-2B) may limit reasoning power compared to heavier LMMs, which can affect ability to handle complex visual or structural scenarios.  
+\end{itemize}
+
+\section{Conclusion}
+This project explored a lightweight, research-friendly approach to multimodal GUI automation. By combining webpage screenshots and HTML DOM structure as input, enforcing a structured JSON output format, and building a minimal inference, parsing and execution pipeline, we demonstrated that:
+
+\begin{itemize}
+  \item Multimodal input (visual + structural) is a promising direction for UI action prediction.  
+  \item Smaller multimodal models are also capable to produce step outcome with better inputs.
+  \item The core pipeline from data loading to model inference to browser execution is simple and hence provides easy and systematic evaluation on even larger datasets.
+  \item However, grounding remains the most significant challenge, underscoring the need for improved grounding logic, summarization, and error-handling.  
+\end{itemize}
+
+All things considered, our study creates a baseline, or proof-of-concept, demonstrating that GUI automation through multimodal models is feasible even with limited resources and points out specific avenues for further development.
+
+\section{Future Work}
+For the next phases of this project, we plan to:
+
+\begin{itemize}
+  \item Implement the \textbf{DOM summarization module} to compress raw HTML into token-efficient structural summaries, improving inference efficiency and reducing noise.  
+  \item Extend evaluation to a \textbf{larger sample set}, covering diverse websites and tasks, to measure action accuracy, target correctness, and overall success rate over complete dataset.  
+  \item Add a \textbf{fallback loop} where if grounding fails or confidence is low, we retry to move on previous step or invoke human-in-the-loop for validation before executing actions.  
+  \item Develop a \textbf{human-in-the-loop (HITL)} safety and verification layer to prevent privacy-related challenges, where the user can interact while data sensitivity matters.
+  \item Evaluate \textbf{step-level and trajectory-level metrics}, to get better performance and evaluate in a better way.  
+  \item Experiment with \textbf{prompt engineering} to improve model robustness without needing extremely large models.  
+\end{itemize}
