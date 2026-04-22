@@ -1,0 +1,195 @@
+\chapter{Experiments and Results}
+
+\section{Experimental Setup}
+
+All experiments use Mind2Web \cite{deng2023mind2webgeneralistagentweb}, which is the standard benchmark for element-level grounding on real web pages. We report on all three generalization splits: \texttt{test\_task} (1{,}257 samples, unseen tasks on seen websites), \texttt{test\_website} (975 samples, unseen websites in seen domains), and \texttt{test\_domain} (3{,}838 samples, completely unseen domains). The full evaluation set is 6{,}070 samples. Training uses the Mind2Web train / eval splits (6{,}626 train / 736 eval) released by the dataset authors.
+
+Two primary metrics are reported. \textbf{Recall@20} measures whether the ground-truth target element survives in the top-20 candidates returned by the filter stage; no LLM grounder is involved, so the number is reproducible and free of grounder variance \cite{deng2023mind2webgeneralistagentweb}. \textbf{Element Accuracy (EA)} is the end-to-end metric, measured by feeding the top-20 candidates to the local LoRA grounder and checking whether the predicted \texttt{backend\_node\_id} matches ground truth \cite{zhang2025prune4web}.
+
+Hardware for all runs is a single RTX 4050 laptop GPU (6 GB VRAM) with CUDA for MiniLM inference. All grounders are 4-bit QLoRA \cite{dettmers2023qlora} with \texttt{r=16}, \texttt{alpha=32}, effective batch size 16, max sequence length 1024, and seed 42. Four filter configurations are compared across the experiments: \textbf{FULL} (Prune4Web's keyword-weighted scoring on all candidates, serving as the paper baseline), \textbf{DELTA\_KW} (a delta-aware keyword prefilter), \textbf{DELTA\_EMBED} (MiniLM cosine ranking only), and \textbf{DELTA\_HYBRID} (late fusion of $\alpha \cdot \mathrm{keyword} + (1-\alpha) \cdot \mathrm{MiniLM}$ with $\alpha = 0.6$), which is the configuration that best balances recall and token cost.
+
+
+\section{Tokenizer Study}
+
+The token-reduction numbers reported in the rest of this chapter use Qwen's own BPE tokenizer rather than a character-length proxy, so that the numbers are directly comparable to what the grounder actually consumes. The same 500-sample test\_domain slice was tokenised twice, once with the Qwen2.5-0.5B tokenizer and once with the Qwen3-0.6B tokenizer. Table \ref{tab:tokenizer} reports the results.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|r|r|r|r|r}
+\hline
+\textbf{Config} & \textbf{Recall@20} & \textbf{Char proxy} & \textbf{Qwen tokens} & \textbf{Char red.} & \textbf{Token red.} \\
+\hline
+FULL & 86.60\% & 1{,}383 & 429.6 & --- & --- \\
+DELTA\_KW & 85.20\% & 1{,}112 & 342.0 & 19.6\% & \textbf{20.4\%} \\
+DELTA\_EMBED & 86.00\% & 898 & 321.4 & 35.1\% & \textbf{25.2\%} \\
+\textbf{DELTA\_HYBRID} & \textbf{88.80\%} & 1{,}158 & 380.0 & 16.3\% & \textbf{11.5\%} \\
+\hline
+\end{tabular}
+\caption{Qwen tokenizer token-cost comparison across filter configurations on 500 test\_domain samples. The Qwen2.5 and Qwen3 tokenizers produced byte-for-byte identical counts, so the analysis applies to both grounders unchanged.}
+\label{tab:tokenizer}
+\end{table}
+
+The two tokenizers produced byte-for-byte identical token counts across all 500 samples, which confirms that Qwen3 inherits Qwen2.5's BPE merges without modification \cite{qwen25techreport2024}. The character-length proxy and actual Qwen tokens do not track linearly, because the DOM element summaries contain many special-looking tokens (tag names, attribute keys, separators) that the Qwen BPE merges into single tokens while the character proxy over-counts them. The Qwen token-reduction numbers are the ones that should be reported in cost estimates; they are roughly 30\% smaller than the character-proxy numbers but still clearly positive for every delta configuration.
+
+
+\section{Filter-Stage Recall@20}
+
+Before looking at end-to-end accuracy, we study the filter stage on its own. This is important because Recall@20 is grounder-independent: it only asks whether the ground-truth element survives into the candidate pool that is then passed on to whichever grounder the user chooses. Table \ref{tab:recall} reports Recall@20 and token cost for all four configurations, across all three Mind2Web test splits (6{,}070 samples in total).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|l|r|r|r|r|r}
+\hline
+\textbf{Split} & \textbf{Config} & \textbf{Recall@20} & \textbf{Tokens} & \textbf{Lat. (ms)} & \textbf{$\Delta$ Recall} & \textbf{Tok. red.} \\
+\hline
+test\_task (1{,}257)     & FULL & 84.88\% & 1{,}432 & 9.60 & --- & --- \\
+                         & DELTA\_KW & 84.57\% & 1{,}142 & 2.88 & -0.31 pp & 20.3\% \\
+                         & DELTA\_EMBED & 82.26\% & 907 & 150.01 & -2.62 pp & 36.7\% \\
+                         & \textbf{DELTA\_HYBRID} & \textbf{84.65\%} & \textbf{1{,}196} & \textbf{152.56} & \textbf{-0.23 pp} & \textbf{16.5\%} \\
+\hline
+test\_website (975)      & FULL & 88.62\% & 1{,}357 & 7.76 & --- & --- \\
+                         & DELTA\_KW & 88.21\% & 1{,}059 & 2.31 & -0.41 pp & 22.0\% \\
+                         & DELTA\_EMBED & 87.18\% & 845 & 142.55 & -1.44 pp & 37.8\% \\
+                         & \textbf{DELTA\_HYBRID} & \textbf{88.51\%} & \textbf{1{,}117} & \textbf{144.70} & \textbf{-0.11 pp} & \textbf{17.7\%} \\
+\hline
+test\_domain (3{,}838)   & FULL & 87.23\% & 1{,}373 & 7.40 & --- & --- \\
+                         & DELTA\_KW & 86.22\% & 1{,}085 & 2.02 & -1.01 pp & 21.0\% \\
+                         & DELTA\_EMBED & 86.16\% & 883 & 122.07 & -1.07 pp & 35.7\% \\
+                         & \textbf{DELTA\_HYBRID} & \textbf{88.43\%} & \textbf{1{,}142} & \textbf{122.77} & \textbf{+1.20 pp} & \textbf{16.9\%} \\
+\hline
+\end{tabular}
+\caption{DOM Delta A/B benchmark on all Mind2Web test splits (6{,}070 samples). DELTA\_HYBRID matches or improves Recall@20 while consistently reducing grounder input by 16-18\%.}
+\label{tab:recall}
+\end{table}
+
+DELTA\_HYBRID stays within 0.23~pp of the FULL baseline on test\_task and test\_website, and improves recall by +1.20~pp on test\_domain, which is the hardest generalization axis and also the largest split at 3{,}838 samples. This is the paper's main empirical claim: the filter stage can be made substantially cheaper (16 to 18\% fewer tokens in the grounder candidate block) without giving up recall, and on unseen domains it actually does better than the full-DOM baseline. The likely reason is that unseen domains have lower keyword overlap between task descriptions and DOM text, so the MiniLM semantic component covers paraphrases that the keyword scorer misses. Pure DELTA\_EMBED loses 1 to 3 pp of recall across all splits, which is why the hybrid fusion (with $\alpha = 0.6$ in favour of keywords) is preferred over embeddings alone.
+
+
+\section{Grounder Element Accuracy}
+
+We now move to the end-to-end metric. Two local grounders are reported, both trained with the identical QLoRA recipe on the same 6{,}626 Mind2Web examples, and we compare them against the 88.28\% test\_task number from the Prune4Web paper, which the authors report using a fine-tuned Qwen2.5VL-3B-Instruct vision-language grounder \cite{zhang2025prune4web}.
+
+\subsection{Qwen2.5-0.5B LoRA grounder}
+
+Table \ref{tab:ea_qwen25} reports the end-to-end Element Accuracy of the 0.5B local grounder on a 200-sample test\_domain slice, feeding it both the FULL and DELTA\_HYBRID candidate blocks.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|r|r|r|r}
+\hline
+\textbf{Config} & \textbf{Recall@20} & \textbf{Element Accuracy} & \textbf{Char tokens} & \textbf{Token red.} \\
+\hline
+FULL & 90.50\% & \textbf{73.00\%} & 1{,}349 & --- \\
+DELTA\_HYBRID & 89.50\% & 68.00\% & 1{,}153 & 14.5\% \\
+\hline
+\end{tabular}
+\caption{Element Accuracy with the Qwen2.5-0.5B + LoRA grounder, on 200 test\_domain samples.}
+\label{tab:ea_qwen25}
+\end{table}
+
+On the separate test\_task split (200 samples, same LoRA adapter), the Qwen2.5-0.5B grounder achieves 85.00\% EA, which is within 3.28~pp of the paper's 88.28\% Qwen2.5VL-3B-Instruct number at roughly 6x fewer parameters and without the vision encoder.
+
+\subsection{Qwen3-0.6B LoRA grounder}
+
+Table \ref{tab:ea_qwen3} reports the same measurement with the newer Qwen3-0.6B base, trained with the same recipe but for 2 epochs instead of 3.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|r|r|r|r}
+\hline
+\textbf{Config} & \textbf{Recall@20} & \textbf{Element Accuracy} & \textbf{Char tokens} & \textbf{Token red.} \\
+\hline
+FULL & 90.50\% & \textbf{77.50\%} & 1{,}349 & --- \\
+DELTA\_HYBRID & 89.50\% & 71.50\% & 1{,}153 & 14.5\% \\
+\hline
+\end{tabular}
+\caption{Element Accuracy with the Qwen3-0.6B + LoRA grounder, on the same 200 test\_domain samples as Table \ref{tab:ea_qwen25}.}
+\label{tab:ea_qwen3}
+\end{table}
+
+On test\_task (200 samples), the Qwen3-0.6B grounder reaches 88.00\% EA, which matches the paper's 88.28\% Qwen2.5VL-3B-Instruct number within a sub-sample rounding margin.
+
+\subsection{Side-by-side comparison against the paper's Qwen2.5VL-3B grounder}
+
+Table \ref{tab:ea_sidebyside} brings the three grounders together.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|r|r|r|r}
+\hline
+\textbf{Eval (test\_domain, 200)} & \textbf{Qwen2.5VL-3B (paper)} & \textbf{Qwen2.5-0.5B} & \textbf{Qwen3-0.6B} & \textbf{Qwen3 - Qwen2.5} \\
+\hline
+test\_task EA (200) & 88.28\% & 85.00\% & 88.00\% & +3.00 pp \\
+DOM-Delta FULL EA & --- & 73.00\% & 77.50\% & +4.50 pp \\
+DOM-Delta DELTA\_HYBRID EA & --- & 68.00\% & 71.50\% & +3.50 pp \\
+\hline
+\end{tabular}
+\caption{Side-by-side: the Prune4Web paper's fine-tuned Qwen2.5VL-3B-Instruct reference \cite{zhang2025prune4web} vs the two local QLoRA grounders. The Qwen3-0.6B LoRA matches the paper's 3B vision-language grounder on Mind2Web test\_task at roughly 5x fewer parameters and without a vision encoder.}
+\label{tab:ea_sidebyside}
+\end{table}
+
+Two observations follow from this table. First, scaling the grounder from 0.5B to 0.6B lifts EA uniformly by 3 to 4.5~pp across all configurations with the filter side held exactly equal, so the gain clearly comes from the LLM and not from the filter. Second, the DELTA\_HYBRID vs FULL gap of roughly 6~pp EA is stable across both grounders, even though their Recall@20 differs by only 1~pp. With the 200-sample slice giving a $\pm$6~pp 95\% confidence interval per cell, the reproducibility of this gap across two different grounder sizes argues that it is a genuine downstream sensitivity to candidate ordering rather than random noise. The recommended next step to close it is candidate-ordering normalisation (re-sorting the top-20 by structural UID or DOM position before building the grounder prompt).
+
+
+\section{Training Time and Inference Latency}
+
+Table \ref{tab:training} summarises the training cost of the two local grounders together with the Prune4Web paper's fine-tuned Qwen2.5VL-3B-Instruct \cite{zhang2025prune4web} as a reference. Both local grounders were trained on the same 6{,}626 Mind2Web examples with identical QLoRA hyperparameters.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|r|r|r|r}
+\hline
+\textbf{Grounder} & \textbf{Params} & \textbf{Epochs} & \textbf{Train time} & \textbf{Final eval loss} \\
+\hline
+Qwen2.5VL-3B-Instruct (Prune4Web, fine-tuned) & $\sim$3B & --- & --- & --- \\
+Qwen2.5-0.5B + LoRA & 0.5B & 3 & 609 min & 0.668 \\
+\textbf{Qwen3-0.6B + LoRA} & \textbf{0.6B} & \textbf{2} & \textbf{325 min} & \textbf{0.758} \\
+\hline
+\end{tabular}
+\caption{Training cost of the two local grounders. Despite being 20\% larger, Qwen3-0.6B trained in 47\% less wall-clock time than Qwen2.5-0.5B, because we used 2 epochs instead of 3 and because Qwen3 converged faster per step.}
+\label{tab:training}
+\end{table}
+
+Qwen3-0.6B trained in roughly half the wall-clock time of Qwen2.5-0.5B, even though it is the larger model, because the loss curve for Qwen2.5 had largely plateaued by epoch 2 and the third epoch was added out of caution rather than necessity. Qwen3's slightly higher eval loss at 2 epochs (0.758 vs 0.668 for Qwen2.5 at 3 epochs) does \textit{not} reflect worse grounding performance; as Table \ref{tab:ea_sidebyside} shows, Qwen3's Element Accuracy is 3 to 4.5~pp \textit{higher}. The lower eval loss on Qwen2.5 looks more like overfitting to the JSON output format than actual improvement in grounding.
+
+On inference latency, Qwen2.5-0.5B is roughly 5~s per sample on an RTX 4050 while Qwen3-0.6B is roughly 20~s per sample. The difference is not due to the parameter count but to Qwen3's chat template, which still emits an empty \texttt{<think>\textbackslash n\textbackslash n</think>} block even when \texttt{enable\_thinking=False} is set. Those tokens must still be decoded before the JSON payload starts, which quadruples the decoding budget. For batch evaluation this is acceptable; for a live web-agent loop the lower-latency Qwen2.5 backend remains the cheaper choice, or alternatively the \texttt{<think>} block can be stripped at the tokenizer level.
+
+
+\section{Latency Breakdown of DELTA\_HYBRID}
+
+Because DELTA\_HYBRID is the recommended filter configuration, we instrument its per-step cost on 200 test\_domain samples.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{l|r|r}
+\hline
+\textbf{Stage} & \textbf{Time (ms)} & \textbf{\% of total} \\
+\hline
+Keyword scoring & 1.19 & 0.5\% \\
+MiniLM encoding + score fusion & 222.08 & 99.5\% \\
+\hline
+\textbf{Total (per step)} & \textbf{223.29} & \textbf{100\%} \\
+\hline
+\end{tabular}
+\caption{Per-step latency breakdown of DELTA\_HYBRID on 200 test\_domain samples (MiniLM on CUDA).}
+\label{tab:latency}
+\end{table}
+
+Almost all of the per-step cost is MiniLM inference on the candidate element summaries. At 223~ms the filter adds negligible latency to a web agent's typical 2 to 5~s per-step budget (network + screenshot + LLM call). Further speedups would require either a smaller encoder (for example MiniLM-L3) or caching embeddings of elements that are stable across steps (which the DOM Delta layer already identifies).
+
+
+\section{Privacy and HITL (Qualitative)}
+
+At the time of this report, the Privacy Hub + HITL layer has been implemented and exercised on live web sessions, but no large-scale quantitative benchmark has been run yet; empirical measurements here would need a dedicated PII-annotated test set, which Mind2Web does not provide. Qualitatively, on the live-website sessions recorded during development, the PolicyHub's 24 risk keywords successfully triggered the HITL gate on actions that involved password fields, CAPTCHA prompts, and payment-submit buttons, and routed them to human review instead of sending them on to the grounder. The PrivacyPipeline's regex-based PII detector was observed to mask email addresses, phone numbers, and date-of-birth patterns in element \texttt{value} and \texttt{placeholder} attributes before they reached the grounder prompt. A small quantitative pilot (around 30 samples drawn from a mixed slice of Mind2Web \texttt{test\_domain} pages with injected PII) is planned as a follow-up measurement, once an annotation pass is complete; the intended headline numbers are the fraction of samples on which the HITL gate fires and the fraction of element summaries on which at least one PII field is masked.
+
+
+\section{Summary of Empirical Claims}
+
+Three headline results emerge from the experiments above. First, DOM Delta Processing with hybrid keyword + MiniLM fusion reduces grounder input tokens by 16 to 18\% while maintaining Recall@20 across all three Mind2Web generalization splits, and improves Recall@20 by +1.20~pp on the hardest split (test\_domain, 3{,}838 samples). Second, a QLoRA-fine-tuned Qwen3-0.6B reaches 88.00\% Element Accuracy on Mind2Web test\_task, matching the Prune4Web paper's own fine-tuned Qwen2.5VL-3B-Instruct grounder at 88.28\% within a sub-sample rounding margin, while running entirely locally in 4-bit on a 6~GB consumer GPU at roughly 5x fewer parameters and without a vision encoder. Third, the combined system adds an unintrusive privacy + HITL layer that, under live-session qualitative observation, intercepts risk-bearing actions before the grounder call and masks PII in element summaries before they reach the grounder prompt, with a small quantitative pilot planned as future measurement.

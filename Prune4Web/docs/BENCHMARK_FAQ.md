@@ -252,4 +252,21 @@ rapidfuzz) is Prune4Web's, not our novel contribution.
 
 ---
 
+## Remaining Questions
+
+1. "Structural UIDs (an MD5 hash over tag, id, name, xpath)" what is MD5?
+- MD5 is a widely used cryptographic hash function that produces a 128-bit (16-byte) hash value, typically represented as a 32-character hexadecimal string. In the context of structural UIDs for DOM elements, an MD5 hash is generated based on the element's tag, id, name, and xpath to create a unique identifier for that element. This allows us to track elements across different DOM snapshots and identify which ones have been added, removed, modified, or unchanged.
+
+2. we contain 6000 arounde samples total in test, but in evaluation why it is showing only 800 steps? what does here meaning of step ? is it like batching? what is the value of it?
+
+● A step = one gradient update on one effective batch, not one sample. With effective batch size 16 (per-device ×
+  grad-accum) on 6,626 train samples:
+
+  - 6,626 / 16 ≈ 414 steps per epoch
+  - Qwen3-0.6B trained for 2 epochs → 414 × 2 ≈ 828 steps (the ~800 you're seeing)
+  - Qwen2.5-0.5B trained for 3 epochs → 414 × 3 ≈ 1,242 steps
+
+  So "step" here is optimizer step (batched), not sample. The 6,626 samples are all being consumed each epoch — just 16
+  at a time per update.
+  
 *Document created 2026-04-16.*

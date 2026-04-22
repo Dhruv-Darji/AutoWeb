@@ -1,0 +1,26 @@
+%% Figure 4.1 - Proposed System Overview
+%% End-to-end flow: Task -> Planner -> DOM Delta Filter -> Privacy Hub -> Local Grounder -> HITL Gate -> Browser
+%% Intended caption: "Proposed system overview. Prune4Web Planner -> Filter -> Grounder backbone,
+%% augmented with DOM Delta Processing at the filter stage and a Privacy Hub + risk-based HITL gate
+%% around the grounder."
+flowchart TD
+    U[User Task] --> P[Planner LLM<br/>emits one sub-task + policy_risk]
+    P --> DE[DOM Extractor<br/>parse current HTML]
+
+    DE --> DS[Previous DOM Snapshot]
+    DE --> DD[DOM Delta Layer<br/>structural UIDs + added/modified tags]
+    DS -. diff .-> DD
+
+    DD --> F[Hybrid Filter<br/>0.6 * keyword + 0.4 * MiniLM<br/>top-20 candidates]
+
+    F --> PH[Privacy-Aware LLM Wrapper<br/>PII regex masking + DP noise]
+    PH --> G[Local Grounder<br/>Qwen2.5-0.5B / Qwen3-0.6B<br/>QLoRA 4-bit]
+
+    G --> H{HITL Gate<br/>policy_risk OR<br/>risk-keyword OR<br/>confidence below 30}
+    H -- risk --> HR[Human Review]
+    H -- safe --> BR[Browser Driver<br/>Selenium / Playwright]
+
+    BR -->|next step| DE
+
+    classDef novel fill:#e6f2ff,stroke:#1f4e79,stroke-width:2px;
+    class DD,PH,H novel;

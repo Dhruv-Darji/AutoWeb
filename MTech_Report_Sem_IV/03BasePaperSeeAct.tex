@@ -1,170 +1,48 @@
-\chapter{Base Paper: SeeAct}
+\chapter{Problem Definition and Existing Solution}
 
-\section{Overview of SeeAct}
-The paper “GPT-4V(ision) is a Generalist Web Agent, if Grounded” introduced an LMM-based (i.e. GPT-4V) GUI automation agent called SeeAct \cite{SeeAct}. SeeAct use Screenshot and DOM both as input to generate an action task \cite{SeeAct}. SeeAct uses LMM to infer the next action from a screenshot while using DOM for element grounding with defined methods \cite{SeeAct}.
+\section{Problem Definition}
+Given a natural-language task (for example, "book a one-way flight from Ahmedabad to Delhi on 12th May") and the current state of a live web page, the job of a web-automation agent is to produce the next executable step in a structured form. At each step the agent has to output a triple of (element, action, value), where the element is a concrete DOM node on the page, the action is one of the primitive interactions supported by the browser (click, type, select, and a few others), and the value is a string or null depending on the action. The page itself is observable in two representations, the rendered screenshot and the underlying HTML/DOM tree, and a real agent has to consume at least one of these at every step.
 
-\begin{itemize}
-    
-    \item \textbf{Motivation:} LLM-brained GUI agents solely rely on the DOM, or vision-based GUI agents solely rely on visuals only, while SeeAct provide a simple but promising framework flow with its unique implementation method \cite{SeeAct}.
+Three practical constraints turn this into a hard problem. First, modern pages routinely contain tens of thousands of DOM tokens \cite{zhang2025prune4web}, which is larger than the useful context window of most LLMs and expensive to send on every step. Second, the agent has to respect a per-step latency budget of a few seconds, otherwise the interaction does not feel live. Third, DOM elements in real websites carry user-sensitive values, such as email addresses, phone numbers, credit card fields, and identification numbers, so any sensible agent pipeline has to avoid leaking these values to a hosted LLM without the user's awareness. A useful web-automation system therefore has to reach high element-level accuracy while keeping token cost, latency, and privacy risk all within realistic limits.
 
-    \item SeeAct use the Multimodal-Mind2Web dataset, which is a widely adopted dataset for better comparison and evaluation \cite{SeeAct}.
-
-    \item Evaluation is done both on cached pages (offline) and on live websites (online), demonstrating real-world capability of the approach \cite{SeeAct}.
-    
-\end{itemize}
+In the third semester of this project, the base paper under study was SeeAct \cite{SeeAct}, which proposed a GPT-4V driven multimodal agent and introduced the Multimodal-Mind2Web dataset. SeeAct is still a useful reference for the motivation and the dataset, but it relies on GPT-4V at every step, which makes reproducing the full pipeline on a student setup infeasible from a billing point of view. For the Sem~IV work we therefore switched the anchor of our problem-definition chapter to a system that we could actually re-implement, run, and measure end-to-end on local hardware, namely Prune4Web.
 
 
-\section{Dataset (Multimodal-Mind2Web)}
-Multimodal-Min2Web is build on top of the Mind2Web dataset, which contains screenshots and HTML values; thus, the author used this dataset for SeeAct \cite{SeeAct} \cite{deng2023mind2webgeneralistagentweb}.
-\\
-\textbf{Key characteristics of the dataset:}\\
-\begin{itemize}
-    
-    \item Multimodal alignment: In the dataset, each raw (step) contains a screenshot value and corresponding HTML values, making it a multimodal dataset.
+\section{Existing Solution: Prune4Web}
 
-    \item Scale \& diversity: Mind2Web (thus Multimodal version) covers over 2,000 tasks drawn from 137 websites spanning 31 top-level domains — ensuring coverage across many real-world use cases and UI styles \cite{deng2023mind2webgeneralistagentweb}.
-
-    \item Dataset splits: Multimodal-Mind2Web provides several splits for evaluation:
-    \begin{itemize}
-        \item \textit{train:} 7,775 actions from 1,009 tasks
-        \item \textit{test\_task:} 1,339 actions from 177 tasks
-        \item \textit{test\_website:} 1,019 actions from 142 tasks
-        \item \textit{test\_domain:} 4,060 actions from 694 tasks
-    \end{itemize}
-
-    \item Each record (action step) contains: screenshot path, raw HTML, cleaned HTML, task, operation info (CLICK/TYPE/SELECT + optional value), candidate DOM elements, metadata like annotation\_id, website, domain, etc \cite{SeeAct} \cite{deng2023mind2webgeneralistagentweb}.
-
-    \item Each record represents a single step, where using grouping of the same annotation\_id we can build an end-to-end task and with shortening of step\_id sequence of steps will also be preserved \cite{SeeAct} \cite{deng2023mind2webgeneralistagentweb}.
-\end{itemize}
-Multimodal-Mind2Web (13.6 GB) contains a total of 14,273 steps with 2022 tasks, covering 137 websites, spanning 31 top-level domains, with a wide variety of user tasks plus interaction patterns \cite{deng2023mind2webgeneralistagentweb} \cite{SeeAct}.
-
-
-\section{SeeAct: Architecture \& Implementation}
-SeeAct is a pipeline-like, simple framework, with perception, reasoning, grounding and execution like a flow (Fig \ref{SeeAct:Architecral Diagram} shows this flow).
-Below is SeeAct’s architecture and describes how inputs are prepared, how action generation works, and lists defined grounding strategies:
+Prune4Web (Zhang \textit{et al.}, 2025) \cite{zhang2025prune4web} is a three-stage pipeline for LLM-based web agents. It is the closest published system to the design we want and it explicitly targets the cost/context problem of sending the DOM to the LLM. Figure \ref{Prune4Web:Architecture} shows the high-level flow.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.4\linewidth]{SeeAct Diagram (white-BG).png}
-    \caption{SeeAct: Architectural diagram \cite{SeeAct}}
-    \label{SeeAct:Architecral Diagram}
+    \includegraphics[width=0.75\linewidth]{SeeAct Diagram (white-BG).png}
+    \caption{Prune4Web pipeline: Planner (LLM) $\to$ Programmatic Element Filter (LLM emits weights, Python scores) $\to$ Action Grounder (LLM on top-$N$ elements). Reproduced conceptually from \cite{zhang2025prune4web}; diagram to be replaced in the final version.}
+    \label{Prune4Web:Architecture}
 \end{figure}
 
-    \subsection{Input preparation (Screenshot + DOM)}
-    SeeAct generate input at each step of the task, where it uses Playwright for screenshot and HTML input, but while offline evaluation, it use available data directly from the dataset \cite{SeeAct}. 
-    
-    \subsection{Action Generation}
-        \begin{itemize}
-            \item See Act uses LMM (i.e GPT-4V) to generate action description for the next step using screenshot, step history and task \cite{SeeAct}.
-            \item SeeAct relies solely on screenshots to generate Action Generation, where it does not use any HTML value while generating next action description \cite{SeeAct}.
-            \item The prompting instructs GPT-4V to “imitate humans” browsing the web which identify what page is being seen, reason about what has been done (history), inspect visible webpage details in screenshot (buttons/fields/status), then decide next logical action which may click a button, type into a textbox, select from a dropdown, etc \cite{SeeAct}.
-        \end{itemize}
-        
-    \subsection{Grounding Strategies}
-        Action Generation generates an action description, which is not directly able to generate the action or act upon the environment, where the action description is just a text that we have to map to our environment value. 
-        \begin{itemize}
-            \item SeeAct uses HTML values at this stage to MAP the generated LMM output with HTML values, where it tries to find a relation for action generation.
-            \item SeeAct uses DeBERTa model for grounding with a cross-encoder variant, meaning, given a pair of (query, candidate element representation), the model outputs a score representing how likely that candidate is relevant to the query (i.e. the next action) \cite{SeeAct}.
-            \item Practically: “query” could be some features derived from the textual intention (e.g. “I want to click the button that says ‘Search’”), candidate element = some DOM element represented by its HTML metadata (tag, text content, attributes). The cross-encoder concatenates both and outputs a relevance score \cite{SeeAct}. 
-            \item SeeAct uses this to rank all DOM elements and choose the top-50 for the grounding module (heuristic value). This greatly reduces complexity compared to considering the full DOM \cite{SeeAct}. 
-        \end{itemize}
-    
-        below are the different techniques used as grounding strategies to map action description with the HTML:
-        \begin{enumerate}
-            \item \textbf{Grounding via Element Attributes:}
-            \begin{itemize}
-                \item Prompt the model to output detailed attributes for the target element: its type (e.g., BUTTON, TEXTBOX), visible text (e.g., “Submit”, “Search”), and possibly other distinguishing info (position, nearby labels) \cite{SeeAct}.
-                \item Then perform a heuristic search over the HTML DOM: find elements whose attributes match the description. If exactly one match: pick it. If multiple: re-prompt model to disambiguate \cite{SeeAct}.
-            \end{itemize}
+    \subsection{Stage 1: Planner}
+    A multimodal LLM receives the high-level task, the page screenshot, and the previous-step history, and emits a single JSON object with one \texttt{sub\_task} field (plus \texttt{action\_type}, \texttt{value}, and a short \texttt{reasoning} string). The planner breaks a long task like "buy a laptop under 50{,}000" into one imperative sub-task per step, for example "click the search box" \cite{zhang2025prune4web}. The planner never looks at the raw DOM.
 
-            \item \textbf{Grounding via Image Annotation:}
-            \begin{itemize}
-                \item For each top-k candidate element, overlay a bounding box and a label on the screenshot image. This is similar to “set-of-mark” prompting used in other VLM/image-grounding works \cite{SeeAct}. 
-            \end{itemize}
+    \subsection{Stage 2: Programmatic Element Filter}
+    This is the core contribution of the paper. The LLM is asked to emit a small keyword/weight scoring script based only on the sub-task, without seeing any DOM content. A deterministic Python scorer then runs that script over every interactive DOM element, combining per-keyword weights with per-attribute importance (tag, visible text, id, name, aria-label, placeholder, title, role, class) and returns the top-$N$ candidates \cite{zhang2025prune4web}. Because the LLM never reads raw DOM at this stage, the filter call stays $O(\text{sub-task length})$ in tokens instead of $O(\text{page size})$, and the reported candidate reduction is 25x to 50x \cite{zhang2025prune4web}.
 
-            \item \textbf{Oracle Action Grounding:}
-            \begin{itemize}
-                \item human annotators map the model’s textual plan ã to the correct DOM element + operation + value.
-                \item This sets an upper bound on what the LMM + planning + reasoning part can achieve, which shows potential if grounding solve perfectly \cite{SeeAct}. Under oracle grounding, SeeAct with GPT-4V obtains much higher performance on online evaluation \cite{SeeAct}.
-            \end{itemize}
-            
-        \end{enumerate}
+    \subsection{Stage 3: Action Grounder}
+    A second LLM call receives the sub-task along with the compact block of top-$N$ element summaries and returns the exact target (\texttt{element\_uid}, \texttt{action}, \texttt{value}). On Mind2Web, Prune4Web reports 88.28\% Element Accuracy with a Qwen2.5VL-3B-Instruct vision-language grounder fine-tuned by the authors, and shows that a lighter Qwen2.5-0.5B-Instruct variant also operates in the same Filter-Grounder pipeline \cite{zhang2025prune4web}.
 
-\section{Results \& Performance}
-
-\textbf{Key Performance metrics used:}
-\begin{itemize}
-    \item \textbf{Element Accuracy:} fraction of steps where the agent selects the correct DOM element.
-
-    \item \textbf{Operation F1:} token-level F1 score for the predicted operation (click/type/select + value), comparing predicted vs ground truth.
-
-    \item \textbf{Step Success Rate:} considers a step successful only if both the element and operation are correct. Macro-averaged across tasks. 
-
-    \item \textbf{Task Success Rate:} for a multi-step task, the task is successful only if all its steps succeed (strict setting). This measures end-to-end execution correctness (on dataset values). 
-
-    \item \textbf{Online Task Success Rate:} for evaluation on live websites, it measures the proportion of tasks that on agent completes successfully (when grounded via human/oracle). Under oracle grounding, SeeAct achieves 51.1\% success on live websites
-\end{itemize}
-
-\noindent \textbf{Summary of Results:}
-Table \ref{SeeAct:ResultSummary} Contains the online and offline results. 
-
-\begin{table}[h]
-\centering
-\begin{tabularx}{\textwidth}{X|X|X|X}
-    \hline
-    \textbf{Grounding} & \textbf{Cross-Task} & \textbf{Cross-Website} & \textbf{Cross-Domain} \\
-    \hline
-    
-    SeeAct \textsubscript{Attribute} &
-    16.1 &
-    12.1 &
-    19.1 \\
-    \hline
-    
-    SeeAct \textsubscript{Annotation} &
-    20.3 &
-    13.9 &
-    13.7 \\
-    \hline
-    
-    SeeAct \textsubscript{Choice} &
-    39.1 &
-    32.7 &
-    42.0 \\
-    \hline
-    
-    SeeAct \textsubscript{Oracle} &
-    61.9 &
-    65.0 &
-    62.1 \\
-    \hline
-
-\end{tabularx}
-\caption{SeeAct: Step success rate (\%) of GPT-4V on a subset of 30
-tasks for each task split with different grounding methods \cite{SeeAct}}
-\label{SeeAct:ResultSummary}
-\end{table}
+\noindent Overall, Prune4Web is a clean and measurable starting point because the filter and grounder stages are modular, the token-cost argument is verifiable, and the evaluation is on a standard benchmark (Mind2Web) that the earlier Sem-III work already used.
 
 
-\section{Strengths of SeeAct \& Its Limitations}
-    \subsection{Key Contribution of SeeAct}
-        \begin{itemize}
-            \item Shows how a vision-based LMM (GPT-4V) can use as an online agent by generating natural-language action plans from visual perception (a screenshot of a webpage) with reasoning and planning, and results in a human-like approach rather than agents that are only DOM-based \cite{SeeAct}.
-        
-            \item Simple architecture that separates action generation vs grounding vs execution, which provides clarity, flexibility, and ease of extension (e.g. different grounding strategies, different execution backends) \cite{SeeAct}.
-        
-            \item The Multimodal-Mind2Web dataset was created and released to close a significant gap by providing a realistic, large-scale, multimodal (visual + structural) benchmark for web agents.  This makes it possible to do a thorough investigation and assessment for upcoming generalist web-agent research \cite{SeeAct}.
-        
-            \item It includes both online and offline evaluation, giving generalization perspective and compatibility option with a simpler LMM architecture as well \cite{SeeAct}.
-        
-            \item Evaluation of multiple grounding strategies, error analysis (why certain methods fail, which gives actionable insights for future work \cite{SeeAct}.
-        \end{itemize}
+\section{Gaps We Inherit From Prune4Web}
 
-    \subsection{Limitations of SeeAct}
-        \begin{itemize}
-            \item \textbf{Grounding:} Grounding remains the major bottleneck. Even the best automatic grounding strategy (Textual Choices) lags far behind oracle grounding. This means many failures arise not from reasoning/planning but from incorrect element selection \cite{SeeAct}.
+Re-implementing Prune4Web in this repository and running it over the Mind2Web splits surfaced three gaps that directly motivate the proposed contributions in Chapter 4.
 
-            \item \textbf{Strict task-success rate:} Strict task-success criterion is bottleneck. Task success requires all steps to be correct, where a single mistake (wrong click, mis-ground) fails the entire task. This makes the metric harsh, and small errors propagate. Also, it reduces the evaluation capability of the fallback loops \cite{SeeAct}.
+\textbf{Grounder leans on a 3B vision-language model.}
+Prune4Web's headline 88.28\% Element Accuracy comes from a Qwen2.5VL-3B-Instruct grounder that the authors fine-tune themselves; a lighter Qwen2.5-0.5B-Instruct variant is also reported as a proof-of-concept but not as the primary result \cite{zhang2025prune4web}. Using a 3B vision-language grounder means the grounder always consumes the page screenshot in addition to the candidate element summaries, which pushes memory and latency well past what a 6~GB consumer GPU can serve, and the 0.5B text-only variant reported in the paper is not accompanied by LoRA hyperparameters, training schedule, or per-split accuracy that would let another group reproduce it. This leaves open whether a purely text-mode grounder below 1B parameters, trained with a documented recipe, can match the 3B VLM at element accuracy. Our QLoRA-tuned Qwen2.5-0.5B and Qwen3-0.6B grounders (Chapter 4 and 5) answer exactly that question.
 
-            \item \textbf{Limited set of supported actions:} SeeAct supports only basic operations: CLICK, TYPE, SELECT. Many real-world tasks involve more complex UI interactions — e.g. hover, drag-and-drop, scroll, keyboard shortcuts, dynamic pop-ups — which are not handled. The paper itself acknowledges that web UI complexity remains a challenge \cite{SeeAct}.
-        \end{itemize}
+\textbf{DOM processing is single-step and stateless.}
+Each step of Prune4Web re-runs the filter on the full current DOM, even if the page has barely changed from the previous step. This is a wasted efficiency signal: in typical multi-step tasks a button click only opens a new dropdown, or fills in one field, yet the next step still ships the entire DOM back through the filter. Prune4Web, Mind2Web, AutoWebGLM, and D2Snap all share this limitation \cite{zhang2025prune4web} \cite{deng2023mind2webgeneralistagentweb} \cite{lai2024autowebglm} \cite{schiepanski2025d2snap}, and it is the gap that our DOM Delta Processing is designed to close.
+
+\textbf{No privacy / HITL layer inside the loop.}
+Prune4Web sends the candidate element summaries, which frequently contain PII in attributes like \texttt{value}, \texttt{placeholder}, and \texttt{aria-label}, straight to the grounder LLM without masking. It also has no notion of an action being risky on its own terms (payment, credential, CAPTCHA, destructive confirmations) and therefore no gate that can pause or escalate before the action is executed. Both safety and privacy concerns are flagged as open problems in recent surveys \cite{tang2025surveymllmbasedguiagents} \cite{ning2025surveywebagentsnextgenerationai}, and the Privacy Hub + HITL layer in Chapter 4 is our response to this gap.
+
+\bigskip
+\noindent These three gaps (local grounder, cross-step DOM reduction, privacy-aware execution) are the direct motivation for the proposed methodology described in Chapter 4 and evaluated in Chapter 5.
