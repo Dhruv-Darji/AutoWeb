@@ -85,7 +85,7 @@ Guided By \\
 \vspace{10pt}
 
 \noindent This is to certify that the major project entitled
- \textbf{``Improving Web Automation with DOM Delta Processing and Privacy-Aware LLM Agents"} submitted by \textbf{Darji Dhruv S. (Roll No: 24MCD003)}, towards the partial fulfillment of the requirements for the award of degree of Master of Technology in Computer Science and Engineering (Data Science) of Nirma University, Ahmedabad, is the record of work carried out by him under my supervision and guidance. In my opinion, the submitted work has reached a level required for being accepted for examination. The results embodied in this major project part-I, to the best of my knowledge, haven't been submitted to any other university or institution for award of any degree or diploma. \\
+ \textbf{``Improving Web Automation with DOM Delta Processing and Privacy-Aware LLM Agents"} submitted by \textbf{Darji Dhruv S. (Roll No: 24MCD003)}, towards the partial fulfillment of the requirements for the award of degree of Master of Technology in Computer Science and Engineering (Data Science) of Nirma University, Ahmedabad, is the record of work carried out by him under my supervision and guidance. In my opinion, the submitted work has reached a level required for being accepted for examination. The results embodied in this major project part-II, to the best of my knowledge, haven't been submitted to any other university or institution for award of any degree or diploma. \\
 \vspace{2cm} \\
 \noindent
 
@@ -93,7 +93,7 @@ Guided By \\
 \vspace{2cm} \noindent
 \begin{tabular}{ l p{3.1cm}lp{4cm}l }
 Dr. Parita Oza 					& \hspace{0.3cm} 		& Dr.  Swati Jain\\
-Guide \& Assistant Professor, 	& 						   & Professor, \\
+Guide \& Assistant Professor, 	& 						   & Associate Professor, \\
 CSE Department, 				& 						& Coordinator M.Tech - CSE (Data Sceince)\\
 School of Technology, 		& 						& School of Technology,\\
 Nirma University, Ahmedabad. 	& 						& Nirma University, Ahmedabad\\
@@ -147,7 +147,7 @@ Dr. Parita Oza
 \end{center}
 \vspace{10pt}
 
-I would like to sincerely thank to everyone who helped me during this project. First of all, I would like to express my sincere gratitude to my project guide and project mentor, Dr. Parita Oza. She provided me with important advice, support and motivation during the project. I would want to express my gratitude to my PG Coordinator  Dr. Swati Jain, for her cooperation and for keeping me in line with the administrative and academic aspects. Her support and approachable nature made the journey much easier. My sincere thanks to Dr. Sudeep Tanwar, Head of the Department, for allowing me to work on this project and for creating an environment where students are encouraged to learn and explore. Finally, I want to thank my family and friends for their constant support, patience, and belief in me. Their encouragement kept me motivated throughout this work.
+I would like to sincerely thank to everyone who helped me during this project. First of all, I would like to express my sincere gratitude to my project guide and project mentor, Dr. Parita Oza. She provided me with important advice, support and motivation during the project. I would want to express my gratitude to my PG Coordinator  Dr. Swati Jain, for her cooperation and for keeping me in line with the administrative and academic aspects. Her support and approachable nature made the journey much easier. My sincere thanks to Dr. Ankit Thakkar, I/c Head of the Department, for allowing me to work on this project and for creating an environment where students are encouraged to learn and explore. Finally, I want to thank my family and friends for their constant support, patience, and belief in me. Their encouragement kept me motivated throughout this work.
 \\
 
 
@@ -165,7 +165,7 @@ I would like to sincerely thank to everyone who helped me during this project. F
 \end{center}
 \vspace{10pt}
 
-Modern web pages routinely contain tens of thousands of DOM tokens, which is well beyond the practical input size of most large language models and a major obstacle to building cost-efficient and privacy-respecting web-automation agents. The Prune4Web pipeline addresses the cost side by emitting a small keyword/weight scoring script that filters the DOM down to a top-$N$ candidate block before any LLM-grounding call is made, but it processes every step in isolation, depends on a fine-tuned three-billion-parameter vision-language grounder, and sends raw element summaries that often carry personally identifiable information into the grounder prompt. This thesis re-implements the Prune4Web Planner $\to$ Filter $\to$ Grounder backbone on a single six-gigabyte consumer GPU and extends it along three axes. A DOM Delta Processing layer adds structural-UID tracking and a hybrid keyword + MiniLM cosine score on the changed-element subset; a Privacy Hub plus risk-based Human-in-the-Loop gate adds a 24-keyword PolicyHub, a regex PII detector, and an optional differentially-private noise layer around the grounder; and the grounder itself is replaced by a QLoRA-fine-tuned sub-one-billion-parameter Qwen model that runs entirely on-device. On Mind2Web (6{,}070 test samples across three generalisation splits), the delta layer reduces grounder input by 16 to 18\% in tokens while improving Recall@20 by 1.20 points on the largest test\_domain split, and a fine-tuned Qwen3-0.6B grounder reaches 88.00\% Element Accuracy on test\_task, matching the Prune4Web paper's own 3B vision-language grounder at 88.28\% within rounding margin and at roughly five times fewer parameters. \\
+Web automation using natural language prompting is essential for wide range of functionality including UI Testing, bug detection, bug replay, as well as frequent task automation. Traditional automation strategies such as random based, rule based and script based lack with diverse and dynamic UI operability. This experiment utilizing recent developments in Large Multimodal Models (LLMs) and investigates an agent architecture that take input of both the rendered webpage screenshot and a summary HTML, and generate next executable step actions in structured JSON format. We provide implementation using Qwen2.5-0.5B as well as Qwen3-0.6B in local system and detailing three innovations: DOM Delta implementation, QLORA-based fine-tuned filter, and privacy aware Human-in-the-loop, and we describe the design of our pipeline. Our initial experimental result demonstrate that using dom delta and local small fine tuned 0.5/0.6B filter, recall@20 is comparable with 3B filter. Results also suggest that with further refinement, resource-efficient multimodal can also offer flexibility, generalization, and safer automation for modern web interfaces. \\
 
 
 
@@ -199,6 +199,7 @@ Abbreviations\\
 \textbf{VLM} & & Vision Language Model \\
 \textbf{JSON} & & JavaScript Object Notation \\
 \textbf{HITL} & & Human in the loop \\
+\textbf{PII} & & Personally Identifiable Information\\
 
 \end{tabular}
 %\end{Large}
