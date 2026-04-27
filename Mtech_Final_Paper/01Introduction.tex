@@ -1,0 +1,28 @@
+\section{Introduction}
+
+Web environment is a widely used environment across all kind of users, where websites are primary source of data. Naturally, we interact with the web using a browser environment, which poses the visuals and the base for that visually are HTML, CSS, JS and DOM. Large multimodal model \cite{LMM:Citation}, have shown remarkable results on visual plus textual input. This brings the ideation with combining visual and textual web data to operate the web only with user user-intended prompt or a predefined prompt task.
+
+Initiall approaches like SeeAct \cite{SeeAct}, AdaptAgennt \cite{FewShotLearning:verma2024adaptagentadaptingmultimodalweb}, LiteWebAgent \cite{zhang2025litewebagentopensourcesuitevlmbased}, OpenWebAgent \cite{iong2024openwebagent} etc. has already showcased the results, and adaptability or usability over different environment. But, a major bottleneck in web automation still remains, which occurs due to the Large size of HTML value, complex UI structure, and this resultsin poor grounding of actual actions \cite{SeeAct}. Figure \ref{fig:webAutomation} showcases the web automation with user-given prompt, visuals and with extracted HTML values.
+
+These papers showcase the fundamental of web automation rely on perception, exploration, planning and interaction \cite{tang2025surveymllmbasedguiagents}.
+\begin{itemize}
+    \item \textbf{Perception:} Ability to understand the interface and  infer the accurate next action for given input \cite{tang2025surveymllmbasedguiagents}. initial agents operate using only text-based input or using only visual-based input, where the evolution of LMM brings the idea of multi-type input in web automation field.
+
+    \item \textbf{Exploration:} Ability to handle the knowledge based such as given task, created step history using short term memory (STM) and long term memory (LTM). Agents now build comprehensive knowledge
+    bases for internal understanding (visual understanding) or step histor, and external information (web resources) \cite{tang2025surveymllmbasedguiagents}
+
+    \item \textbf{Planning:} Web automation agent use knowledge base to create long-term and short-term plans. it enable further for fallback or step back while going on wrong step execution or it come with Human Interaction idea for better privacy management \cite{tang2025surveymllmbasedguiagents}
+
+    \item \textbf{Interaction} Web automation operates withina  defined environment, e.g. SeeAct \cite{SeeAct} operate their execution on Pupeter, while LiteWebAgent \cite{zhang2025litewebagentopensourcesuitevlmbased} operates using a Chrome extension, which brings unique ideation for the web automation environment. Interaction also depends on the agent's capability to generate different kinds of interactions (click, scroll, input, etc.) and thus it limits that in interaction.
+\end{itemize}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{Images/GUI Automation.png}
+    \caption{Web automation with user prompts, which executes steps for given tasks}
+    \label{fig:webAutomation}
+\end{figure}
+
+
+Throughout this research project, we try to explore the web automation field, it limitations and conduct experiments in the field exploration. web automation showcases its potential not only in the direction of testing but also in user daily task automation, auto form filling, etc, which simplifies and accelerates the task execution process. However, the gap between raw HTML representation and the visual layout limit for current techniques, and generalisation across a variety of websites \cite{SeeAct}. while SeeAct offers an LMM-based approach with aim to create a truly generalised web agent that can operate over real-world websites as well \cite{SeeAct}. It is showcased in SeeAct \cite{SeeAct} paper as well, where they achieve 51.1\% task accuracy on online tasks. Further, We can investigate whether the combination of multimodal perception, natural-language planning, DOM interaction can overcome the bottleneck of previous automation tools and move us closer to general-purpose, dependable web automation by incorporating such a vision-based agent into our investigation.
