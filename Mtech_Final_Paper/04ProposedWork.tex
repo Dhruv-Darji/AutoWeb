@@ -1,12 +1,12 @@
-\chapter{Proposed Methodology}
+\section{Proposed Methodology}
 
-\section{System Overview}
+\subsection{System Overview}
 
 Figure \ref{fig:ProposeArchitecture} shows the end-to-end flow of the proposed system architecture. We keep the three-stage structure of Prune4Web \cite{zhang2025prune4web} (Planner $\to$ Filter $\to$ Grounder) as the base, and we add a \textit{DOM Delta} layer that works along with the DOM filter phase, and a \textit{Privacy Hub + HITL} layer that works along with the grounder. The goal of these two layers is to make Web-Automation more local, cheaper, and more privacy-aware.
 
 \begin{figure}[!h]
   \centering
-  \includegraphics[width=0.65\textwidth]{Diagrams/Architecture.png}
+  \includegraphics[width=0.95\linewidth]{Architecture.png}
   \caption{Proposed system overview. Prune4Web's \cite{zhang2025prune4web} Planner $\to$ Filter $\to$ Grounder backbone, with DOM Delta Processing at the filter stage and a Privacy Hub + risk-based HITL gate around the Planner.}
   \label{fig:ProposeArchitecture}
 \end{figure}
@@ -15,7 +15,7 @@ Figure \ref{fig:ProposeArchitecture} shows the end-to-end flow of the proposed s
 The defined pipeline works for a single sub-task, where the planner decide what to do atthe current step using the user-given high-level task. The pipeline first planner gets input as the user-given high-level task, previous sub-tasks history, and the injected privacy directive. based on the generated plan, Policy confident, Policy risk values pipeline decides the next step (Privacy generation can be implemented at Grounder level as well, with sensitive data masking). HITL Gate uses the privacy-risk keyword list defined initially to decide whether to go for further processing in the pipeline. On the filter step, the DOM is extracted and compared against the previously stored snapshot to produce delta view, in which each element is tagged as added, modified, or unchanged. Structural UIDs (an MD5 hash over tag, id, name, xpath) are assigned to every element \cite{deng2023mind2webgeneralistagentweb}. The delta-aware filter then returns the top-20 elements using a hybrid keyword + MiniLM \cite{wang2020minilm}\cite{reimers2019sbert} scoring function. The local grounder (a QLoRA-fine-tuned Qwen3-0.6B or Qwen2.5-0.5B) map the final element and generate action value to be performed.
 
 
-\section{DOM Delta Processing}
+\subsection{DOM Delta Processing}
 
 
 At the sub-task level, we store the previous DOM value in memory as a snapshot to just compute the DOM difference and not to re-process the entire DOM on every step.
@@ -31,7 +31,7 @@ Figure \ref{fig:DomDelta} sketches the three-way fusion of structural UID tracki
 
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=0.65\linewidth]{Diagrams/DOM_DELTA_DIAGRAM.png}
+    \includegraphics[width=0.65\linewidth]{DOM_DELTA_DIAGRAM.png}
     \caption{DOM Delta Processing: structural-UID tracking + hybrid keyword + MiniLM scoring on the delta subset.}
     \label{fig:DomDelta}
 \end{figure}
@@ -39,7 +39,7 @@ Figure \ref{fig:DomDelta} sketches the three-way fusion of structural UID tracki
 Chapter 5 reports a 16 to 18\% token reduction at matched or slightly improved Recall@20 across all three Mind2Web test splits and a +1.20~\% improvement on the largest (test\_domain, 3,838 samples).
 
 
-\section{Human-in-the-Loop with Privacy Hub}
+\subsection{Human-in-the-Loop with Privacy Hub}
 
 Privacy Hub is a centralized privacy rools and lists risky of risky keywords such as CAPTCHA, Login, etc. Prune4Web and related systems. Privacy HUB also allows user customization, can be contain a complete site policy as well (which increases token usage). The layer is completely flexible and can be implement at the planner or grounder level, as per the requirement. Planner-level implementation will stop further steps as it triggers after just the planner result, and hence reduces inference time. While grounder-level implementation contain element masking (email addresses, phone numbers, date of birth, ID numbers, password placeholders) before prompting values straight into the LLM prompt. which can be use as  PII. A PolicyHub introduces a risk-based HITL gate and a Privacy-Aware LLM wrapper that rewrites the prompt before the call.
 
@@ -50,7 +50,7 @@ The PolicyHub contain a set of defined policy rules and a lists of risky keyword
 
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=0.75\linewidth]{Diagrams/POLICY_HUB.png}
+    \includegraphics[width=0.75\linewidth]{POLICY_HUB.png}
     \caption{HITL gate and Privacy Hub. PolicyHub injects policy rules into the Planner prompt, and the Privacy payer masks PII from element summaries before the Grounder call.}
     \label{fig:HitlPrivacy}
 \end{figure}
@@ -58,6 +58,6 @@ The PolicyHub contain a set of defined policy rules and a lists of risky keyword
 Figure \ref{fig:HitlPrivacy} shows both components in the pipeline. To save cost, HITL gate kept before grounder, which blocks ricky actions, and the Privacy Hub keeps user data out of the grounder prompt by default.
 
 
-\section{Implementation Notes}
+\subsection{Implementation Notes}
 
 The backbone of the pipeline is re-implemented from the Prune4Web paper \cite{zhang2025prune4web}, with deviations. In implementation at the Grounder stage supports a QLoRA-fine-tuned Qwen2.5-0.5B or Qwen3-0.6B adapter loaded in 4-bit nf4 quantisation via \cite{dettmers2023qlora}, running under 1~GB VRAM on an RTX 4050 (6 GB). The local grounder LLM  is fine-tuned on 6,626 Mind2Web-Multimodel examples using the identical Grounder prompt used at inference, so there is no train/inference drift. We reported the measured accuracy, training time, and latency trade-offs between the two local base models and the paper's fine-tuned Qwen2.5VL-3B-Instruct grounder \cite{zhang2025prune4web} in the next Chapter.

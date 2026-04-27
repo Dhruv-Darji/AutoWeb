@@ -1,18 +1,18 @@
-\chapter{Future Work}
+\section{Future Work}
 
 The work in this thesis leaves four concrete and locally tractable extensions, listed in roughly increasing order of effort.
 
-\section{Wire the Privacy Wrapper Into All Three Call Sites}
+\subsection{Wire the Privacy Wrapper Into All Three Call Sites}
 The \texttt{PrivacyAwareLLM} class in \texttt{src/privacy\_aware\_llm.py} already implements both the \texttt{[PRIVACY DIRECTIVE]} system-prompt injection and the per-element PII anonymisation pipeline, and is instantiated in \texttt{run\_prune4web.py}. However, the three LLM call sites in the driver, namely the planner, the filter, and the grounder, still invoke the raw \texttt{llm\_call} helper rather than \texttt{privacy\_llm.call(messages, stage=...)}. The next implementation step is to route all three through the wrapper so that the directive is injected into the planner system prompt (where the sub-task is decided), into the filter system prompt (where keyword scripts that may leak PII are emitted), and into the grounder system prompt (where the candidate element summaries are read). Once routed, the existing \texttt{print\_privacy\_summary} hook will emit per-stage PII match counts, which gives the report a small quantitative table to attach to Section~5.7.
 
-\section{Run the 30-Sample Privacy and HITL Pilot}
+\subsection{Run the 30-Sample Privacy and HITL Pilot}
 Section 5.7 currently reports the Privacy Hub and HITL gate qualitatively because Mind2Web does not include a labelled PII test set. A small pilot of around 30 samples drawn from a mixed slice of Mind2Web \texttt{test\_domain} pages, with PII fields injected into the candidate element summaries to give a known ground truth, would produce two headline numbers: the fraction of samples on which the HITL gate fires, and the fraction of element summaries on which at least one PII field is masked before reaching the grounder prompt. The same slice can be re-used to measure the precision and recall of the regex PII detector against the injected ground truth, and to confirm that the three OR-combined HITL triggers (\texttt{policy\_risk}, risk-keyword scan, confidence floor) behave as intended.
 
-\section{Control for Candidate Ordering in the EA Gap}
+\subsection{Control for Candidate Ordering in the EA Gap}
 Chapter 5 reports a stable 5 to 6~pp Element Accuracy gap between the FULL and DELTA\_HYBRID candidate blocks fed to the same QLoRA grounder, even though their Recall@20 differs by only 1~pp on the same 200 test\_domain samples. This argues that the gap is a downstream sensitivity to candidate ordering inside the top-20 block rather than a recall problem. A direct follow-up is to re-sort the top-20 by structural UID or DOM position before constructing the grounder prompt, and to re-measure EA with both grounders. If the gap closes, candidate-order normalisation should be folded back into the DOM Delta layer; if it does not, the grounder is sensitive to the score-induced ordering itself, which would motivate a small preference-tuning round on ordered candidate blocks.
 
-\section{Strip the Empty Think Block from the Qwen3 Grounder}
+\subsection{Strip the Empty Think Block from the Qwen3 Grounder}
 The Qwen3-0.6B grounder runs at roughly 20~s per sample versus 5~s for Qwen2.5-0.5B on the same RTX 4050. Profiling traced the difference to Qwen3's chat template, which still emits an empty \texttt{<think>}\textbackslash n\textbackslash n\texttt{</think>} block before the JSON payload even when \texttt{enable\_thinking=False} is set. Stripping the think tokens at the tokenizer level is a small, contained change and should bring Qwen3's per-step latency down to the same order as Qwen2.5 without affecting Element Accuracy, which is currently the only reason to prefer the Qwen2.5 backend in the live agent loop.
 
-\section{Beyond Mind2Web}
+\subsection{Beyond Mind2Web}
 On a longer horizon, the system has been measured only on Mind2Web. The natural next step is to evaluate on a benchmark with multi-step trajectories where DOM Delta Processing should pay off the most, such as WebVoyager or a Mind2Web-Live trajectory split, since the static Mind2Web evaluation only exercises the per-step decision and not the cross-step re-use that the structural-UID layer is designed for. This would also allow the HITL gate to be evaluated on long sessions where risky actions and benign actions interleave, which is the deployment regime the Privacy Hub is ultimately aimed at.

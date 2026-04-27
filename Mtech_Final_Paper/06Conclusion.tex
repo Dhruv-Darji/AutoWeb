@@ -1,0 +1,16 @@
+\section{Conclusion}
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item Due to the lack of required dataset values availability in all openly available datasets, Privacy Hub + HITL has just tested on very small live web sessions and does not have large-scale benchmark results.
+    \item Element Accuracy measured on 200-samples of test\_task and test\_domain slices. EA difference between DELTA\_HYBRID vs FULL Element Accuracy is around $\pm$6~\%.
+\end{itemize}
+
+\subsection{Conclusion}
+The two experiment conducted including DOM Delta adn privacy aware on web-automation, both implemented over Planner $\to$ Filter $\to$ Grounder as fundamental architecture provided in Web4Prune \cite{zhang2025prune4web}. DOM Delta Processing, replaces the stateless full-DOM filter with a structural-UID-tracked delta view where scoring is based on keyword or MiniLM \cite{wang2020minilm} or hybrid approach at where hybrid approach provide comparative results. All inference conducted in local 6GB RTX 4050 GPU with minimal around 1GB runtime GPU usage or with CPU possible only model which take experiment toward more localize Web-Automation or In browser web-automation. We also experimented Privacy Hub and a risk-based Human-in-the-Loop (HITL) gate around the pipeline, considering 24-keyword PolicyHub with a regex PII detector and an optional \cite{dettmers2023qlora}.
+
+On all three Mind2Web \cite{deng2023mind2webgeneralistagentweb} test splits (6,070 samples in total), DELTA\_HYBRID reduces grounder input by 16 to 18\% in Qwen-tokenised cost while staying within 0.23~pp of Recall@20 on test\_task and test\_website and improving Recall@20 by +1.20~pp on test\_domain, the largest and hardest split (3,838 samples). Overall DELTA\_HYBRID methodoly reach 88.00\% of Element Accuracy with a QLoRA-fine-tuned Qwen3-0.6B grounder, which matching the Prune4Web paper's own fine-tuned Qwen2.5VL-3B-Instruct grounder at 88.28\% within small rounding margin while running at roughly 5x fewer parameters and without a vision encoder. Combined, these two findings indicate that a sub-1B text-only local grounder, coupled with a delta-aware filter, can reproduce the published 3B vision-language baseline at a significantly reduced compute cost.
+
+The overall result of this experiment is that the Prune4Web pipeline can be cheaper at the filter stage (DOM Delta), safer at the grounder stage (HITL + Privacy Hub), and more accessible at the model stage (sub-1B QLoRA grounder can be implementable on low powsered system as well), without sacrificing the element-accuracy.
+
