@@ -1,0 +1,18 @@
+% Slide 21: Experiments: Filter-Stage Recall@20
+\begin{frame}{Experiments: Filter-Stage Recall@20}
+  \begin{center}
+    \small
+    \begin{tabular}{l r r r r r}
+      \toprule
+      \textbf{Split} & \textbf{Samples} & \textbf{FULL R@20} & \textbf{DELTA\_HYBRID R@20} & \textbf{$\Delta$} & \textbf{Token red.} \\
+      \midrule
+      test\_task    & 1,257 & 90.30\% & 90.07\% & $-0.23$\,pp & 17.8\% \\
+      test\_website & 975   & 89.95\% & 89.85\% & $-0.10$\,pp & 16.4\% \\
+      test\_domain  & 3,838 & 86.78\% & 87.98\% & $+1.20$\,pp & 17.5\% \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vskip0.5cm
+  DELTA\_HYBRID matches FULL Recall@20 within 0.23\,pp on two splits and \textbf{improves} on the largest split, while reducing grounder input tokens by \textbf{16--18\%}.
+\end{frame}

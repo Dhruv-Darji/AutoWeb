@@ -1,0 +1,24 @@
+% Slide 6: Literature Review (2/6)
+\begin{frame}{Literature Review}
+  \lrtable
+  \begin{tabularx}{\textwidth}{p{0.7cm} p{2.8cm} X X}
+    \toprule
+    \textbf{Year} & \textbf{Title} & \textbf{Key Contribution} & \textbf{Limitations} \\
+    \midrule
+    Feb, 2025 \cite{wang2025guiagentsfoundationmodels}
+    & GUI Agents with Foundation Models: A Comprehensive Survey
+    & Consolidates recent work using (M)LLMs for GUI tasks. Offers taxonomy, datasets review, and unified framework.
+    & Discusses practical gaps like unavailable checkpoints, inconsistent experimental settings, and reproducibility challenges. \\
+    \addlinespace
+    Mar, 2024 \cite{SeeAct}
+    & GPT-4V(ision) is a Generalist Web Agent, if Grounded
+    & Shows GPT-4V (multimodal LMM) can act as a generalist web agent when grounded with both screenshot + HTML; introduces SeeAct, evaluates on Mind2Web (51.1\% success with manual grounding).
+    & Grounding strategies are imperfect and there's a significant gap to oracle grounding. SeeAct's best gains rely on expensive LMMs and manual grounding infrastructure. \\
+    \addlinespace
+    Nov, 2024 \cite{FewShotLearning:verma2024adaptagentadaptingmultimodalweb}
+    & AdaptAgent: Adapting Multimodal Web Agents with Few-Shot Learning from Human Demonstrations
+    & Proposes few-shot adaptation using human demonstrations to improve web agents' generalization on unseen sites. Shows 3.36\%--7.21\% absolute gains (relative 21\%--66\%) on benchmarks.
+    & Improvement depends on demonstration selection and model type. Few-shot gains vary and do not fully close the generalization gap for proprietary or very different sites. \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}

@@ -1,0 +1,10 @@
+% Slide 24: Future Work
+\begin{frame}{Future Work}
+  \begin{itemize}
+    \item Future work should focus on gathering data for evaluating PolicyHub and privacy layer on large scale.
+
+    \item Even though Recall@20 of FULL and DELTA HYBRID is $\sim$1\,pp, we observed a stable 5 to 6\,pp Element Accuracy gap between the same QLoRA grounder and the 3B model, even though they differ by only on the same 200 test domain samples.
+
+    \item Experiment should try to reorder top-20 block before grounding and to re-measure EA with both grounders. If the gap closes, candidate-order normalisation should be folded back into the DOM Delta layer. If it does not, the grounder is sensitive to the score-induced ordering itself, which would motivate a small preference-tuning round on ordered candidate blocks.
+  \end{itemize}
+\end{frame}

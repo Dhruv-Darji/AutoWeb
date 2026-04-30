@@ -1,0 +1,18 @@
+% Slide 15: Novelty 1: DOM Delta Processing
+\begin{frame}{Novelty 1: DOM Delta Processing}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.58\textwidth}
+      \begin{itemize}
+        \item \textbf{Structural UID:} tag, id, name, xpath values are stable across re-renders, even when visible text mutates. Same property as Mind2Web's \texttt{backend\_node\_id} but computed offline from parsed HTML, where no live browser needed.
+        \item \textbf{Ancestor summary:} Keep up to 4 semantically meaningful ancestors (\texttt{form}, \texttt{nav}, \texttt{section}, \texttt{dialog}) appended which preserve ancestor summary.
+        \item \textbf{Hybrid score:} Calculate hybrid score with delta keyword and with delta sentence embeddings from all-MiniLM-L6-v2.
+        \item \textbf{Result:} As a result 16--18\% Qwen-token reduction at matched Recall@20 across all three test splits.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.40\textwidth}
+      \begin{flushright}
+        \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{DOM_DELTA_DIAGRAM.png}
+      \end{flushright}
+    \end{column}
+  \end{columns}
+\end{frame}

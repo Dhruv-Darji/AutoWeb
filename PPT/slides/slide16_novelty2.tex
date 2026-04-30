@@ -1,0 +1,21 @@
+% Slide 16: Novelty 2: Policy Hub + Risk-Based HITL
+\begin{frame}{Novelty 2: Policy Hub + Risk-Based HITL}
+  \footnotesize
+  \begin{itemize}
+    \item \textbf{PolicyHub:} Contains policies and risky keywords list, which is customizable and can contain complete policy as well.
+
+    \item LLM JSON output extended with \texttt{policy\_risk} (bool), \texttt{risk\_confidence}, \texttt{hitl\_reason}.
+
+    \item \textbf{HITL gate} fires on any one of three OR-combined triggers:
+    \begin{enumerate}
+      \item[(a)] LLM self-flags \texttt{policy\_risk=true},
+      \item[(b)] a risk keyword appears in the action text or \texttt{hitl\_reason},
+      \item[(c)] \texttt{risk\_confidence} falls below a configured threshold.
+    \end{enumerate}
+
+    \item The gate sits \textbf{before the grounder}, so risky steps further inference can be avoided by the expensive grounder call.
+
+    \item \textbf{Privacy-Aware LLM wrapper} (between Filter and Grounder) runs a regex PII detector (email, phone, Aadhaar, PAN, password) and replaces matches with \texttt{[EMAIL\_MASKED]} style placeholders.
+    \item A short privacy directive is injected into the grounder prompt so masked tokens are treated as opaque.
+  \end{itemize}
+\end{frame}

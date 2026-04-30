@@ -1,0 +1,12 @@
+% Slide 20: Implementation Notes
+\begin{frame}{Implementation Notes}
+  \begin{itemize}
+    \item Our architecture inspired from Prune4Web with some deviations.
+
+    \item \textbf{Grounder:} QLoRA-fine-tuned Qwen2.5-0.5B or Qwen3-0.6B loaded in 4-bit nf4; $<$1\,GB VRAM at inference on RTX 4050 (6\,GB).
+
+    \item Fine-tuned on 6,626 Mind2Web examples using the identical grounder prompt as inference --- no train/inference drift.
+
+    \item DOM Delta + Privacy wrapper run entirely on-device.
+  \end{itemize}
+\end{frame}

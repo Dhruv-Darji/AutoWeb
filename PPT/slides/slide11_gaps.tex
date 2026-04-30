@@ -1,0 +1,19 @@
+% Slide 11: Research Gaps
+\begin{frame}{Research Gaps}
+  \footnotesize
+  \begin{block}{\small Unreliable Element Grounding}
+    Current agents struggle with fine-grained visual-to-HTML grounding, causing major failures on real websites \cite{wang2025guiagentsfoundationmodels, SeeAct, Browsinglikehuman:luo2025browsing}.
+  \end{block}
+  \vspace{-2pt}
+  \begin{block}{\small Stateless full-DOM Filtering}
+    Every existing pruning system (Prune4Web, AutoWebGLM, Agent-E, HTML-T5) re-processes the full DOM each step, even when the page changed marginally. No structural-UID + delta layer is wired into a real filter \cite{zhang2025prune4web, tarsariya2024agente, lai2024autowebglm, gur2024webagent}.
+  \end{block}
+  \vspace{-2pt}
+  \begin{block}{\small Sub-1B Local Grounders are Under-studied}
+    Most web agents are dependent on GPT-4V or Qwen2.5VL-3B. Open-weight small models such as 0.5B grounders exist but do not have strong numbers \cite{zhang2025prune4web}.
+  \end{block}
+  \vspace{-2pt}
+  \begin{block}{\small Privacy and HITL Limitations}
+    Most web-automation tools do not look for sensitive pages like CAPTCHA, Payment-Gateway, login, or explicit privacy policies at each subtask level \cite{zhang2025largelanguagemodelbrainedgui, ning2025surveywebagentsnextgenerationai}.
+  \end{block}
+\end{frame}

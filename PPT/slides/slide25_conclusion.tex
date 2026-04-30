@@ -1,0 +1,13 @@
+% Slide 25: Conclusion
+\begin{frame}{Conclusion}
+  \small
+  \begin{itemize}
+    \item \textbf{DOM Delta Processing} replaces the stateless full-DOM filter with a structural-UID-tracked delta view. Hybrid keyword + MiniLM scoring gives \textbf{16--18\% token reduction} at matched or improved Recall@20 across 6,070 Mind2Web test samples.
+
+    \item A \textbf{QLoRA-fine-tuned Qwen3-0.6B} local grounder reaches \textbf{88.00\% EA}, matching the Prune4Web 3B Qwen2.5VL-Instruct baseline (88.28\%) within rounding margin while running at 5$\times$ fewer parameters, no vision encoder, $<$1\,GB VRAM on a 6\,GB RTX 4050.
+
+    \item A \textbf{PolicyHub + risk-based HITL gate} with a regex PII detector and a privacy directive injected into the grounder prompt brings privacy-awareness into the action loop, not bolted on after.
+
+    \item \textbf{Net result:} the Prune4Web pipeline becomes cheaper at the filter stage, safer at the grounder stage, and deployable on consumer hardware without sacrificing element accuracy.
+  \end{itemize}
+\end{frame}

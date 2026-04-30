@@ -1,0 +1,17 @@
+% Slide 17: Architecture
+\begin{frame}{Architecture}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{description}
+        \item[Action Generation (LMM):] Given the current screenshot + task + history to model which returns a textual action and risk scores for action.
+        \item[Action Grounding:] Map textual description to actual DOM element + operation (click / type / select) by small model and with DOM delta methodology.
+        \item[Browser Execution:] Use automation (via Playwright / browser engine) to execute the action. Webpage updates and we get new screenshot + DOM.
+      \end{description}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \begin{flushright}
+        \includegraphics[width=\linewidth,height=0.74\textheight,keepaspectratio]{Architecture.png}
+      \end{flushright}
+    \end{column}
+  \end{columns}
+\end{frame}

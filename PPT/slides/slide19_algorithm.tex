@@ -1,0 +1,20 @@
+% Slide 19: Improvement - Algorithm
+\begin{frame}{Improvement -- Algorithm}
+  \begin{block}{Algorithm: Policy-Aware Action Loop}
+    \ttfamily\small
+    \begin{tabbing}
+      \hspace{0.5cm}\=\hspace{0.5cm}\=\hspace{0.5cm}\=\kill
+      $A_t = \pi(s_t, T, \{a_1, a_2, \ldots, a_{t-1}\}, p_t)$ \\[2pt]
+      $a_t, c, r, h_r = A_t$ \\[2pt]
+      matched = compare action plan and policy keywords \\[4pt]
+      \textbf{if} $(r > 0$ \textbf{or} matched \textbf{or} $c < \text{confidence})$ \{ \\
+      \> $r = 1$ \hspace{1cm} \# policy\_risk detected \\
+      \} \\[4pt]
+      \textbf{if} $(r == 1)$ \{ \\
+      \> HITL value triggered, wait for human interaction for step \\
+      \} \textbf{else} \{ \\
+      \> Execute further steps from grounding \\
+      \}
+    \end{tabbing}
+  \end{block}
+\end{frame}

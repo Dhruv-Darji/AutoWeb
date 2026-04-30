@@ -1,0 +1,35 @@
+% Slide 18: Improvement
+\begin{frame}{Improvement}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Prune4Web:}
+      \begin{align*}
+        a_t &= \pi(s_t, T, \{a_1, a_2, \ldots, a_{t-1}\}) \\
+        s_{t+1} &= S(a_t) = \{h_{t+1}, i_{t+1}\}
+      \end{align*}
+      \textbf{Where:}\\
+      $a_t$ = action at time $t$\\
+      $s$ = site specific input (html + image)\\
+      $\pi$ = Multimodal LLM\\
+      $T$ = user defined task
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \textbf{Our's:}
+      \begin{align*}
+        A_t &= \pi(s_t, T, \{a_1, a_2, \ldots, a_{t-1}\}, p_t) \\
+        s_{t+1} &= S(a_t) = \{h_{t+1}, i_{t+1}\}
+      \end{align*}
+      \textbf{Where:}\\
+      $a_t$ = action at time $t$\\
+      $s$ = site specific input (html + image)\\
+      $\pi$ = Multimodal LLM\\
+      $T$ = user defined task\\
+      $p_t$ = Policy rules\\
+      $A_t \in (a_t, c, r, h_r)$\\
+      $c$ = confidence, $c \in [0,100]$\\
+      $r \in \{0,1\}$\\
+      $h_r$ = \texttt{hitl\_reason}
+    \end{column}
+  \end{columns}
+\end{frame}

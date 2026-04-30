@@ -1,0 +1,24 @@
+% Slide 8: Literature Review (4/6)
+\begin{frame}{Literature Review}
+  \lrtable
+  \begin{tabularx}{\textwidth}{p{0.7cm} p{2.8cm} X X}
+    \toprule
+    \textbf{Year} & \textbf{Title} & \textbf{Key Contribution} & \textbf{Limitations} \\
+    \midrule
+    May, 2025 \cite{zhang2025prune4web}
+    & Prune4Web: DOM Tree Pruning Programming for Web Agent
+    & Three-stage Planner$\to$Filter$\to$Grounder; programmatic JS-extractor + chunked LLM judge; 88.28\% EA Mind2Web with fine-tuned Qwen2.5VL-3B-Instruct grounder.
+    & Filter is prompt-engineered \& LLM-bound. Grounder is a 3B VLM and no privacy/HITL layer. \\
+    \addlinespace
+    2025 \cite{schiepanski2025d2snap}
+    & Beyond Pixels: Exploring DOM Downsampling for LLM-Based Web Agents
+    & DOM-diff snapshotting; $\sim10^3$-token compression via post-order merging + TextRank.
+    & Operates on isolated snapshots; no cross-step reuse. \\
+    \addlinespace
+    2024 \cite{tarsariya2024agente}
+    & Agent-E: From Autonomous Web Navigation to Foundational Design Principles in Agentic Systems
+    & Accessibility-tree pruning; MutationObserver for cross-step changes.
+    & Converts changes into prompt text --- no token reduction. \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}

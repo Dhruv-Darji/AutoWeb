@@ -1,0 +1,24 @@
+% Slide 7: Literature Review (3/6)
+\begin{frame}{Literature Review}
+  \lrtable
+  \begin{tabularx}{\textwidth}{p{0.7cm} p{2.8cm} X X}
+    \toprule
+    \textbf{Year} & \textbf{Title} & \textbf{Key Contribution} & \textbf{Limitations} \\
+    \midrule
+    May, 2025 \cite{zhang2025litewebagentopensourcesuitevlmbased}
+    & LiteWebAgent: The Open-Source Suite for VLM-Based Web-Agent Applications
+    & Provides an open, modular framework (planning, memory, tree search) plus production demos (serverless backend or Chrome extension) to help researchers build and deploy VLM web agents.
+    & Actual performance depends on chosen models and grounding modules. \\
+    \addlinespace
+    Aug, 2024 \cite{iong2024openwebagent}
+    & OpenWebAgent: An Open Toolkit to Enable Web Agents on Large Language Models
+    & Delivers a modular toolkit with an HTML parser, action generation module, and UI to accelerate building of LLM/LMM web agents; open-source code \& plugin.
+    & Toolkit-oriented --- does not itself claim new agent performance. Practical utility depends on integration choices and model quality. \\
+    \addlinespace
+    Jul, 2025 \cite{Browsinglikehuman:luo2025browsing}
+    & Browsing Like Human: A Multimodal Web Agent with Experiential Fast-and-Slow Thinking (WebExperT)
+    & Proposes a human-like fast/slow planning paradigm and experiential learning (reflecting on failures) to improve decomposition of complex instructions --- shows strong results on Mind2Web.
+    & Added complexity (planning + reflection) may increase compute and implementation complexity. \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}

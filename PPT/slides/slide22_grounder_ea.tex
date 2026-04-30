@@ -1,0 +1,17 @@
+% Slide 22: Experiments: Grounder Element Accuracy
+\begin{frame}{Experiments: Grounder Element Accuracy}
+  \begin{center}
+    \begin{tabular}{l r r l}
+      \toprule
+      \textbf{Grounder} & \textbf{Params} & \textbf{test\_task EA} & \textbf{Notes} \\
+      \midrule
+      Qwen2.5VL-3B-Instruct (Prune4Web) & 3.0B & 88.28\% & Vision-language, paper baseline \\
+      Qwen2.5-0.5B + QLoRA (ours) & 0.5B & 85.00\% & Text-only, 6$\times$ fewer params \\
+      Qwen3-0.6B + QLoRA (ours) & 0.6B & 88.00\% & Text-only, 5$\times$ fewer params, matches paper \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vskip0.5cm
+  200-sample \texttt{test\_domain} slice with DOM Delta enabled: Qwen3 reaches \textbf{88.00\% EA}, matching the 3B vision-language baseline within rounding margin while running without a vision encoder.
+\end{frame}

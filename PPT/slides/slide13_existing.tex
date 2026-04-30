@@ -1,0 +1,13 @@
+% Slide 13: Existing Solution
+\begin{frame}{Existing Solution}
+  \textbf{Paper-Title:} Prune4Web: DOM Tree Pruning Programming for Web Agent
+
+  \begin{itemize}
+    \item Three-stage pipeline: Planner (decides sub-task) $\to$ Programmatic Element Filter (LLM emits a Python keyword:weight script that a deterministic scorer applies) $\to$ Action Grounder (fine-tuned Qwen2.5VL-3B-Instruct).
+    \item Reports 88.28\% Element Accuracy on Mind2Web \texttt{test\_task} with the fine-tuned 3B VLM grounder; also filter is having 25 to 50 times DOM-token reduction at the filter stage.
+    \item Chosen as base over SeeAct because SeeAct depends on GPT-4V (paid) and could not be reproduced locally while Prune4Web has local inference capability and a stronger published number.
+  \end{itemize}
+
+  \vfill
+  \hfill{\footnotesize Source: \cite{SeeAct, zhang2025prune4web}}
+\end{frame}

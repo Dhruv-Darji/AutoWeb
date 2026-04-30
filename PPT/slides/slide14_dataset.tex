@@ -1,0 +1,25 @@
+% Slide 14: Dataset: MultiModal-Mind2Web
+\begin{frame}{Dataset: MultiModal-Mind2Web}
+  \textbf{What is Multimodal-Mind2Web:}
+  \begin{itemize}
+    \item It is the multimodal version of Mind2Web, where each webpage state has both screenshot image + HTML DOM \cite{deng2023mind2webgeneralistagentweb}.
+    \item Covers 137 websites, spanning 31 top-level domains, with a broad variety of user tasks + interaction patterns \cite{deng2023mind2webgeneralistagentweb}.
+    \item Consists of over 2,000+ distinct tasks (in the original Mind2Web) with crowdsourced action sequences \cite{deng2023mind2webgeneralistagentweb}.
+  \end{itemize}
+
+  \vskip0.3cm
+  \small
+  \begin{tabular}{l r l}
+    \toprule
+    \textbf{Split / Set} & \textbf{No.\ of actions / steps} & \textbf{What it means} \\
+    \midrule
+    Train         & 7775 actions from 1009 tasks & Training pool for learning / experimentation \\
+    Test\_task    & 1339 actions from 177 tasks  & Tests generalization across tasks within known websites \\
+    Test\_website & 1019 actions from 142 tasks  & Tests cross-website generalization \\
+    Test\_domain  & 4060 actions from 694 tasks  & Tests cross-domain robustness \\
+    \bottomrule
+  \end{tabular}
+
+  \vfill
+  \hfill{\footnotesize Source: \cite{deng2023mind2webgeneralistagentweb}}
+\end{frame}

@@ -1,0 +1,37 @@
+% Slide 23: Implementation & Initial Result
+\begin{frame}{Implementation \& Initial Result}
+  {\small *Initial results are computed on 13 live websites (7 required HITL, 6 not required HITL)}
+
+  \vskip0.2cm
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.56\textwidth}
+      \scriptsize
+      \setlength{\tabcolsep}{5pt}
+      \begin{tabular}{l r}
+        \toprule
+        \textbf{Metric} & \textbf{Value} \\
+        \midrule
+        HITL Recall         & 85.71\% \\
+        HITL Precision      & 100\%   \\
+        HITL Accuracy       & 92.86\% \\
+        False Positive Rate & 0\%     \\
+        False Negative Rate & 14.29\% \\
+        \bottomrule
+      \end{tabular}
+
+      \vskip0.25cm
+      \footnotesize
+      \begin{itemize}
+        \item The system is able in triggering HITL.
+        \item It avoids unnecessary human interruptions (0 false positives),
+        \item but misses some high-risk cases (false negatives),
+        \item which we aim to improve via expanded risk keywords and site-level overrides.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{flushright}
+        \includegraphics[width=\linewidth,height=0.62\textheight,keepaspectratio]{HITL_Result.png}
+      \end{flushright}
+    \end{column}
+  \end{columns}
+\end{frame}

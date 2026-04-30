@@ -1,0 +1,164 @@
+\documentclass[aspectratio=169, 12pt]{beamer}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{ragged2e}
+\usepackage{adjustbox}
+\usepackage{caption}
+% References are maintained manually in slide26_references.tex
+% to keep compilation fast and robust on Overleaf.
+
+% ============================================================
+% Theme & Colors
+% ============================================================
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Custom colors inspired by the original PPT (warm peach/navy)
+\definecolor{primaryNavy}{HTML}{1E2761}
+\definecolor{accentPeach}{HTML}{F5CBA7}
+\definecolor{lightBg}{HTML}{FDF6EC}
+\definecolor{darkText}{HTML}{2C3E50}
+\definecolor{accentBlue}{HTML}{2980B9}
+\definecolor{tableHeader}{HTML}{D6E4F0}
+\definecolor{tableAlt}{HTML}{EBF5FB}
+\definecolor{greenAccent}{HTML}{27AE60}
+
+\setbeamercolor{structure}{fg=primaryNavy}
+\setbeamercolor{palette primary}{bg=primaryNavy, fg=white}
+\setbeamercolor{palette secondary}{bg=accentPeach, fg=darkText}
+\setbeamercolor{frametitle}{bg=primaryNavy, fg=white}
+\setbeamercolor{title}{fg=primaryNavy}
+\setbeamercolor{item}{fg=primaryNavy}
+\setbeamercolor{block title}{bg=primaryNavy, fg=white}
+\setbeamercolor{block body}{bg=lightBg, fg=darkText}
+
+% Remove navigation symbols
+\setbeamertemplate{navigation symbols}{}
+% Add slide numbers
+\setbeamertemplate{footline}[frame number]
+% Use numbered bibliography labels instead of icon glyphs
+\setbeamertemplate{bibliography item}[text]
+
+% ============================================================
+% Graphics path
+% ============================================================
+\graphicspath{{diagrams/}}
+
+% ============================================================
+% Custom commands
+% ============================================================
+\newcommand{\sectionslide}[1]{%
+  \begin{frame}
+    \vfill
+    \centering
+    {\Huge\bfseries\color{primaryNavy} #1}
+    \vfill
+  \end{frame}
+}
+
+% Smaller font for literature review tables
+\newcommand{\lrtable}{\scriptsize}
+
+% ============================================================
+% Title information
+% ============================================================
+\title[DOM Delta \& Privacy-Aware LLM Agents]{%
+  ``Improving Web Automation with DOM Delta Processing\texorpdfstring{\\}{ - }
+  and Privacy-Aware LLM Agents''}
+\author[Darji Dhruv S.]{Darji Dhruv S. (24MCD003)\texorpdfstring{\\[4pt]}{ - }
+  \small Mentor: Dr.\ Parita Oza}
+\institute[]{Computer Science \& Engineering (Data Science)}
+\date{Major Project -- 2}
+
+% ============================================================
+% Document
+% ============================================================
+\begin{document}
+
+% --- Slide 1: Title ---
+\input{slides/slide01_title.tex}
+
+% --- Slide 2: Contents ---
+\input{slides/slide02_contents.tex}
+
+% --- Slide 3: Introduction ---
+\input{slides/slide03_introduction.tex}
+
+% --- Slide 4: Problem Statement ---
+\input{slides/slide04_problem.tex}
+
+% --- Slides 5-10: Literature Review ---
+\input{slides/slide05_litreview1.tex}
+\input{slides/slide06_litreview2.tex}
+\input{slides/slide07_litreview3.tex}
+\input{slides/slide08_litreview4.tex}
+\input{slides/slide09_litreview5.tex}
+\input{slides/slide10_litreview6.tex}
+
+% --- Slide 11: Research Gaps ---
+\input{slides/slide11_gaps.tex}
+
+% --- Slide 12: Objectives ---
+\input{slides/slide12_objectives.tex}
+
+% --- Slide 13: Existing Solution ---
+\input{slides/slide13_existing.tex}
+
+% --- Slide 14: Dataset ---
+\input{slides/slide14_dataset.tex}
+
+% --- Slide 15: Novelty 1 ---
+\input{slides/slide15_novelty1.tex}
+
+% --- Slide 16: Novelty 2 ---
+\input{slides/slide16_novelty2.tex}
+
+% --- Slide 17: Architecture ---
+\input{slides/slide17_architecture.tex}
+
+% --- Slide 18: Improvement ---
+\input{slides/slide18_improvement.tex}
+
+% --- Slide 19: Improvement Algorithm ---
+\input{slides/slide19_algorithm.tex}
+
+% --- Slide 20: Implementation Notes ---
+\input{slides/slide20_implnotes.tex}
+
+% --- Slide 21: Filter-Stage Recall ---
+\input{slides/slide21_filter_recall.tex}
+
+% --- Slide 22: Grounder EA ---
+\input{slides/slide22_grounder_ea.tex}
+
+% --- Slide 23: HITL Results ---
+\input{slides/slide23_hitl_results.tex}
+
+% --- Slide 24: Future Work ---
+\input{slides/slide24_future.tex}
+
+% --- Slide 25: Conclusion ---
+\input{slides/slide25_conclusion.tex}
+
+% --- Slides 26-28: References ---
+\input{slides/slide26_references.tex}
+
+% --- Slide 29: Thanks ---
+\input{slides/slide29_thanks.tex}
+
+\end{document}

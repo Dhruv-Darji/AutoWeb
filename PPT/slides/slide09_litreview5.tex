@@ -1,0 +1,24 @@
+% Slide 9: Literature Review (5/6)
+\begin{frame}{Literature Review}
+  \lrtable
+  \begin{tabularx}{\textwidth}{p{0.7cm} p{2.8cm} X X}
+    \toprule
+    \textbf{Year} & \textbf{Title} & \textbf{Key Contribution} & \textbf{Limitations} \\
+    \midrule
+    2024 \cite{lai2024autowebglm}
+    & AutoWebGLM: A Large Language Model-based Web Navigating Agent
+    & HTML pruning by trimming non-actionable nodes, depth-limit.
+    & Per-step snapshot only. \\
+    \addlinespace
+    2023 \cite{gur2024webagent}
+    & A Real-World WebAgent with Planning, Long Context Understanding, and Program Synthesis
+    & HTML-specific encoder for long DOM sequences.
+    & Each step independent \& no delta reuse. \\
+    \addlinespace
+    2020 \cite{wang2020minilm}
+    & MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers
+    & 22M-param distilled encoder, ms-level CPU inference.
+    & Generic encoder, not DOM-aware. \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}
