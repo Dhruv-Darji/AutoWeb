@@ -29,7 +29,205 @@ Every method takes the same four arguments:
 
 Each method returns `(ranked_top_n_elements, telemetry_dict)`.
 
-## 1.1 Method A — Delta_Keyword (lexical only)
+## 1.1 How the snapshot-to-snapshot delta is actually calculated
+
+Before any of the three scoring methods run, the live agent does a **structural diff between two consecutive DOM snapshots** — the *true* "delta" that gives this whole layer its name. The three methods (Keyword / Embed / Hybrid) sit *on top of* this diff: they score and rank the elements that the diff has identified as relevant to the current step.
+
+The code lives in **`AutoWeb/src/dom_state.py`** (snapshot capture + structural UID) and **`AutoWeb/src/dom_diff.py`** (`compute_delta` + `get_relevant_elements`). The runner in `Prune4Web/run_prune4web.py:996–1024` calls these every step.
+
+### The two-snapshot picture
+
+At step `t`:
+
+```
+                ┌──── browser action ────┐
+DOM snapshot t-1 ─────────────────────────► DOM snapshot t
+   (before)                                   (after)
+       │                                        │
+       └────────────── compute_delta ───────────┘
+                            │
+                            ▼
+                ┌────────────────────────┐
+                │ added    : New nodes   │
+                │ removed  : Gone nodes  │
+                │ modified : Same node,  │
+                │            attrs moved │
+                │ unchanged: Identical   │
+                └────────────────────────┘
+                            │
+                  get_relevant_elements
+                            │
+                            ▼
+              candidate pool fed to scoring (1.2–1.4)
+```
+
+The first step has no `t-1` snapshot — the runner falls back to the full DOM and the three scoring methods run as if there were no diff at all. From step 2 onwards, the diff is meaningful.
+
+### Step 1 — Capture each snapshot
+
+`capture_dom_state(html, url, title, timestamp)` parses the page with BeautifulSoup and walks every actionable node. For each node it produces a `SnapshotElement` carrying the standard fields (`tag`, `text`, `aria_label`, `placeholder`, `elem_id`, `name`, `xpath`, `ancestors`, …) **plus two derived values** that the diff depends on.
+
+#### The structural UID (element identity)
+
+`dom_state.py:272–273`:
+
+```python
+identity = f"{tag_name}|{snap.elem_id}|{snap.name}|{snap.xpath}"
+snap.uid = hashlib.md5(identity.encode("utf-8")).hexdigest()[:12]
+```
+
+Four components — tag name, HTML id, name attribute, approximate XPath — concatenated and hashed to a 12-char MD5. This is the **stable identity** of an element across re-renders. Two crucial properties:
+
+- The same logical element on the page produces the **same uid** even if its visible text or aria-label mutates between snapshots, because none of those are in the identity string.
+- A truly new node (e.g. a popup that wasn't there before) produces a **different uid**, because either its tag, id, name, or xpath will differ from anything in the previous snapshot.
+
+This is the substitute for Mind2Web's `backend_node_id` that we use at run-time, where no live browser instrumentation is available.
+
+#### The fingerprint (element content)
+
+`dom_state.py:70–75`:
+
+```python
+def fingerprint(self) -> str:
+    payload = "|".join(str(getattr(self, attr)) for attr in TRACKED_ATTRS)
+    return hashlib.md5(payload.encode("utf-8")).hexdigest()
+```
+
+A second hash, this time over the *content* fields — `text`, `aria_label`, `placeholder`, `value`, `disabled`, `checked`, `selected`, `href`, `role`, `elem_class`, `input_type`. Two snapshots of the *same* element (same uid) get the *same* fingerprint when their content is unchanged, and a *different* fingerprint when any of those eleven attributes mutated.
+
+So each element carries two hashes: **uid** says *who* it is; **fingerprint** says *what state* it is in.
+
+### Step 2 — Set arithmetic on uids
+
+`compute_delta()` in `dom_diff.py:111–144` is essentially three set operations between the uid sets of the two snapshots:
+
+```python
+before_uids = set(before.elements.keys())
+after_uids  = set(after.elements.keys())
+
+added    = after_uids  - before_uids        # in after, not in before
+removed  = before_uids - after_uids         # in before, not in after
+common   = before_uids & after_uids         # present in both
+```
+
+For elements in `common`, we compare **fingerprints**:
+
+```python
+for uid in common:
+    if before[uid].fingerprint() != after[uid].fingerprint():
+        # same element, content changed
+        modified.append(ElementChange(uid, before=before[uid], after=after[uid],
+                                      changed_attrs=_changed_attributes(before, after)))
+    else:
+        unchanged.append(after[uid])
+```
+
+`_changed_attributes()` simply enumerates which of the eleven tracked content fields actually flipped — useful for telemetry and for the "(changed: text, aria_label)" suffix in delta summaries.
+
+### Worked example — what one delta looks like
+
+Suppose the user has just clicked **"Add to Bag"** on an iPad page. Before the click, the page had 312 elements; after the click, a mini-cart popup appeared and the page now has 327 elements.
+
+```
+before snapshot: 312 elements   uids: { a3f7..., 9e21..., 4b08..., ... }   (312 uids)
+after snapshot:  327 elements   uids: { a3f7..., 9e21..., 4b08..., ...,
+                                        ff70..., 8c1d..., 6e44..., ... } (327 uids)
+
+Set arithmetic:
+  added    = after_uids - before_uids
+           = { ff70..., 8c1d..., 6e44..., 2a91..., ... }       → 18 new elements
+             (the popup's "View Bag", "Continue Shopping", item rows, etc.)
+
+  removed  = before_uids - after_uids
+           = { 7d12..., a48b..., 5f33... }                     → 3 elements
+             (the "Add to Bag" CTA may have been replaced by a smaller "in cart"
+              indicator; carousel arrows that lost focus).
+
+  common   = before_uids ∩ after_uids                           → 309 elements
+
+For each of the 309 common uids, compare fingerprints:
+  modified = 5  elements        (cart counter "0" → "1"; status text changed;
+                                 a button's aria-label flipped to "Added")
+  unchanged = 304 elements      (header, navigation, footer, sidebar, ...)
+```
+
+Resulting `DOMDelta`:
+
+```python
+DOMDelta(
+    before_count = 312,
+    after_count  = 327,
+    added        = [18 SnapshotElements],
+    removed      = [3  SnapshotElements],
+    modified     = [5  ElementChange records],
+    unchanged    = [304 SnapshotElements],
+)
+
+# delta.print_summary() →
+# DOM delta: before=312 after=327 added=18 removed=3 modified=5 unchanged=304 reduction=14.2x
+```
+
+`reduction_factor = after_count / max(len(added) + len(modified), 1) = 327 / 23 ≈ 14.2×`. That is, instead of re-processing 327 elements, the relevance filter only needs to seriously consider 23 — the things that *actually changed* in this step.
+
+### Step 3 — Pick relevant elements from the delta
+
+`get_relevant_elements()` in `dom_diff.py:170` turns the raw delta into the candidate pool that the three scoring methods will rank. The priority order is:
+
+1. **Added elements** that match task keywords. Highest signal — a new element that mentions task vocabulary is almost certainly part of the next interaction.
+2. **All modified elements**. We include every modified element regardless of keyword match, because *something happened to it* and that something is usually a consequence of the previous action.
+3. **Unchanged elements** that match task keywords, but only if the first two pools came up empty (or `include_unchanged=True` is forced — which is what step 1 does, since there is no diff yet).
+
+Continuing the example: of the 18 *added* popup elements, suppose 11 keyword-match the live task (*"complete checkout"*) — "View Bag", "Continue", "Subtotal", item title, etc. All 5 modified elements are auto-included. So the candidate pool entering Method A/B/C is **16 elements** instead of 327 — a **20× reduction in the number of strings the downstream scorer has to embed or match against.**
+
+That ratio — single-digit-to-low-double-digit candidates instead of hundreds — is what makes the embedding pass in Methods B and C cheap enough to run on every step. Without this snapshot-diff layer, we would be paying MiniLM to encode the entire footer and navigation of every page, every step, even though none of it has changed since the previous step.
+
+### How the live runner calls all of this
+
+`run_prune4web.py:996–1024`:
+
+```python
+delta_elements = None
+if delta_processor is not None:
+    dom_state, delta = delta_processor.update_and_diff(
+        html, url=url_now, title=title, timestamp=time.time()
+    )
+    if delta is not None:                       # not the first step
+        delta.print_summary()
+        snap_relevant = delta_processor.get_relevant_elements(
+            delta, task_context=task
+        )
+        # Map back from SnapshotElement → ElementNode for the scorer
+        snap_ids   = {s.elem_id for s in snap_relevant if s.elem_id}
+        snap_texts = {s.text[:60] for s in snap_relevant if s.text}
+        delta_elements = [
+            el for el in elements
+            if el.elem_id in snap_ids or el.text[:60] in snap_texts
+        ] or elements                           # safety fallback
+
+# Use delta-filtered pool if available, else full DOM
+candidate_source = delta_elements if delta_elements is not None else elements
+```
+
+So:
+
+- **Step 1**: `delta is None` → `candidate_source = elements` (full DOM).
+- **Step ≥2**: `delta_elements` is a small subset of the full DOM, and Methods A/B/C run on this subset.
+
+### Three things this layer is responsible for, and three it isn't
+
+**Is responsible for:**
+- Element identity across re-renders (structural UID).
+- Detecting which elements appeared / disappeared / mutated since the previous step.
+- Producing a small, task-relevant candidate pool for the scorer.
+
+**Is *not* responsible for:**
+- Ranking inside the candidate pool — that's Methods A/B/C in §1.2–§1.4.
+- Deciding which element to click — that's the grounder.
+- Knowing anything about the user's *high-level* task — `get_relevant_elements()` only sees the planner's per-step *sub-task* string.
+
+This separation is deliberate. The diff layer is a deterministic structural operation; the scoring layer is the part that needs language understanding; the grounder is the part that needs reasoning. Each of them does one thing well, and any one of them can be swapped out without touching the others.
+
+## 1.2 Method A — Delta_Keyword (lexical only)
 
 ### Code
 ```python
@@ -243,7 +441,7 @@ The grounder receives these four candidates as the top-N and picks `uid=2` ("Add
 - Vocabulary-sensitive: weighting depends on which words the planner happens to emit.
 - If the page has many short generic strings ("the", "to", "buy"), the pre-filter retains too much and the score noise floor rises.
 
-## 1.2 Method B — Delta_Embed (semantic only)
+## 1.3 Method B — Delta_Embed (semantic only)
 
 ### Code
 ```python
@@ -464,7 +662,7 @@ The grounder receives these five candidates as the top-N and picks `uid=2` ("Add
 - Generic encoder, not DOM-aware. It doesn't know that text inside a `<button>` matters more than text inside a `<footer>`.
 - Min/max cosine across an unrelated DOM is often a narrow band (0.3–0.6), which means score normalisation is sensitive to outliers.
 
-## 1.3 Method C — Delta_Hybrid (the one we ship)
+## 1.4 Method C — Delta_Hybrid (the one we ship)
 
 ### Code
 ```python
@@ -537,7 +735,7 @@ We swept α from 0.0 to 1.0 in 0.1 steps on the eval split. 0.6 — slightly fav
 - α is a hyper-parameter — different domains might prefer different blends; we use a single global value.
 - Two branches mean two failure modes: if both branches happen to mis-rank, the fusion can't save you. (We see this in the 5–6 pp EA gap at near-equal Recall@20 on test_domain.)
 
-## 1.4 Did we fine-tune MiniLM?
+## 1.5 Did we fine-tune MiniLM?
 
 **No. MiniLM is used as-is, with the pretrained `sentence-transformers/all-MiniLM-L6-v2` checkpoint.**
 
@@ -549,7 +747,7 @@ There are three reasons we did not tune it:
 
 So in the entire DOM Delta pipeline, **the only learned component is the pretrained MiniLM encoder. Every other piece is deterministic Python — keyword matching, min-max normalisation, alpha-blend, sort.**
 
-## 1.5 Side-by-side cheat sheet
+## 1.6 Side-by-side cheat sheet
 
 | Aspect | Delta_Keyword | Delta_Embed | Delta_Hybrid |
 |---|---|---|---|
