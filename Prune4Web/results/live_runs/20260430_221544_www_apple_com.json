@@ -1,0 +1,416 @@
+{
+  "timestamp": "20260430_221544",
+  "input": {
+    "url": "https://www.apple.com/",
+    "domain": "www.apple.com",
+    "task": "add base ipade to cart",
+    "max_steps": 7
+  },
+  "config": {
+    "planner_model": "gpt-4o",
+    "filter_model": "gpt-4o",
+    "grounder_model": "gpt-4o",
+    "grounder_local": false,
+    "top_n_candidates": 20,
+    "dom_delta_enabled": true,
+    "privacy_enabled": true,
+    "hitl_enabled": true,
+    "hitl_low_confidence_floor": 60,
+    "hitl_threshold": 72,
+    "policy_hub_path": "D:\\Mtech\\Sem 3\\Codes\\WebAgents\\AutoWeb\\src\\policyHub\\policies.json"
+  },
+  "output": {
+    "total_steps": 7,
+    "steps_executed": 7,
+    "steps_failed": 0,
+    "hitl_triggers": 0,
+    "hitl_trigger_rate": 0.0,
+    "success_rate": "100.0%",
+    "total_api_cost_usd": 0.039758
+  },
+  "steps": [
+    {
+      "step": 1,
+      "sub_task": "Click 'iPad' in the navigation menu",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "ipad": 3.0,
+        "navigation": 1.5,
+        "menu": 1.5,
+        "tablet": 0.8,
+        "apple": 0.5
+      },
+      "dom_nodes": 371,
+      "candidates": 20,
+      "grounded_uid": 55,
+      "grounded_element": "[55] <a aria-label=\"iPad\"> iPad",
+      "llm_confidence": 90.0,
+      "composite_confidence": 90.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "hitl_details": {
+        "hitl_triggered": false,
+        "trigger_reasons": [],
+        "llm_confidence": 90.0,
+        "policy_risk_flag": false,
+        "matched_keywords": [],
+        "low_confidence_floor": 60,
+        "final_confidence": 90.0,
+        "policy_risk_score": 100.0,
+        "threshold": 72
+      },
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: Click 'iPad' in the navigation menu",
+      "executed": true,
+      "executed_selector": "role:link",
+      "grounding_error": ""
+    },
+    {
+      "step": 2,
+      "sub_task": "Click 'iPad' in the lineup",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "ipad": 3.0,
+        "tablet": 1.5,
+        "lineup": 1.0,
+        "product": 0.5,
+        "device": 0.5
+      },
+      "dom_nodes": 406,
+      "candidates": 1,
+      "grounded_uid": 3,
+      "grounded_element": "[3] <a id=\"ac-ls-continue\"> Continue",
+      "llm_confidence": 90.0,
+      "composite_confidence": 90.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "hitl_details": {
+        "hitl_triggered": false,
+        "trigger_reasons": [],
+        "llm_confidence": 90.0,
+        "policy_risk_flag": false,
+        "matched_keywords": [],
+        "low_confidence_floor": 60,
+        "final_confidence": 90.0,
+        "policy_risk_score": 100.0,
+        "threshold": 72
+      },
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: Click 'iPad' in the lineup",
+      "executed": true,
+      "executed_selector": "js-id:ac-ls-continue",
+      "grounding_error": ""
+    },
+    {
+      "step": 3,
+      "sub_task": "Click 'iPad' in the lineup",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "ipad": 3.0,
+        "tablet": 1.5,
+        "lineup": 1.0,
+        "product": 0.5,
+        "device": 0.5
+      },
+      "dom_nodes": 369,
+      "candidates": 20,
+      "grounded_uid": 44,
+      "grounded_element": "[44] <a aria-label=\"iPad\"> iPad",
+      "llm_confidence": 90.0,
+      "composite_confidence": 90.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "hitl_details": {
+        "hitl_triggered": false,
+        "trigger_reasons": [],
+        "llm_confidence": 90.0,
+        "policy_risk_flag": false,
+        "matched_keywords": [],
+        "low_confidence_floor": 60,
+        "final_confidence": 90.0,
+        "policy_risk_score": 100.0,
+        "threshold": 72
+      },
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: Click 'iPad' in the lineup",
+      "executed": true,
+      "executed_selector": "role:link",
+      "grounding_error": ""
+    },
+    {
+      "step": 4,
+      "sub_task": "Click 'iPad' in the lineup",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "ipad": 3.0,
+        "tablet": 1.5,
+        "lineup": 1.0,
+        "product": 0.5,
+        "device": 0.5
+      },
+      "dom_nodes": 369,
+      "candidates": 1,
+      "grounded_uid": 288,
+      "grounded_element": "[288] <a> Additional terms apply",
+      "llm_confidence": 90.0,
+      "composite_confidence": 90.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "hitl_details": {
+        "hitl_triggered": false,
+        "trigger_reasons": [],
+        "llm_confidence": 90.0,
+        "policy_risk_flag": false,
+        "matched_keywords": [],
+        "low_confidence_floor": 60,
+        "final_confidence": 90.0,
+        "policy_risk_score": 100.0,
+        "threshold": 72
+      },
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: Click 'iPad' in the lineup",
+      "executed": true,
+      "executed_selector": "text:Additional terms apply",
+      "grounding_error": ""
+    },
+    {
+      "step": 5,
+      "sub_task": "Navigate back to the iPad selection page",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "back": 2.0,
+        "iPad": 3.0,
+        "selection": 1.5,
+        "return": 1.0,
+        "navigate": 0.5,
+        "page": 0.5
+      },
+      "dom_nodes": 277,
+      "candidates": 20,
+      "grounded_uid": 45,
+      "grounded_element": "[45] <button id=\"globalnav-menubutton-link-ipad\" aria-label=\"iPad menu\">",
+      "llm_confidence": 85.0,
+      "composite_confidence": 85.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "hitl_details": {
+        "hitl_triggered": false,
+        "trigger_reasons": [],
+        "llm_confidence": 85.0,
+        "policy_risk_flag": false,
+        "matched_keywords": [],
+        "low_confidence_floor": 60,
+        "final_confidence": 85.0,
+        "policy_risk_score": 100.0,
+        "threshold": 72
+      },
+      "confidence": 0.95,
+      "reasoning": "Element 7 matches the sub-task target: Navigate back to the iPad selection page",
+      "executed": true,
+      "executed_selector": "js-id:globalnav-menubutton-link-ipad",
+      "grounding_error": ""
+    },
+    {
+      "step": 6,
+      "sub_task": "Click 'iPad' under Explore iPad",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "iPad": 3.0,
+        "explore": 2.0,
+        "tablet": 1.0,
+        "device": 0.5,
+        "Apple": 0.5
+      },
+      "dom_nodes": 277,
+      "candidates": 20,
+      "grounded_uid": 44,
+      "grounded_element": "[44] <a aria-label=\"iPad\"> iPad",
+      "llm_confidence": 90.0,
+      "composite_confidence": 90.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "hitl_details": {
+        "hitl_triggered": false,
+        "trigger_reasons": [],
+        "llm_confidence": 90.0,
+        "policy_risk_flag": false,
+        "matched_keywords": [],
+        "low_confidence_floor": 60,
+        "final_confidence": 90.0,
+        "policy_risk_score": 100.0,
+        "threshold": 72
+      },
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: Click 'iPad' under Explore iPad",
+      "executed": true,
+      "executed_selector": "role:link",
+      "grounding_error": ""
+    },
+    {
+      "step": 7,
+      "sub_task": "Scroll down to view iPad models",
+      "action": "click",
+      "action_value": "",
+      "keyword_weights": {
+        "scroll": 2.0,
+        "down": 1.5,
+        "iPad": 3.0,
+        "models": 2.5,
+        "view": 1.0,
+        "tablet": 0.5,
+        "Apple": 0.5
+      },
+      "dom_nodes": 369,
+      "candidates": 1,
+      "grounded_uid": 288,
+      "grounded_element": "[288] <a> Additional terms apply",
+      "llm_confidence": 85.0,
+      "composite_confidence": 85.0,
+      "policy_risk_flag": false,
+      "hitl_triggered": false,
+      "hitl_reason": "",
+      "hitl_details": {
+        "hitl_triggered": false,
+        "trigger_reasons": [],
+        "llm_confidence": 85.0,
+        "policy_risk_flag": false,
+        "matched_keywords": [],
+        "low_confidence_floor": 60,
+        "final_confidence": 85.0,
+        "policy_risk_score": 100.0,
+        "threshold": 72
+      },
+      "confidence": 0.95,
+      "reasoning": "Element 0 matches the sub-task target: Scroll down to view iPad models",
+      "executed": true,
+      "executed_selector": "text:Additional terms apply",
+      "grounding_error": ""
+    }
+  ],
+  "llm_usage": [
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1582,
+      "completion_tokens": 56,
+      "cached_tokens": 0,
+      "cost_usd": 0.004515
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 228,
+      "completion_tokens": 40,
+      "cached_tokens": 0,
+      "cost_usd": 0.0009699999999999999
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1605,
+      "completion_tokens": 55,
+      "cached_tokens": 0,
+      "cost_usd": 0.004562500000000001
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 227,
+      "completion_tokens": 41,
+      "cached_tokens": 0,
+      "cost_usd": 0.0009775
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1631,
+      "completion_tokens": 52,
+      "cached_tokens": 0,
+      "cost_usd": 0.0045975
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 227,
+      "completion_tokens": 41,
+      "cached_tokens": 0,
+      "cost_usd": 0.0009775
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1654,
+      "completion_tokens": 54,
+      "cached_tokens": 0,
+      "cost_usd": 0.0046749999999999995
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 227,
+      "completion_tokens": 41,
+      "cached_tokens": 0,
+      "cost_usd": 0.0009775
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1679,
+      "completion_tokens": 52,
+      "cached_tokens": 0,
+      "cost_usd": 0.0047174999999999995
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 227,
+      "completion_tokens": 49,
+      "cached_tokens": 0,
+      "cost_usd": 0.0010574999999999998
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1702,
+      "completion_tokens": 53,
+      "cached_tokens": 0,
+      "cost_usd": 0.004785
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 228,
+      "completion_tokens": 42,
+      "cached_tokens": 0,
+      "cost_usd": 0.00099
+    },
+    {
+      "stage": "planner",
+      "model": "gpt-4o",
+      "prompt_tokens": 1724,
+      "completion_tokens": 51,
+      "cached_tokens": 0,
+      "cost_usd": 0.0048200000000000005
+    },
+    {
+      "stage": "filter",
+      "model": "gpt-4o",
+      "prompt_tokens": 226,
+      "completion_tokens": 57,
+      "cached_tokens": 0,
+      "cost_usd": 0.001135
+    }
+  ]
+}

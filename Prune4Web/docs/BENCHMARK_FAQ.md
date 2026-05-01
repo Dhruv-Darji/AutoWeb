@@ -269,4 +269,290 @@ rapidfuzz) is Prune4Web's, not our novel contribution.
   So "step" here is optimizer step (batched), not sample. The 6,626 samples are all being consumed each epoch — just 16
   at a time per update.
   
-*Document created 2026-04-16.*
+---
+
+## Q8. How do I run a live browser session with different configurations?
+
+The live runner is `run_prune4web.py` at the repo root. It launches a real
+Playwright browser, drives Prune4Web on a URL + natural-language task, and
+prints per-step decisions plus a token/cost summary at the end.
+
+### Minimal command
+
+```bash
+cd D:/Mtech/Sem\ 3/Codes/WebAgents/Prune4Web
+python run_prune4web.py --url "https://www.amazon.com" --task "search for noise cancelling headphones and add the first result to cart"
+```
+
+If `--url` or `--task` is omitted, the script will prompt for them.
+
+### CLI flags (defined in `run_prune4web.py`)
+
+| Flag | Default | Purpose |
+|---|---|---|
+| `--url` | (prompted) | Starting URL the browser opens |
+| `--task` | (prompted) | High-level natural-language task |
+| `--max-steps` | `5` (or `PRUNE4WEB_MAX_STEPS`) | Hard cap on planner→filter→grounder iterations |
+| `--grounder` | `qwen3` (or `GROUNDER_BACKEND`) | Grounder backend: `qwen3` (local Qwen3-0.6B + LoRA, default), `qwen25` (local Qwen2.5-0.5B + LoRA), or `gpt4o` (hosted OpenAI) |
+
+The default grounder is the **locally-fine-tuned Qwen3-0.6B**. The
+`OPENAI_API_KEY` is still required because the planner and filter stages
+continue to use the hosted model — only the grounder stage is local
+unless you also point `PRUNE4WEB_PLANNER_MODEL` / `PRUNE4WEB_FILTER_MODEL`
+at a local OpenAI-compatible endpoint. Everything beyond these flags is
+configured via **environment variables** (typically in a `.env` at the
+repo root).
+
+### Environment variables (live-run knobs)
+
+| Variable | Default | What it controls |
+|---|---|---|
+| `OPENAI_API_KEY` | — | **Required.** Hosted-LLM key for planner/filter/grounder calls |
+| `PRUNE4WEB_PLANNER_MODEL` | `gpt-4o` | Model name used for the planner stage |
+| `PRUNE4WEB_FILTER_MODEL` | `gpt-4o` | Model used to emit the filter scoring script |
+| `PRUNE4WEB_GROUNDER_MODEL` | `gpt-4o` | Hosted model name used **only when** `--grounder gpt4o` is chosen |
+| `GROUNDER_BACKEND` | `qwen3` | Default grounder backend if `--grounder` is omitted (`qwen3` / `qwen25` / `gpt4o`) |
+| `GROUNDER_BASE_MODEL` | auto-set by `--grounder` | Local base-model directory; override only for custom paths |
+| `GROUNDER_OUTPUT_MODEL` | auto-set by `--grounder` | LoRA adapter directory; override only for custom paths |
+| `GROUNDER_DISABLE_THINKING` | `1` for `qwen3`, unset for `qwen25` | Strips empty `<think>` block from Qwen3's chat template |
+| `PRUNE4WEB_MAX_STEPS` | `5` | Same as `--max-steps`, used when flag is omitted |
+| `PRUNE4WEB_USE_VISION` | `1` | `1` = send screenshot alongside HTML, `0` = HTML only |
+| `PRUNE4WEB_DOM_DELTA` | `1` | Toggle DOM Delta layer (structural UID + delta-aware filter) |
+| `PRUNE4WEB_PRIVACY` | `1` | Toggle Privacy-Aware LLM wrapper (regex PII masking + directive) |
+| `PRUNE4WEB_DP_EPSILON` | `0` | Laplace-noise budget on candidate scores; `0` disables DP |
+| `PRUNE4WEB_USE_HITL` | `1` | Toggle the risk-based HITL gate around the planner |
+| `PRUNE4WEB_HITL_THRESHOLD` | `75` | Confidence ceiling used by the HITL gate |
+| `PRUNE4WEB_HITL_LOW_CONFIDENCE_FLOOR` | `30` | Confidences below this auto-trigger HITL |
+| `PRUNE4WEB_POLICY_HUB_PATH` | `AutoWeb/src/policyHub/policies.json` | Path to the PolicyHub rule/keyword JSON |
+
+`HITL_THRESHOLD` and `LOW_CONFIDENCE_FLOOR` (without the `PRUNE4WEB_`
+prefix) are also accepted as fallbacks for backward compatibility.
+
+### Common live-run recipes
+
+**1. Vanilla Prune4Web baseline (no DOM Delta, no Privacy, no HITL).**
+Useful when you want to compare against a "stock" Prune4Web run.
+
+```bash
+PRUNE4WEB_DOM_DELTA=0 \
+PRUNE4WEB_PRIVACY=0 \
+PRUNE4WEB_USE_HITL=0 \
+python run_prune4web.py --url "<URL>" --task "<TASK>"
+```
+
+**2. Full proposed pipeline (everything on — the paper config).**
+
+```bash
+PRUNE4WEB_DOM_DELTA=1 \
+PRUNE4WEB_PRIVACY=1 \
+PRUNE4WEB_USE_HITL=1 \
+python run_prune4web.py --url "<URL>" --task "<TASK>"
+```
+
+**3. Privacy-only ablation (HITL off, Delta on).**
+
+```bash
+PRUNE4WEB_DOM_DELTA=1 \
+PRUNE4WEB_PRIVACY=1 \
+PRUNE4WEB_USE_HITL=0 \
+python run_prune4web.py --url "<URL>" --task "<TASK>"
+```
+
+**4. Strict HITL (lower the ceiling so more sub-tasks ask for confirmation).**
+
+```bash
+PRUNE4WEB_HITL_THRESHOLD=50 \
+PRUNE4WEB_HITL_LOW_CONFIDENCE_FLOOR=40 \
+python run_prune4web.py --url "<URL>" --task "<TASK>"
+```
+
+**5. Cheaper hosted model on the planner/filter, local Qwen3 grounder.**
+
+```bash
+PRUNE4WEB_PLANNER_MODEL=gpt-4o-mini \
+PRUNE4WEB_FILTER_MODEL=gpt-4o-mini \
+python run_prune4web.py --url "<URL>" --task "<TASK>"
+# --grounder defaults to qwen3, no flag needed
+```
+
+**5b. Pick a different grounder explicitly.**
+
+```bash
+# Use the local Qwen2.5-0.5B grounder instead of Qwen3
+python run_prune4web.py --grounder qwen25 --url "<URL>" --task "<TASK>"
+
+# Fall back to the hosted gpt-4o grounder (original Prune4Web behaviour)
+python run_prune4web.py --grounder gpt4o --url "<URL>" --task "<TASK>"
+```
+
+**6. Differential-privacy noise on the candidate scores (ε = 1.0).**
+
+```bash
+PRUNE4WEB_DP_EPSILON=1.0 \
+python run_prune4web.py --url "<URL>" --task "<TASK>"
+```
+
+### Windows PowerShell equivalent
+
+PowerShell does not accept inline `KEY=VAL command` syntax. Set first, then
+run:
+
+```powershell
+$env:PRUNE4WEB_DOM_DELTA = "1"
+$env:PRUNE4WEB_USE_HITL  = "1"
+python run_prune4web.py --url "<URL>" --task "<TASK>"
+```
+
+Or put the same keys into a `.env` file at the repo root and let
+`python-dotenv` load them — the script calls `load_dotenv()` on startup, so
+a `.env` is the cleanest way to pin a configuration for repeated runs.
+
+### What you will see during a run
+
+- A real Chromium window opens on the given URL.
+- For each step, the console prints the planner's chosen sub-task, the
+  filter's top-20 candidates, the HITL decision (`hitl_required: true|false`
+  with a reason), and the grounder's chosen element.
+- If HITL fires, the run pauses and asks you to perform that sub-task in
+  the live browser yourself; once done, the agent resumes from the next
+  page state.
+- When the run ends (task complete or `--max-steps` hit), a summary block
+  prints token counts per stage, a USD cost estimate using
+  `MODEL_PRICING_PER_1M`, and the final HITL/Privacy flags that were active.
+
+### Other runnable scripts (not the live runner)
+
+These exist alongside `run_prune4web.py` but do not drive a live browser:
+
+| Script | Purpose |
+|---|---|
+| `run_full_dom_delta_bench.py` | Offline A/B benchmark that produced the FULL vs DELTA_HYBRID Recall@20 numbers in this FAQ |
+| `run_followup_experiments.py` | Sweep harness for additional ablation runs |
+| `grounder_finetune/run_qwen3_pipeline.py` | QLoRA fine-tuning entrypoint for the local grounder |
+
+The local QLoRA grounder is now the **default** — `--grounder qwen3` is
+applied unless you ask for `qwen25` or `gpt4o`. If you want fully
+on-device runs (planner + filter + grounder all local), point
+`PRUNE4WEB_PLANNER_MODEL` and `PRUNE4WEB_FILTER_MODEL` at a local
+OpenAI-compatible endpoint (e.g. `vllm` or `text-generation-inference`)
+and keep `OPENAI_API_KEY` set to any non-empty value so the SDK
+initialises. End-to-end local execution has not been validated against
+the benchmark numbers in this FAQ.
+
+---
+
+## Q9. What models are used by default for planner / filter / grounder, and what combinations are supported?
+
+### Defaults (no flags, no env overrides)
+
+| Stage | Default | Hosted/Local |
+|---|---|---|
+| **Planner** | `gpt-4o` | hosted (OpenAI) — no local fine-tune yet |
+| **Filter** | deterministic keyword extractor + DOM-Delta (MiniLM) | **local** |
+| **DOM Delta** | structural UID hash + MiniLM (22M) hybrid score (α=0.6) | **local** |
+| **Grounder** | `Qwen3-0.6B + LoRA` | **local** |
+| **PolicyHub / HITL** | rule engine (24 keywords × 3 triggers) | **local** |
+| **Privacy-Aware-LLM** | regex PII masking (+ optional ε-DP) | **local** |
+
+Out of the box, **only the planner LLM** still calls GPT-4o. Filter, DOM-Delta, grounder, HITL and privacy all run on-device. `OPENAI_API_KEY` is still required because the planner uses it.
+
+### Filter backends exposed by `--filter`
+
+| Flag value | Backend | Notes |
+|---|---|---|
+| `local` *(default)* | deterministic tokenizer → keyword weights, then DOM-Delta + MiniLM hybrid scorer | No API call. The keyword bag-of-words feeds the existing Python scorer; DOM Delta narrows the candidate pool ahead of it. |
+| `gpt4o` | hosted GPT-4o keyword-weight LLM (the original Prune4Web filter) | Use `--filter gpt4o` to reproduce the legacy paper baseline. |
+
+### Grounder backends exposed by `--grounder`
+
+| Flag value | Backend | Model directory / model id |
+|---|---|---|
+| `qwen3` *(default)* | local QLoRA | base `D:/Environments/Models/Qwen3-0.6B` + adapter `D:/Environments/Models/Qwen3-0.6B-Prune4Web-Grounder` |
+| `qwen25` | local QLoRA | base `D:/Environments/Models/Qwen2.5-0.5B` + adapter `D:/Environments/Models/Qwen2.5-0.5B-Prune4Web-Grounder` |
+| `gpt4o` | hosted OpenAI | whatever `PRUNE4WEB_GROUNDER_MODEL` is set to (default `gpt-4o`) |
+
+The runtime banner now prints the resolved value, e.g. `grounder_model : local:Qwen3-0.6B-Prune4Web-Grounder`.
+
+### Planner / Filter overrides
+
+Planner and filter do not have CLI flags; they are controlled by env vars at process start:
+
+```bash
+export PRUNE4WEB_PLANNER_MODEL=gpt-4o-mini   # cheaper planner
+export PRUNE4WEB_FILTER_MODEL=gpt-4o-mini    # cheaper filter
+```
+
+Any model id reachable through the OpenAI-compatible client works (`gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, ...). If `OPENAI_BASE_URL` is pointed at a local OpenAI-compatible server (vLLM, TGI, llama.cpp's server, LM Studio), these names can also be local model ids served by that endpoint — but this path has **not** been validated against the benchmark numbers in this FAQ.
+
+### Supported combinations
+
+The three stages compose independently. The matrix below lists the combinations that are wired up and tested:
+
+| # | Planner | Filter | Grounder | How to run | Notes |
+|---|---|---|---|---|---|
+| 1 | `gpt-4o` | local (default) | `qwen3` (local) | `python run_prune4web.py --url ... --task ...` | **Default.** Only planner is hosted. |
+| 2 | `gpt-4o` | `gpt4o` | `qwen3` (local) | `... --filter gpt4o` | Restores the legacy keyword-weight LLM (paper baseline filter). |
+| 3 | `gpt-4o` | `gpt4o` | `gpt4o` (hosted) | `... --filter gpt4o --grounder gpt4o` | Full original Prune4Web baseline (88.28% EA). |
+| 3a | `gpt-4o` | local | `qwen25` (local) | `... --grounder qwen25` | 85.0% EA on `test_task`; smaller VRAM footprint. |
+| 4 | `gpt-4o-mini` | `gpt-4o-mini` | `qwen3` (local) | `PRUNE4WEB_PLANNER_MODEL=gpt-4o-mini PRUNE4WEB_FILTER_MODEL=gpt-4o-mini python run_prune4web.py ...` | Cheapest hosted-tier combo; expect a small EA drop on harder splits. |
+| 5 | `gpt-4o-mini` | `gpt-4o-mini` | `gpt-4o-mini` | `PRUNE4WEB_PLANNER_MODEL=gpt-4o-mini PRUNE4WEB_FILTER_MODEL=gpt-4o-mini PRUNE4WEB_GROUNDER_MODEL=gpt-4o-mini python run_prune4web.py ... --grounder gpt4o` | Pure low-cost API run. |
+| 6 | local OpenAI-compatible | local OpenAI-compatible | `qwen3` (local) | Set `OPENAI_BASE_URL=http://localhost:<port>/v1` plus the two planner/filter env vars to your served model id; run with default flags. | Fully on-device. **Not benchmark-validated.** |
+| 7 | (legacy) any | any | local | `GROUNDER_USE_LOCAL=1 python run_prune4web.py ...` | Back-compat path; equivalent to `--grounder qwen3`. The CLI flag wins if both are present. |
+
+### Quick decision guide
+
+- **Want the published numbers?** Use combo #1 (default) or #3.
+- **Want minimum API cost while keeping the local grounder?** Use combo #4.
+- **Tight on VRAM (<6 GB)?** Prefer `qwen25` (combo #2).
+- **Cannot use OpenAI at all?** Combo #6 — works but unvalidated.
+
+---
+
+## Q10. Where do I change models without editing code?
+
+A single config file: **`Prune4Web/config/models.json`**.
+
+Open it, edit the `backend` / `model` / model-path values, save, run. No code change needed.
+
+```json
+{
+  "planner":  { "backend": "openai", "model": "gpt-4o", "use_vision": true },
+  "filter":   { "backend": "local",  "gpt4o_model": "gpt-4o" },
+  "grounder": {
+    "backend": "qwen3",
+    "qwen3":  { "base_model": "...", "adapter": "...", "disable_thinking": true },
+    "qwen25": { "base_model": "...", "adapter": "..." },
+    "gpt4o":  { "model": "gpt-4o" }
+  },
+  "embeddings": { "minilm_model": "sentence-transformers/all-MiniLM-L6-v2", "alpha_blend": 0.6 },
+  "privacy":    { "enabled": true, "dp_epsilon": 0 },
+  "hitl":       { "enabled": true, "threshold": 72, "low_confidence_floor": 60, "policy_hub_path": "..." }
+}
+```
+
+### Precedence
+
+For any setting, the order is **CLI flag > pre-existing env var > config file > built-in default**. So you can:
+
+- Edit `models.json` to change defaults globally.
+- Override one stage for a single run with `--grounder qwen25` or `--filter gpt4o`.
+- Force a model from a script with `PRUNE4WEB_PLANNER_MODEL=gpt-4o-mini python run_prune4web.py ...`.
+
+### Switching backends — quick examples
+
+| What you want | Edit in `models.json` |
+|---|---|
+| Use Qwen2.5-0.5B grounder instead of Qwen3 | `"grounder": { "backend": "qwen25", ... }` |
+| Restore the original GPT-4o filter | `"filter":   { "backend": "gpt4o", "gpt4o_model": "gpt-4o" }` |
+| Run planner on a cheaper API model | `"planner":  { "model": "gpt-4o-mini" }` |
+| Move the local model directory | Update `qwen3.base_model` and `qwen3.adapter` paths |
+| Turn off the privacy layer | `"privacy":  { "enabled": false }` |
+| Tighten HITL gate | `"hitl":     { "threshold": 80 }` |
+
+### Custom config file location
+
+Pass `--config /path/to/your_models.json` or set `PRUNE4WEB_CONFIG=/path/...`. Useful for keeping benchmark and live-run configs separate.
+
+---
+
+*Document created 2026-04-16. Q8 added 2026-04-30. Q9, Q10 added 2026-05-01.*

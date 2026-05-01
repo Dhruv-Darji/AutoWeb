@@ -1,0 +1,58 @@
+{
+  "_comment": "Single source of truth for model selection in run_prune4web.py. Edit this file to switch backends without touching code. Precedence: CLI flag > env var > this file > built-in default.",
+
+  "planner": {
+    "backend": "openai",
+    "model": "gpt-4o",
+    "use_vision": true,
+    "_note": "Currently no fine-tuned local planner exists. To use a local OpenAI-compatible server (vLLM/Ollama/LM Studio), set backend='openai', model to the served name, and export OPENAI_BASE_URL=http://localhost:<port>/v1."
+  },
+
+  "filter": {
+    "backend": "local",
+    "_options": ["local", "gpt4o"],
+    "_note": "'local' = deterministic keyword extractor + DOM-Delta(MiniLM) hybrid, no API call. 'gpt4o' = legacy keyword-weight LLM via PRUNE4WEB_FILTER_MODEL.",
+    "gpt4o_model": "gpt-4o"
+  },
+
+  "grounder": {
+    "backend": "qwen3",
+    "_options": ["qwen3", "qwen25", "gpt4o"],
+    "qwen3": {
+      "base_model": "D:/Environments/Models/Qwen3-0.6B",
+      "adapter": "D:/Environments/Models/Qwen3-0.6B-Prune4Web-Grounder",
+      "disable_thinking": true,
+      "max_new_tokens": 128,
+      "max_input_tokens": 1536
+    },
+    "qwen25": {
+      "base_model": "D:/Environments/Models/Qwen2.5-0.5B-Instruct",
+      "adapter": "D:/Environments/Models/Qwen2.5-0.5B-Prune4Web-Grounder",
+      "disable_thinking": false,
+      "max_new_tokens": 128,
+      "max_input_tokens": 1536
+    },
+    "gpt4o": {
+      "model": "gpt-4o"
+    }
+  },
+
+  "embeddings": {
+    "minilm_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "alpha_blend": 0.6,
+    "_note": "Used by DOM-Delta hybrid scorer. alpha_blend = weight on the keyword score; (1 - alpha_blend) goes to the MiniLM cosine score."
+  },
+
+  "privacy": {
+    "enabled": true,
+    "dp_epsilon": 0,
+    "_note": "dp_epsilon=0 disables differential-privacy noise on numeric fields. Set to 1.0 or similar to enable."
+  },
+
+  "hitl": {
+    "enabled": true,
+    "threshold": 72,
+    "low_confidence_floor": 60,
+    "policy_hub_path": "D:/Mtech/Sem 3/Codes/WebAgents/AutoWeb/src/policyHub/policies.json"
+  }
+}

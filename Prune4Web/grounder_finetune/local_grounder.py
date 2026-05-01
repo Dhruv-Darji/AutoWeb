@@ -55,9 +55,9 @@ from Prune4Web.run_prune4web import ElementNode  # noqa: E402
 
 
 BASE_MODEL_DIR = Path(os.getenv("GROUNDER_BASE_MODEL",
-                                "D:/Environments/Models/Qwen2.5-0.5B-Instruct"))
+                                "D:/Environments/Models/Qwen3-0.6B"))
 ADAPTER_DIR = Path(os.getenv("GROUNDER_OUTPUT_MODEL",
-                             "D:/Environments/Models/Qwen2.5-0.5B-Prune4Web-Grounder"))
+                             "D:/Environments/Models/Qwen3-0.6B-Prune4Web-Grounder"))
 
 _MAX_NEW_TOKENS = int(os.getenv("GROUNDER_MAX_NEW_TOKENS", "128"))
 _MAX_INPUT_TOKENS = int(os.getenv("GROUNDER_MAX_INPUT_TOKENS", "1536"))

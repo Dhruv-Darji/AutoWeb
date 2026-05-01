@@ -523,8 +523,40 @@ def generate_keyword_weights(sub_task: str) -> Dict[str, float]:
     return {str(k): float(v) for k, v in keywords.items()}
 
 
+_FILTER_STOPWORDS = {
+    "a", "an", "the", "and", "or", "of", "to", "in", "on", "at", "for", "from",
+    "by", "with", "is", "are", "be", "this", "that", "it", "its", "as", "into",
+    "click", "select", "choose", "press", "tap", "go", "open", "close", "type",
+    "enter", "set", "make", "do", "page", "button", "link", "field", "item",
+    "please", "now", "then", "next", "back",
+}
+
+
+def _local_keyword_weights(sub_task: str) -> Dict[str, float]:
+    """Deterministic keyword extractor used when --filter local.
+
+    Tokenises the sub-task, drops stopwords/short tokens, and assigns a
+    uniform weight of 1.0 to each remaining token. The Python scorer in
+    score_elements() already handles fuzzy / phrase / word matching, so a
+    simple bag-of-words is enough to reproduce the keyword-weight contract
+    of the LLM filter without an API call.
+    """
+    if not sub_task:
+        return {}
+    tokens = re.findall(r"[A-Za-z][A-Za-z0-9]+", sub_task.lower())
+    weights: Dict[str, float] = {}
+    for tok in tokens:
+        if len(tok) < 3 or tok in _FILTER_STOPWORDS:
+            continue
+        weights[tok] = 1.0
+    return weights
+
+
 def programmatic_element_filter(sub_task: str, elements: List[ElementNode], top_n: int = TOP_N_CANDIDATES) -> Tuple[List[ElementNode], Dict[str, float]]:
-    keywords = generate_keyword_weights(sub_task)
+    if _RESOLVED_FILTER_BACKEND == "gpt4o":
+        keywords = generate_keyword_weights(sub_task)
+    else:
+        keywords = _local_keyword_weights(sub_task)
     candidates = score_elements(elements, keywords, top_n=top_n)
     return candidates, keywords
 
@@ -549,17 +581,99 @@ def action_grounder(sub_task: str, candidates: List[ElementNode], action_value: 
 # -----------------------------
 # Optional: local fine-tuned grounder
 # -----------------------------
-# Set GROUNDER_USE_LOCAL=1 to swap the OpenAI grounder for the locally
-# fine-tuned Qwen2.5-0.5B LoRA adapter produced by
-# Prune4Web/grounder_finetune/scripts/02_finetune.py.
-if os.getenv("GROUNDER_USE_LOCAL", "").strip() in {"1", "true", "yes"}:
+# Default: locally-fine-tuned Qwen3-0.6B LoRA adapter.
+# Override with the --grounder CLI flag or GROUNDER_BACKEND env var:
+#   qwen3  -> local Qwen3-0.6B + LoRA  (default)
+#   qwen25 -> local Qwen2.5-0.5B + LoRA
+#   gpt4o  -> hosted OpenAI grounder (the original Prune4Web behaviour)
+QWEN3_BASE = "D:/Environments/Models/Qwen3-0.6B"
+QWEN3_ADAPTER = "D:/Environments/Models/Qwen3-0.6B-Prune4Web-Grounder"
+QWEN25_BASE = "D:/Environments/Models/Qwen2.5-0.5B-Instruct"
+QWEN25_ADAPTER = "D:/Environments/Models/Qwen2.5-0.5B-Prune4Web-Grounder"
+
+
+# Resolved at runtime by activate_grounder() / activate_filter(); read by
+# print_runtime_parameters() and _save_run_log() so they show the truly active
+# backend rather than the static *_MODEL env-var defaults.
+_RESOLVED_GROUNDER_BACKEND: str = "gpt4o"
+_RESOLVED_FILTER_BACKEND: str = "local"
+
+
+def _grounder_model_display(backend: str) -> str:
+    """Map a backend label to the model string shown in logs/banners."""
+    b = (backend or "").strip().lower()
+    if b == "qwen3":
+        return "local:Qwen3-0.6B-Prune4Web-Grounder"
+    if b == "qwen25":
+        return "local:Qwen2.5-0.5B-Prune4Web-Grounder"
+    return GROUNDER_MODEL
+
+
+def _filter_model_display(backend: str) -> str:
+    """Map a filter backend label to the model string shown in logs/banners."""
+    b = (backend or "").strip().lower()
+    if b == "gpt4o":
+        return FILTER_MODEL
+    return "local:deterministic-keywords + DOM-Delta(MiniLM)"
+
+
+def activate_filter(backend: str) -> str:
+    """Resolve the filter backend. Returns 'local' or 'gpt4o'."""
+    global _RESOLVED_FILTER_BACKEND
+    b = (backend or "local").strip().lower()
+    if b in {"gpt", "gpt4o", "gpt-4o", "openai", "llm"}:
+        _RESOLVED_FILTER_BACKEND = "gpt4o"
+        print("[filter] Using hosted GPT-4o keyword-weight LLM.")
+    else:
+        _RESOLVED_FILTER_BACKEND = "local"
+        print("[filter] Using LOCAL filter: deterministic keywords + DOM-Delta(MiniLM).")
+    return _RESOLVED_FILTER_BACKEND
+
+
+def activate_grounder(backend: str) -> str:
+    """Bind module-global ``action_grounder`` to the chosen backend.
+
+    Returns the resolved backend label ("qwen3", "qwen25", or "gpt4o").
+    Falls back to "gpt4o" if a local backend cannot be loaded.
+    """
+    global action_grounder, _RESOLVED_GROUNDER_BACKEND
+
+    backend = (backend or "qwen3").strip().lower()
+    if backend in {"gpt", "gpt4o", "gpt-4o", "openai"}:
+        print("[grounder] Using hosted OpenAI grounder.")
+        _RESOLVED_GROUNDER_BACKEND = "gpt4o"
+        return "gpt4o"
+
+    if backend in {"qwen25", "qwen2.5", "qwen-2.5", "qwen2_5"}:
+        os.environ["GROUNDER_BASE_MODEL"] = QWEN25_BASE
+        os.environ["GROUNDER_OUTPUT_MODEL"] = QWEN25_ADAPTER
+        os.environ.pop("GROUNDER_DISABLE_THINKING", None)
+        label = "qwen25"
+    else:
+        os.environ["GROUNDER_BASE_MODEL"] = QWEN3_BASE
+        os.environ["GROUNDER_OUTPUT_MODEL"] = QWEN3_ADAPTER
+        os.environ.setdefault("GROUNDER_DISABLE_THINKING", "1")
+        label = "qwen3"
+
     try:
         from Prune4Web.grounder_finetune.local_grounder import ground as _local_ground
-        print("[grounder] Using LOCAL fine-tuned Qwen2.5-0.5B (GROUNDER_USE_LOCAL=1)")
+        print(f"[grounder] Using LOCAL fine-tuned grounder: {label}")
         action_grounder = _local_ground  # type: ignore[assignment]
+        _RESOLVED_GROUNDER_BACKEND = label
+        return label
     except Exception as _lg_exc:
-        print(f"[grounder] Failed to load local grounder ({_lg_exc}); "
+        print(f"[grounder] Failed to load local grounder '{label}' ({_lg_exc}); "
               f"falling back to OpenAI.")
+        _RESOLVED_GROUNDER_BACKEND = "gpt4o"
+        return "gpt4o"
+
+
+# Back-compat: GROUNDER_USE_LOCAL=1 (legacy) still activates a local backend
+# at import time. The CLI flag (--grounder) re-binds in main() and wins.
+_legacy_local = os.getenv("GROUNDER_USE_LOCAL", "").strip() in {"1", "true", "yes"}
+_default_backend = os.getenv("GROUNDER_BACKEND", "qwen3" if _legacy_local else "").strip()
+if _default_backend:
+    activate_grounder(_default_backend)
 
 
 @dataclass
@@ -1137,8 +1251,8 @@ def print_runtime_parameters(url: str, task: str, max_steps: int) -> None:
     print(f"url                 : {url}")
     print(f"task                : {task}")
     print(f"planner_model       : {PLANNER_MODEL}")
-    print(f"filter_model        : {FILTER_MODEL}")
-    print(f"grounder_model      : {GROUNDER_MODEL}")
+    print(f"filter_model        : {_filter_model_display(_RESOLVED_FILTER_BACKEND)}")
+    print(f"grounder_model      : {_grounder_model_display(_RESOLVED_GROUNDER_BACKEND)}")
     print(f"max_steps           : {max_steps}")
     print(f"headless            : False (live browser preview enabled)")
     print(f"top_n_candidates    : {TOP_N_CANDIDATES}")
@@ -1174,7 +1288,7 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
     base_name = f"{ts}_{domain}"
     filename = f"{base_name}.json"
 
-    use_local = os.getenv("GROUNDER_USE_LOCAL", "").strip() in {"1", "true", "yes"}
+    use_local = _RESOLVED_GROUNDER_BACKEND in {"qwen3", "qwen25"}
     steps_data = []
     for r in results:
         steps_data.append({
@@ -1225,8 +1339,10 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
         },
         "config": {
             "planner_model": PLANNER_MODEL,
-            "filter_model": FILTER_MODEL,
-            "grounder_model": "local:Qwen2.5-0.5B-Prune4Web" if use_local else GROUNDER_MODEL,
+            "filter_model": _filter_model_display(_RESOLVED_FILTER_BACKEND),
+            "filter_backend": _RESOLVED_FILTER_BACKEND,
+            "grounder_model": _grounder_model_display(_RESOLVED_GROUNDER_BACKEND),
+            "grounder_backend": _RESOLVED_GROUNDER_BACKEND,
             "grounder_local": use_local,
             "top_n_candidates": TOP_N_CANDIDATES,
             "dom_delta_enabled": USE_DOM_DELTA and _ENHANCEMENTS_AVAILABLE,
@@ -1285,6 +1401,99 @@ def _save_run_log(url: str, task: str, max_steps: int, results: List[StepResult]
     print(f"Text log saved -> {txt_path}")
 
 
+_DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent / "config" / "models.json"
+
+
+def _load_models_config(config_path: Path) -> Dict:
+    """Read the JSON model-config file and apply it as defaults.
+
+    Precedence (highest first): CLI flag > pre-existing env var > config file.
+    The function only sets an env var if it is not already set, so any
+    overrides the user has exported in their shell are preserved.
+    Module-level constants that were captured at import time are re-read
+    here so subsequent code sees the merged values.
+    """
+    global PLANNER_MODEL, FILTER_MODEL, GROUNDER_MODEL
+    global QWEN3_BASE, QWEN3_ADAPTER, QWEN25_BASE, QWEN25_ADAPTER
+    global USE_DOM_DELTA, USE_PRIVACY, DP_EPSILON
+    global USE_HITL, HITL_THRESHOLD, HITL_LOW_CONFIDENCE_FLOOR, POLICY_HUB_PATH
+
+    if not config_path.exists():
+        print(f"[config] No config file at {config_path}; using built-in defaults.")
+        return {}
+
+    try:
+        cfg = json.loads(config_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        print(f"[config] Failed to parse {config_path} ({exc}); using built-in defaults.")
+        return {}
+
+    def _setenv(key: str, value) -> None:
+        if value is None:
+            return
+        if os.getenv(key):
+            return
+        os.environ[key] = str(value)
+
+    planner = cfg.get("planner", {}) or {}
+    _setenv("PRUNE4WEB_PLANNER_MODEL", planner.get("model"))
+
+    filt = cfg.get("filter", {}) or {}
+    _setenv("FILTER_BACKEND", filt.get("backend"))
+    _setenv("PRUNE4WEB_FILTER_MODEL", filt.get("gpt4o_model"))
+
+    gr = cfg.get("grounder", {}) or {}
+    _setenv("GROUNDER_BACKEND", gr.get("backend"))
+    _setenv("PRUNE4WEB_GROUNDER_MODEL", (gr.get("gpt4o") or {}).get("model"))
+    qwen3 = gr.get("qwen3") or {}
+    qwen25 = gr.get("qwen25") or {}
+    if qwen3.get("base_model"):
+        QWEN3_BASE = qwen3["base_model"]
+    if qwen3.get("adapter"):
+        QWEN3_ADAPTER = qwen3["adapter"]
+    if qwen25.get("base_model"):
+        QWEN25_BASE = qwen25["base_model"]
+    if qwen25.get("adapter"):
+        QWEN25_ADAPTER = qwen25["adapter"]
+    if "max_new_tokens" in qwen3:
+        _setenv("GROUNDER_MAX_NEW_TOKENS", qwen3["max_new_tokens"])
+    if "max_input_tokens" in qwen3:
+        _setenv("GROUNDER_MAX_INPUT_TOKENS", qwen3["max_input_tokens"])
+
+    privacy = cfg.get("privacy", {}) or {}
+    if "enabled" in privacy:
+        _setenv("PRUNE4WEB_PRIVACY", "1" if privacy["enabled"] else "0")
+    if "dp_epsilon" in privacy:
+        _setenv("PRUNE4WEB_DP_EPSILON", privacy["dp_epsilon"])
+
+    hitl = cfg.get("hitl", {}) or {}
+    if "enabled" in hitl:
+        _setenv("PRUNE4WEB_USE_HITL", "1" if hitl["enabled"] else "0")
+    if "threshold" in hitl:
+        _setenv("PRUNE4WEB_HITL_THRESHOLD", hitl["threshold"])
+    if "low_confidence_floor" in hitl:
+        _setenv("PRUNE4WEB_HITL_LOW_CONFIDENCE_FLOOR", hitl["low_confidence_floor"])
+    if hitl.get("policy_hub_path"):
+        _setenv("PRUNE4WEB_POLICY_HUB_PATH", hitl["policy_hub_path"])
+
+    # Re-read module-level constants now that env may have been augmented.
+    PLANNER_MODEL = os.getenv("PRUNE4WEB_PLANNER_MODEL", PLANNER_MODEL)
+    FILTER_MODEL = os.getenv("PRUNE4WEB_FILTER_MODEL", FILTER_MODEL)
+    GROUNDER_MODEL = os.getenv("PRUNE4WEB_GROUNDER_MODEL", GROUNDER_MODEL)
+    USE_DOM_DELTA = os.getenv("PRUNE4WEB_DOM_DELTA", "1").strip().lower() in {"1", "true", "yes", "y"}
+    USE_PRIVACY = os.getenv("PRUNE4WEB_PRIVACY", "1").strip().lower() in {"1", "true", "yes", "y"}
+    DP_EPSILON = float(os.getenv("PRUNE4WEB_DP_EPSILON", "0"))
+    USE_HITL = os.getenv("PRUNE4WEB_USE_HITL", "1").strip().lower() in {"1", "true", "yes", "y"}
+    HITL_THRESHOLD = int(os.getenv("PRUNE4WEB_HITL_THRESHOLD", str(HITL_THRESHOLD)))
+    HITL_LOW_CONFIDENCE_FLOOR = int(
+        os.getenv("PRUNE4WEB_HITL_LOW_CONFIDENCE_FLOOR", str(HITL_LOW_CONFIDENCE_FLOOR))
+    )
+    POLICY_HUB_PATH = os.getenv("PRUNE4WEB_POLICY_HUB_PATH", POLICY_HUB_PATH)
+
+    print(f"[config] Loaded model config from {config_path}")
+    return cfg
+
+
 def main() -> None:
     global _CLIENT
     # Ensure Proactor loop on Windows for Playwright subprocess support.
@@ -1297,16 +1506,48 @@ def main() -> None:
     _p.add_argument("--url", default="")
     _p.add_argument("--task", default="")
     _p.add_argument("--max-steps", type=int, default=MAX_STEPS)
+    _p.add_argument(
+        "--config",
+        default=os.getenv("PRUNE4WEB_CONFIG", str(_DEFAULT_CONFIG_PATH)),
+        help="Path to the JSON model-config file (default: Prune4Web/config/models.json).",
+    )
+    _p.add_argument(
+        "--grounder",
+        default=None,
+        choices=["qwen3", "qwen25", "gpt4o"],
+        help="Grounder backend (overrides config file; default in config: qwen3).",
+    )
+    _p.add_argument(
+        "--filter",
+        default=None,
+        choices=["local", "gpt4o"],
+        help="Filter backend (overrides config file; default in config: local).",
+    )
     _args, _ = _p.parse_known_args()
+
+    # Load JSON config FIRST so its values populate env defaults; then CLI flags
+    # below override anything the config set.
+    _load_models_config(Path(_args.config))
+
+    grounder_choice = _args.grounder or os.getenv("GROUNDER_BACKEND", "qwen3")
+    filter_choice = _args.filter or os.getenv("FILTER_BACKEND", "local")
 
     url = _args.url or _ask_non_empty("Enter URL for Prune4Web: ")
     task = _args.task or _ask_non_empty("Enter task for Prune4Web: ")
     max_steps = _args.max_steps
+
+    resolved_backend = activate_grounder(grounder_choice)
+    print(f"[grounder] backend = {resolved_backend}")
+    resolved_filter = activate_filter(filter_choice)
+    print(f"[filter] backend = {resolved_filter}")
+
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
         raise RuntimeError(
             "OPENAI_API_KEY not found. Add it to your .env file:\n"
-            "  OPENAI_API_KEY=sk-proj-..."
+            "  OPENAI_API_KEY=sk-proj-...\n"
+            "(Required by the planner and filter stages even when the "
+            "grounder runs locally.)"
         )
     _CLIENT = OpenAI(api_key=api_key)
 
